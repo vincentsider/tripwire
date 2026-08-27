@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.wrangler/
+*.tsbuildinfo
+
+# Secrets — NEVER commit. This is a public repo.
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Test / coverage
+coverage/
