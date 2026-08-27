@@ -69,14 +69,25 @@ describe('TelemetryBus', () => {
     expect(seen).toEqual(['note']);
   });
 
-  it('clear() releases events and listeners', () => {
+  it('clear() drops events but KEEPS subscribers (survives a run reset)', () => {
     const bus = new TelemetryBus({ now: fakeClock() });
     let count = 0;
     bus.subscribe(() => count++);
     bus.emit({ kind: 'note' });
     bus.clear();
     bus.emit({ kind: 'note' });
-    expect(bus.size).toBe(1); // only the post-clear event
-    expect(count).toBe(1); // listener was released, saw only the first
+    expect(bus.size).toBe(1); // only the post-clear event retained
+    expect(count).toBe(2); // subscriber still attached, saw both emits
+  });
+
+  it('dispose() releases events and listeners', () => {
+    const bus = new TelemetryBus({ now: fakeClock() });
+    let count = 0;
+    bus.subscribe(() => count++);
+    bus.emit({ kind: 'note' });
+    bus.dispose();
+    bus.emit({ kind: 'note' });
+    expect(bus.size).toBe(1); // only the post-dispose event
+    expect(count).toBe(1); // listener released, saw only the first
   });
 });

@@ -10,6 +10,7 @@ import { createRoot } from 'react-dom/client';
 import { resolveHost } from './webmcp/shim.ts';
 import { installPolyfill } from './webmcp/polyfill.ts';
 import { App } from './ui/App.tsx';
+import './ui/theme.css';
 
 // Resolve a native host first; only fall back to the polyfill if none exists,
 // so we never shadow a real document.modelContext / navigator.modelContext.

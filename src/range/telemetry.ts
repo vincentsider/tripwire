@@ -120,10 +120,18 @@ export class TelemetryBus {
     return this.buffer.length;
   }
 
-  /** Release all events and listeners. Call on teardown to prevent retention. */
+  /**
+   * Drop all retained events but KEEP subscribers. Used between runs so a live
+   * view (the Trace) stays attached across a reset. Use dispose() for teardown.
+   */
   clear(): void {
     this.buffer = [];
     this.head = 0;
+  }
+
+  /** Release everything — events AND listeners. Call on teardown. */
+  dispose(): void {
+    this.clear();
     this.listeners.clear();
   }
 }

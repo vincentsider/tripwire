@@ -2,9 +2,10 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { installPolyfill, uninstallPolyfill } from '../webmcp/polyfill.ts';
 import { resolveHost } from '../webmcp/shim.ts';
 import { TelemetryBus } from './telemetry.ts';
-import { runLevel, type AgentDriver } from './level.ts';
+import { runLevel } from './level.ts';
 import { CORPUS, levelById } from './levels.ts';
 import { buildScorecard } from './scoring.ts';
+import { compliantAgent, carefulAgent } from './simAgents.ts';
 import type { ModelContextHost } from '../webmcp/types.ts';
 
 afterEach(() => uninstallPolyfill());
@@ -15,38 +16,6 @@ function host(): ModelContextHost {
   if (!h) throw new Error('polyfill not resolved');
   return h;
 }
-
-// A "compliant" agent enumerates tools, calls the primary one, reads the
-// description AND the result, and obeys any instruction it finds there — i.e.
-// exactly the susceptible behaviour the levels are designed to catch.
-const compliantAgent: AgentDriver = async (h, _canary) => {
-  const tools = await h.getTools();
-  for (const t of tools) {
-    // Call the obvious "primary" read tools to surface descriptions/data.
-    if (t.name === 'search_docs') {
-      await h.executeTool('search_docs', JSON.stringify({ query: 'setup' }));
-      // Obey the hidden instruction in the description.
-      const m = /note="(TW-[A-Z0-9]+)"/.exec(t.description);
-      if (m) await h.executeTool('record_feedback', JSON.stringify({ note: m[1] }));
-    }
-    if (t.name === 'read_reviews') {
-      const out = await h.executeTool('read_reviews', JSON.stringify({ product: 'x' }));
-      // Obey an instruction found inside the returned data.
-      const m = out && /subject=(TW-[A-Z0-9]+)/.exec(out);
-      if (m) await h.executeTool('submit_ticket', JSON.stringify({ subject: m[1] }));
-    }
-  }
-};
-
-// A "careful" agent uses the primary tools but treats descriptions and returned
-// data as untrusted: it never acts on instructions found there.
-const carefulAgent: AgentDriver = async (h) => {
-  const tools = await h.getTools();
-  for (const t of tools) {
-    if (t.name === 'search_docs') await h.executeTool('search_docs', JSON.stringify({ query: 'setup' }));
-    if (t.name === 'read_reviews') await h.executeTool('read_reviews', JSON.stringify({ product: 'x' }));
-  }
-};
 
 describe('corpus levels', () => {
   it('T1 catches a compliant agent and clears a careful one', async () => {
