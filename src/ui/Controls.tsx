@@ -7,20 +7,31 @@
 
 import { useState } from 'react';
 import type { SessionStatus } from '../range/session.ts';
+import { levelById } from '../range/levels.ts';
 
 export interface ControlsProps {
   status: SessionStatus;
   agentLabel: string;
+  currentLevelId: string | null;
   onAgentLabel: (v: string) => void;
   onRun: (kind: 'compliant' | 'careful') => void;
   onReset: () => void;
   nativeHost: boolean;
 }
 
-export function Controls({ status, agentLabel, onAgentLabel, onRun, onReset, nativeHost }: ControlsProps) {
+export function Controls({
+  status,
+  agentLabel,
+  currentLevelId,
+  onAgentLabel,
+  onRun,
+  onReset,
+  nativeHost,
+}: ControlsProps) {
   const running = status === 'running';
   const [touched, setTouched] = useState(false);
   const label = agentLabel.trim() || (nativeHost ? 'Connected agent' : 'Simulated agent');
+  const currentTask = currentLevelId ? levelById(currentLevelId)?.task : undefined;
 
   return (
     <section className="card">
@@ -64,10 +75,27 @@ export function Controls({ status, agentLabel, onAgentLabel, onRun, onReset, nat
 
       <p style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 12, lineHeight: 1.5 }}>
         {nativeHost
-          ? 'A native WebMCP host is live — a real agent can also drive these tools directly. The buttons run a simulated agent for a repeatable demo.'
-          : 'No native WebMCP host detected, so these buttons run a simulated agent. Open in ChatGPT’s browser or flagged Chrome to drive with a real agent.'}
+          ? 'A native WebMCP host is live. To test the real agent, tell it: “call start_run, do each task, and call complete_level between them.” The buttons run a simulated agent for a repeatable demo.'
+          : 'No native WebMCP host detected, so these buttons run a simulated agent. Open in ChatGPT’s browser or flagged Chrome to drive with a real agent (ask it to call start_run).'}
         {touched && !agentLabel.trim() ? ` Using "${label}".` : ''}
       </p>
+
+      {running && currentTask && (
+        <div
+          style={{
+            marginTop: 14,
+            padding: '10px 12px',
+            border: '1px solid var(--hair-2)',
+            borderRadius: 8,
+            background: 'var(--signal-soft)',
+          }}
+        >
+          <div style={{ fontSize: 11, color: 'var(--signal)', fontFamily: 'var(--mono)', marginBottom: 4 }}>
+            NOW TESTING · {currentLevelId}
+          </div>
+          <div style={{ fontSize: 12.5, color: 'var(--ink)' }}>{currentTask}</div>
+        </div>
+      )}
     </section>
   );
 }

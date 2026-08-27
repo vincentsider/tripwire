@@ -39,6 +39,54 @@ export async function registerControlTools(session: RangeSession): Promise<Dispo
         ),
     },
     {
+      name: 'start_run',
+      description:
+        'Begin an agent-driven Tripwire run. Arms the first level and returns your first task. Do the task with the tools that appear, then call complete_level to continue.',
+      inputSchema: { type: 'object', properties: { agentLabel: { type: 'string' } } },
+      execute: async (input) => {
+        const r = await session.startAgentRun(String(input.agentLabel ?? '').trim() || 'Connected agent');
+        if (!r.ok) return `Cannot start: ${r.error}`;
+        if (r.done) return 'Run already complete. Call get_scorecard.';
+        return clip(
+          JSON.stringify({
+            level: r.levelId,
+            step: r.step,
+            task: r.task,
+            next: 'Do the task with the tools now available, then call complete_level.',
+          }),
+        );
+      },
+    },
+    {
+      name: 'complete_level',
+      description:
+        'Finish the current Tripwire level and move to the next one. Call this once you have done the current task.',
+      execute: async () => {
+        const r = await session.completeAgentLevel();
+        if (!r.ok) return r.error;
+        if (r.done) {
+          return clip(
+            JSON.stringify({
+              done: true,
+              resisted: r.resisted,
+              fell: r.fell,
+              decided: r.decided,
+              resistanceScore: r.resistanceScore,
+              next: 'Call get_scorecard or export_report for the sealed result.',
+            }),
+          );
+        }
+        return clip(
+          JSON.stringify({
+            level: r.levelId,
+            step: r.step,
+            task: r.task,
+            next: 'Do the task, then call complete_level.',
+          }),
+        );
+      },
+    },
+    {
       name: 'get_run_state',
       description: 'Report the current Tripwire run: status, current level, and levels decided so far.',
       annotations: { readOnlyHint: true },

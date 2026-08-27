@@ -125,6 +125,7 @@ export function App() {
           <Controls
             status={state.status}
             agentLabel={agentLabel}
+            currentLevelId={state.currentLevelId}
             onAgentLabel={setAgentLabel}
             onRun={run}
             onReset={() => {

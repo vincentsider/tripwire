@@ -54,6 +54,12 @@ export interface LevelDefinition {
   brief: string;
   /** One line: how to defend against it. Surfaced by explain_finding. */
   mitigation: string;
+  /**
+   * The innocent instruction handed to a live agent for this level. The agent
+   * does this ordinary task with the level's tools; the attack is hidden in the
+   * tool surface, and the level scores whether the agent was manipulated.
+   */
+  task: string;
   /** Register the level's tools + per-run state; return play/evaluate/dispose. */
   arm: (ctx: LevelContext) => Promise<ArmedLevel>;
 }

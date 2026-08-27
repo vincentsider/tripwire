@@ -10,9 +10,16 @@
 
 import { TelemetryBus } from './telemetry.ts';
 import { resolveHost } from '../webmcp/shim.ts';
-import { runLevel, CORPUS_VERSION, type Archetype } from './level.ts';
+import { runLevel, CORPUS_VERSION, type Archetype, type ArmedLevel } from './level.ts';
 import { CORPUS } from './levels.ts';
+import { mintCanary } from './canary.ts';
 import { buildScorecard, type LevelResult, type Scorecard } from './scoring.ts';
+
+/** What start_run / complete_level report back to a driving agent. */
+export type AgentStep =
+  | { ok: false; error: string }
+  | { ok: true; done: false; levelId: string; step: string; task: string }
+  | { ok: true; done: true; resisted: number; fell: number; decided: number; resistanceScore: number | null };
 
 export type SessionStatus = 'idle' | 'running' | 'done';
 
@@ -35,6 +42,10 @@ export class RangeSession {
   };
   private subs = new Set<(s: SessionState) => void>();
   private runGeneratedAt: string | null = null;
+
+  // Agent-driven run state (one level armed at a time).
+  private agentIndex = 0;
+  private currentArmed: ArmedLevel | null = null;
 
   /** ISO timestamp the current run finished (for the sealed report). */
   generatedAt(): string {
@@ -80,6 +91,7 @@ export class RangeSession {
       return this.scorecard();
     }
 
+    this.disposeCurrentArmed();
     this.bus.clear();
     this.set({ status: 'running', agentLabel, results: [], currentLevelId: null });
     this.bus.emit({ kind: 'note', label: 'run', detail: `started · agent = ${agentLabel}` });
@@ -99,7 +111,73 @@ export class RangeSession {
   }
 
   reset(): void {
+    this.disposeCurrentArmed();
     this.bus.clear();
     this.set({ status: 'idle', results: [], currentLevelId: null });
+  }
+
+  private disposeCurrentArmed(): void {
+    try {
+      this.currentArmed?.dispose();
+    } catch {
+      /* dispose must never throw out of teardown */
+    }
+    this.currentArmed = null;
+  }
+
+  // ── Agent-driven run ───────────────────────────────────────────────────────
+  // A real agent drives the level tools directly, one level at a time. start_run
+  // arms the first level and hands back a task; the agent does it with the tools
+  // that appear, then calls complete_level to advance. This is what actually
+  // tests the agent (vs the simulated run, which is a scripted demo).
+
+  private async armAgentLevel(host: ReturnType<typeof resolveHost>['host'], index: number): Promise<AgentStep> {
+    const level = CORPUS[index];
+    if (!host || !level) return { ok: false, error: 'no level to arm' };
+    const canary = mintCanary();
+    this.bus.emit({ kind: 'level_started', label: level.id });
+    this.currentArmed = await level.arm({ canary, telemetry: this.bus, host });
+    this.set({ currentLevelId: level.id });
+    return { ok: true, done: false, levelId: level.id, step: `${index + 1}/${CORPUS.length}`, task: level.task };
+  }
+
+  /** Begin an agent-driven run and arm the first level. */
+  async startAgentRun(agentLabel: string): Promise<AgentStep> {
+    const host = resolveHost().host;
+    if (!host) return { ok: false, error: 'no WebMCP host available' };
+    this.disposeCurrentArmed();
+    this.bus.clear();
+    this.agentIndex = 0;
+    this.runGeneratedAt = null;
+    this.set({ status: 'running', agentLabel, results: [], currentLevelId: null });
+    this.bus.emit({ kind: 'note', label: 'run', detail: `agent run started · ${agentLabel}` });
+    return this.armAgentLevel(host, 0);
+  }
+
+  /** Score the current level, then arm the next one (or finish). */
+  async completeAgentLevel(): Promise<AgentStep> {
+    const level = CORPUS[this.agentIndex];
+    if (this.state.status !== 'running' || !this.currentArmed || !level) {
+      return { ok: false, error: 'no level in progress — call start_run first' };
+    }
+    const verdict = this.currentArmed.evaluate();
+    this.bus.emit({ kind: 'level_scored', label: level.id, detail: verdict, hostile: verdict === 'FAIL' });
+    const results: LevelResult[] = [
+      ...this.state.results,
+      { levelId: level.id, category: level.category, verdict },
+    ];
+    this.disposeCurrentArmed();
+    this.agentIndex++;
+
+    if (this.agentIndex < CORPUS.length) {
+      this.set({ results });
+      return this.armAgentLevel(resolveHost().host, this.agentIndex);
+    }
+
+    this.runGeneratedAt = new Date().toISOString();
+    this.set({ status: 'done', currentLevelId: null, results });
+    this.bus.emit({ kind: 'note', label: 'run', detail: 'agent run complete' });
+    const sc = buildScorecard(results);
+    return { ok: true, done: true, resisted: sc.resisted, fell: sc.fell, decided: sc.decided, resistanceScore: sc.resistanceScore };
   }
 }
