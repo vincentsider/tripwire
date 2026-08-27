@@ -39,7 +39,7 @@ simple = { limit = 30, period = 60 }
 # fails closed (503), which is the safe default.
 [[kv_namespaces]]
 binding = "DAILY"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "7b2cbce3a0c144b282814e3067940219"
 
 # Keep the detector warm across the judging window.
 [triggers]
