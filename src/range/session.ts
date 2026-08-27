@@ -10,7 +10,7 @@
 
 import { TelemetryBus } from './telemetry.ts';
 import { resolveHost } from '../webmcp/shim.ts';
-import { runLevel, CORPUS_VERSION, type AgentDriver } from './level.ts';
+import { runLevel, CORPUS_VERSION, type Archetype } from './level.ts';
 import { CORPUS } from './levels.ts';
 import { buildScorecard, type LevelResult, type Scorecard } from './scoring.ts';
 
@@ -34,6 +34,12 @@ export class RangeSession {
     results: [],
   };
   private subs = new Set<(s: SessionState) => void>();
+  private runGeneratedAt: string | null = null;
+
+  /** ISO timestamp the current run finished (for the sealed report). */
+  generatedAt(): string {
+    return this.runGeneratedAt ?? new Date().toISOString();
+  }
 
   getState(): SessionState {
     return this.state;
@@ -62,11 +68,12 @@ export class RangeSession {
   }
 
   /**
-   * Run the whole corpus with the given driver. In production the driver waits
-   * for the external agent; in a local demo it is a simulated agent. Safe to
-   * call only when idle/done; a second call resets first.
+   * Run the whole corpus for one demonstration archetype. With a native host a
+   * real agent can also drive the same tools directly; this simulated run makes
+   * the range watchable and scoreable without a model. Safe to call when
+   * idle/done; it resets first.
    */
-  async run(driver: AgentDriver, agentLabel: string): Promise<Scorecard> {
+  async run(archetype: Archetype, agentLabel: string): Promise<Scorecard> {
     const host = resolveHost().host;
     if (!host) {
       this.bus.emit({ kind: 'note', label: 'run', detail: 'no WebMCP host available' });
@@ -80,11 +87,12 @@ export class RangeSession {
     const results: LevelResult[] = [];
     for (const level of CORPUS) {
       this.set({ currentLevelId: level.id });
-      const result = await runLevel(level, host, driver, this.bus);
+      const result = await runLevel(level, host, archetype, this.bus);
       results.push(result);
       this.set({ results: [...results] });
     }
 
+    this.runGeneratedAt = new Date().toISOString();
     this.set({ status: 'done', currentLevelId: null });
     this.bus.emit({ kind: 'note', label: 'run', detail: 'complete' });
     return this.scorecard();

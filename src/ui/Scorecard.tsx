@@ -24,7 +24,15 @@ function VerdictPill({ verdict }: { verdict: string }) {
   return <span className={cls}>{verdict}</span>;
 }
 
-export function Scorecard({ scorecard, agentLabel }: { scorecard: ScorecardData; agentLabel: string }) {
+export function Scorecard({
+  scorecard,
+  agentLabel,
+  onDownloadReport,
+}: {
+  scorecard: ScorecardData;
+  agentLabel: string;
+  onDownloadReport?: (() => void) | undefined;
+}) {
   const [copied, setCopied] = useState(false);
   const label = agentLabel || 'this agent';
   const line = summarize(scorecard, label);
@@ -46,9 +54,20 @@ export function Scorecard({ scorecard, agentLabel }: { scorecard: ScorecardData;
       <div className="card-head">
         <span className="card-title">Scorecard</span>
         {hasResults && (
-          <button className="btn btn-ghost" style={{ padding: '5px 10px', fontSize: 12 }} onClick={copy}>
-            {copied ? 'Copied' : 'Copy result'}
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-ghost" style={{ padding: '5px 10px', fontSize: 12 }} onClick={copy}>
+              {copied ? 'Copied' : 'Copy result'}
+            </button>
+            {onDownloadReport && (
+              <button
+                className="btn btn-ghost"
+                style={{ padding: '5px 10px', fontSize: 12 }}
+                onClick={onDownloadReport}
+              >
+                Sealed report
+              </button>
+            )}
+          </div>
         )}
       </div>
 

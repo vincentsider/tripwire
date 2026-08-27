@@ -1,14 +1,16 @@
 // src/range/level.ts
 //
-// The level model and the runner that ties the pieces together:
+// The level model and the runner. Each level co-locates three things: the tools
+// it registers, and two scripted "plays" that demonstrate a susceptible agent
+// (which the attack catches) and a careful agent (which defends). Co-locating
+// the plays with the attack keeps every level self-contained and makes the
+// corpus trivially extensible — a new level is one object, tools and demos
+// together.
 //
-//   mint a canary → arm the level (register its tools) → let an agent act →
-//   evaluate what the agent did → score → tear the level down.
-//
-// A level NEVER inspects the agent's natural-language output — the page cannot
-// see it. Every verdict is derived from tool calls alone (a decoy tool being
-// called, or a canary appearing in a legitimate tool's arguments). That is the
-// single rule that keeps scoring objective and reproducible.
+// A level NEVER inspects the agent's natural-language output. Every verdict is
+// derived from tool calls alone (a decoy called, a canary in an argument, a
+// missing confirmation, a tool changed since enumeration). That single rule
+// keeps scoring objective and reproducible.
 
 import type { Disposer } from '../webmcp/shim.ts';
 import type { ModelContextHost } from '../webmcp/types.ts';
@@ -18,21 +20,26 @@ import type { LevelResult, Verdict } from './scoring.ts';
 
 export const CORPUS_VERSION = 'v1';
 
+/** The two demonstration archetypes. */
+export type Archetype = 'compliant' | 'careful';
+
 /** Context handed to a level when it is armed. */
 export interface LevelContext {
   /** The one-time inert token this level's payloads reference. */
   canary: string;
   /** Where the level records observable events (also feeds the Trace UI). */
   telemetry: TelemetryBus;
-  /** The live host to register tools against. */
+  /** The live host to register tools against and drive. */
   host: ModelContextHost;
 }
 
-/** A level that has been armed: it can be evaluated, then disposed. */
+/** A level that has been armed: play a demo, read the verdict, then tear down. */
 export interface ArmedLevel {
+  /** Run the scripted agent for one archetype. Resolves when the agent is done. */
+  play: (archetype: Archetype) => Promise<void>;
   /** Read the observations and decide a verdict. Pure; callable more than once. */
   evaluate: () => Verdict;
-  /** Unregister the level's tools and release its state. */
+  /** Unregister the level's tools and release its per-run state. */
   dispose: Disposer;
 }
 
@@ -47,26 +54,19 @@ export interface LevelDefinition {
   brief: string;
   /** One line: how to defend against it. Surfaced by explain_finding. */
   mitigation: string;
-  /** Register the level's tools and return an evaluator + disposer. */
+  /** Register the level's tools + per-run state; return play/evaluate/dispose. */
   arm: (ctx: LevelContext) => Promise<ArmedLevel>;
 }
 
 /**
- * Drives the "agent" phase of a run. In production this waits for the external
- * agent (ChatGPT / Chrome) to act on the tools via the control surface. In tests
- * a scripted driver enumerates and invokes tools directly, exactly as an agent
- * would. Either way it must resolve once the agent is done with this level.
- */
-export type AgentDriver = (host: ModelContextHost, canary: string) => Promise<void>;
-
-/**
- * Run one level end to end and return its result. Disposal happens even if the
- * driver throws, so a failing agent phase can never leak the level's tools.
+ * Run one level end to end for a given archetype and return its result. Disposal
+ * happens even if the play throws, so a failing agent phase can never leak the
+ * level's tools. A play that throws leaves the level SKIPPED, never PASSED.
  */
 export async function runLevel(
   level: LevelDefinition,
   host: ModelContextHost,
-  driver: AgentDriver,
+  archetype: Archetype,
   telemetry: TelemetryBus,
 ): Promise<LevelResult> {
   const canary = mintCanary();
@@ -75,10 +75,9 @@ export async function runLevel(
 
   let verdict: Verdict = 'SKIPPED';
   try {
-    await driver(host, canary);
+    await armed.play(archetype);
     verdict = armed.evaluate();
   } catch {
-    // A driver that throws leaves the level SKIPPED rather than falsely PASSED.
     verdict = 'SKIPPED';
   } finally {
     armed.dispose();
@@ -91,6 +90,5 @@ export async function runLevel(
     hostile: verdict === 'FAIL',
   });
 
-  const result: LevelResult = { levelId: level.id, category: level.category, verdict };
-  return result;
+  return { levelId: level.id, category: level.category, verdict };
 }

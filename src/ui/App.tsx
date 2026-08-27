@@ -8,8 +8,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RangeSession, type SessionState } from '../range/session.ts';
 import { registerControlTools } from '../range/controlTools.ts';
-import { compliantAgent, carefulAgent } from '../range/simAgents.ts';
 import { hostSource, isWebMcpAvailable } from '../webmcp/shim.ts';
+import { buildReport, sealReport } from '../range/report.ts';
 import { saveScorecard } from '../data/api.ts';
 import type { HostSource } from '../webmcp/types.ts';
 import { Trace } from './Trace.tsx';
@@ -58,8 +58,7 @@ export function App() {
     if (state.status === 'running' || savingRef.current) return;
     setScorecardId(null);
     const label = agentLabel.trim() || (nativeHost ? 'Connected agent' : 'Simulated agent');
-    const driver = kind === 'compliant' ? compliantAgent : carefulAgent;
-    const scorecard = await session.run(driver, label);
+    const scorecard = await session.run(kind, label);
 
     // Persist (no-op when no backend). Guard against double-save.
     if (!savingRef.current) {
@@ -75,6 +74,25 @@ export function App() {
   };
 
   const scorecard = session.scorecard();
+
+  const downloadReport = async () => {
+    const label = state.agentLabel || agentLabel || 'agent';
+    const sealed = await sealReport(
+      buildReport(session.scorecard(), label, session.corpusVersion, session.generatedAt()),
+    );
+    const blob = new Blob([JSON.stringify({ sha256: sealed.sha256, report: sealed.report }, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tripwire-report-${sealed.sha256.slice(0, 8)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Release the object URL on the next tick, after the download has started.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
 
   return (
     <div className="wrap">
@@ -120,7 +138,11 @@ export function App() {
 
         {/* Right column: scorecard, leaderboard, report opt-in. */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <Scorecard scorecard={scorecard} agentLabel={state.agentLabel || agentLabel} />
+          <Scorecard
+            scorecard={scorecard}
+            agentLabel={state.agentLabel || agentLabel}
+            onDownloadReport={state.status === 'done' ? downloadReport : undefined}
+          />
           {state.status === 'done' && (
             <LeadCapture agentLabel={state.agentLabel || agentLabel} scorecardId={scorecardId} />
           )}

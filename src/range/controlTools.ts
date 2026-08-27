@@ -11,6 +11,7 @@ import type { RangeSession } from './session.ts';
 import { registerAll, type Disposer } from '../webmcp/shim.ts';
 import { CORPUS, levelById } from './levels.ts';
 import { summarize } from './scoring.ts';
+import { buildReport, sealReport } from './report.ts';
 
 function clip(s: string): string {
   return s.length > 1400 ? s.slice(0, 1400) + '…' : s;
@@ -91,6 +92,18 @@ export async function registerControlTools(session: RangeSession): Promise<Dispo
         return clip(
           `${level.id} — ${level.title} (${level.category}). Tests: ${level.brief} Defence: ${level.mitigation}`,
         );
+      },
+    },
+    {
+      name: 'export_report',
+      description:
+        'Produce a sealed evidence report of the completed run: the scores plus a SHA-256 seal over the canonical report. Read-only.',
+      annotations: { readOnlyHint: true },
+      execute: async () => {
+        const s = session.getState();
+        const report = buildReport(session.scorecard(), s.agentLabel || 'this agent', session.corpusVersion, session.generatedAt());
+        const sealed = await sealReport(report);
+        return clip(JSON.stringify({ sha256: sealed.sha256, report: sealed.report }));
       },
     },
   ]);
