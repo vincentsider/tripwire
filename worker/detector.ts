@@ -15,7 +15,6 @@
 
 import type { Env } from './types.ts';
 
-const DEFAULT_ROUTER = 'https://vincentsider--deepblocker-audio-api-fastapi-app-router.modal.run';
 const ANALYZE_TIMEOUT_MS = 25_000;
 export const MAX_AUDIO_BYTES = 512 * 1024; // ~a few seconds of opus; caps cost + abuse
 
@@ -26,8 +25,11 @@ export type DetectorResult =
   | { status: 'warming' } // cold start exceeded the timeout
   | { status: 'unavailable' }; // detector not configured / errored
 
-function routerBase(env: Env): string {
-  return (env.DEEPFAKE_ROUTER_URL || DEFAULT_ROUTER).replace(/\/$/, '');
+// The detector base is provided by env only (a Worker secret). This public repo
+// never hardcodes the internal endpoint. No base -> the detector is unavailable.
+function routerBase(env: Env): string | null {
+  const base = env.DEEPFAKE_ROUTER_URL;
+  return base ? base.replace(/\/$/, '') : null;
 }
 
 function parseBand(body: unknown): Band {
@@ -48,7 +50,8 @@ function parseFakeProbability(body: unknown): number | null {
  * status the caller can render honestly.
  */
 export async function analyzeAudio(env: Env, audio: Blob): Promise<DetectorResult> {
-  if (!env.DEEPFAKE_API_KEY) return { status: 'unavailable' };
+  const base = routerBase(env);
+  if (!base || !env.DEEPFAKE_API_KEY) return { status: 'unavailable' };
   if (audio.size === 0 || audio.size > MAX_AUDIO_BYTES) return { status: 'unavailable' };
 
   const form = new FormData();
@@ -59,7 +62,7 @@ export async function analyzeAudio(env: Env, audio: Blob): Promise<DetectorResul
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ANALYZE_TIMEOUT_MS);
   try {
-    const resp = await fetch(`${routerBase(env)}/api/v2/analyze`, {
+    const resp = await fetch(`${base}/api/v2/analyze`, {
       method: 'POST',
       headers: { 'X-API-Key': env.DEEPFAKE_API_KEY },
       body: form,
@@ -80,11 +83,12 @@ export async function analyzeAudio(env: Env, audio: Blob): Promise<DetectorResul
 
 /** Fire-and-forget warm-up ping so the detector container is hot for judges. */
 export async function warmDetector(env: Env): Promise<void> {
-  if (!env.DEEPFAKE_API_KEY) return;
+  const base = routerBase(env);
+  if (!base || !env.DEEPFAKE_API_KEY) return;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
   try {
-    await fetch(`${routerBase(env)}/`, {
+    await fetch(`${base}/`, {
       method: 'GET',
       headers: { 'X-API-Key': env.DEEPFAKE_API_KEY },
       signal: controller.signal,
