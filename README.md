@@ -51,6 +51,22 @@ Cloudflare Worker, which holds the Supabase service-role key and the detector
 key as Worker secrets. Every table has Row-Level Security enabled with no anon
 policies, so a leaked key can do nothing.
 
+## Deploy (Cloudflare Workers)
+
+One Worker serves the SPA and the `/api/*` surface. Deploy needs `wrangler login`.
+
+```bash
+wrangler kv namespace create DAILY      # paste the id into wrangler.toml
+wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+wrangler secret put DEEPFAKE_API_KEY
+npm run deploy                          # build + wrangler deploy
+```
+
+`npm run worker:check` bundles and validates the Worker locally without
+deploying. Until the `DAILY` KV namespace is bound, the detector endpoint fails
+closed (503), which is the safe default. No secret is ever placed in
+`wrangler.toml` or committed.
+
 ## Add a level
 
 A level is a `LevelDefinition` in `src/range/levels.ts`: metadata plus an `arm()`

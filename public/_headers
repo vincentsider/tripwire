@@ -1,0 +1,19 @@
+# Static-asset headers (Cloudflare). These apply to the SPA, not to Worker
+# /api/* responses (those set their own headers in code).
+#
+# CRITICAL for WebMCP: the API is only available in ORIGIN-ISOLATED documents,
+# and the header `Origin-Agent-Cluster: ?0` DISABLES it. So the requirement is
+# negative — we must NEVER emit that header. We do not add COOP/COEP either,
+# since that is not required for origin isolation here and can break embedding.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+
+# Long-cache the fingerprinted assets; never cache the HTML shell.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: no-cache
