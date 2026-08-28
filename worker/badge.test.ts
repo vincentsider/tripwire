@@ -39,13 +39,16 @@ const tools = [
 ];
 
 /** Stub the Supabase REST calls; `verified` toggles the origin's state. */
-function stubDb(opts: { verified?: boolean; audit?: Record<string, unknown> | null } = {}) {
+function stubDb(opts: { verified?: boolean; audit?: Record<string, unknown> | null; manifest?: Record<string, unknown> | null } = {}) {
   const verifiedAt = opts.verified ? '2026-08-28T00:00:00Z' : null;
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       const method = init?.method ?? 'GET';
+      if (url.includes('/rest/v1/manifests') && method === 'GET') {
+        return new Response(JSON.stringify(opts.manifest ? [opts.manifest] : []), { status: 200 });
+      }
       if (url.includes('/rest/v1/origins') && method === 'GET') {
         return new Response(JSON.stringify([{ origin: AUDITED, challenge_token: 'tok', verified_at: verifiedAt }]), { status: 200 });
       }
@@ -124,6 +127,36 @@ describe('Mode 2 — audit + signing', () => {
       ctx,
     );
     expect(res.status).toBe(400);
+  });
+
+  it('rejects a tool with an oversized inputSchema (400)', async () => {
+    stubDb({ verified: true });
+    const huge = { type: 'object', properties: { blob: { type: 'string', enum: Array.from({ length: 2000 }, (_, i) => 'v' + i) } } };
+    const res = await worker.fetch(
+      post('/api/audit', { origin: AUDITED, tools: [{ name: 'x', description: 'y', inputSchema: huge }] }, { Origin: AUDITED }),
+      env(),
+      ctx,
+    );
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('Mode 2 — manifest elevates the rung', () => {
+  const fp = 'a'.repeat(64);
+  const auditRow = {
+    id: 'aud-1', origin: AUDITED, fingerprint: fp, findings: [], assurance_score: 1, assurance_rung: 0,
+    report_sha256: 'b'.repeat(64), signature: 'sig', key_id: 'k1', signed_at: '2026-08-28T00:00:00Z',
+    expires_at: '2099-01-01T00:00:00Z', revoked_at: null,
+  };
+  it('badge reports rung 1 when a manifest matches the audited fingerprint', async () => {
+    stubDb({ verified: true, audit: auditRow, manifest: { fingerprint: fp, manifest: {}, manifest_sha256: 'c'.repeat(64), signature: 's', key_id: 'k1', signed_at: '2026-08-28T00:00:00Z' } });
+    const res = await worker.fetch(new Request(`https://api.tripwire.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
+    expect(await res.json()).toMatchObject({ state: 'active', assuranceRung: 1 });
+  });
+  it('a manifest bound to a DIFFERENT fingerprint does not elevate the rung', async () => {
+    stubDb({ verified: true, audit: auditRow, manifest: { fingerprint: 'f'.repeat(64), manifest: {}, manifest_sha256: 'c'.repeat(64), signature: 's', key_id: 'k1', signed_at: '2026-08-28T00:00:00Z' } });
+    const res = await worker.fetch(new Request(`https://api.tripwire.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
+    expect(await res.json()).toMatchObject({ state: 'active', assuranceRung: 0 });
   });
 });
 

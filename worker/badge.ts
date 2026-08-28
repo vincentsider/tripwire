@@ -56,6 +56,9 @@ function validateTools(v: unknown): RegisteredTool[] | null {
     if (typeof t.description !== 'string' || t.description.length > 8000) return null;
     const tool: RegisteredTool = { name: t.name, description: t.description };
     if (t.inputSchema && typeof t.inputSchema === 'object' && !Array.isArray(t.inputSchema)) {
+      // Bound the schema so a chunked body (no content-length) can't smuggle a
+      // huge nested object past readJson into the fingerprint/DB.
+      if (JSON.stringify(t.inputSchema).length > 8000) return null;
       tool.inputSchema = t.inputSchema as NonNullable<RegisteredTool['inputSchema']>;
     }
     if (t.annotations && typeof t.annotations === 'object' && !Array.isArray(t.annotations)) {
@@ -100,18 +103,22 @@ export type BadgeState =
 export async function computeBadgeState(env: Env, origin: string): Promise<BadgeState> {
   const o = await getOrigin(env, origin);
   if (!o || !o.verified_at) return { origin, state: 'unverified' };
-  const a = await getLatestAudit(env, origin);
+  // Audit + manifest are independent; fetch them together.
+  const [a, m] = await Promise.all([getLatestAudit(env, origin), getLatestManifest(env, origin)]);
   if (!a) return { origin, state: 'none' };
   if (a.revoked_at) return { origin, state: 'revoked', signedAt: a.signed_at };
   if (a.expires_at && new Date(a.expires_at).getTime() < Date.now()) {
     return { origin, state: 'expired', fingerprint: a.fingerprint, signedAt: a.signed_at };
   }
+  // A manifest only elevates the rung when it is bound to THIS audited surface
+  // (its fingerprint matches), so a stale/mismatched manifest can't inflate it.
+  const rung = m && m.fingerprint === a.fingerprint ? Math.max(a.assurance_rung, 1) : a.assurance_rung;
   return {
     origin,
     state: 'active',
     fingerprint: a.fingerprint,
     assuranceScore: a.assurance_score,
-    assuranceRung: a.assurance_rung,
+    assuranceRung: rung,
     signedAt: a.signed_at,
     reportSha256: a.report_sha256,
     signature: a.signature,
@@ -266,6 +273,9 @@ export async function handleManifest(req: Request, env: Env): Promise<Response> 
   if (!fingerprint) return jsonPublic({ error: 'invalid fingerprint' }, { status: 400, req });
   if (!b.manifest || typeof b.manifest !== 'object' || Array.isArray(b.manifest)) {
     return jsonPublic({ error: 'manifest must be an object' }, { status: 400, req });
+  }
+  if (JSON.stringify(b.manifest).length > 32000) {
+    return jsonPublic({ error: 'manifest too large' }, { status: 413, req });
   }
 
   // Sign the canonical {origin, fingerprint, manifest}. Tripwire attests the site

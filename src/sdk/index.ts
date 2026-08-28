@@ -130,6 +130,29 @@ interface BadgeState {
   signedAt?: string;
 }
 
+/**
+ * Publish a signed behaviour manifest (rung 1). Binds the manifest to the current
+ * surface fingerprint; Tripwire signs that you MADE these claims. Must run on the
+ * audited (verified) origin.
+ */
+export async function publishManifest(
+  manifest: Record<string, unknown>,
+  opts: SdkOptions = {},
+): Promise<{ ok: boolean; manifestSha256?: string; signature?: string; error?: string }> {
+  const fingerprint = await fingerprintSurface(await readSurface());
+  try {
+    const resp = await fetch(`${apiBase(opts)}/api/manifest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ origin: originOf(opts), fingerprint, manifest }),
+    });
+    const body = (await resp.json()) as { manifestSha256?: string; signature?: string; error?: string };
+    return resp.ok ? { ok: true, ...body } : { ok: false, ...(body?.error ? { error: body.error } : {}) };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
 /** Read the current badge state for an origin (also what the hub's check_badge uses). */
 export async function checkBadge(origin: string, opts: SdkOptions = {}): Promise<BadgeState> {
   const resp = await fetch(`${apiBase(opts)}/api/badge?origin=${encodeURIComponent(origin)}`);

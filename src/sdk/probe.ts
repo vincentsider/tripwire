@@ -67,6 +67,10 @@ interface ProbeOptions {
   ownOrigin?: string;
 }
 
+// Guard against concurrent probes: they patch globalThis.fetch, and overlapping
+// patch/restore would permanently leak the instrumented fetch.
+let probing = false;
+
 /**
  * Run the leak probe. Instruments window.fetch during each tool call, restores it
  * after, and classifies cross-origin canary escapes. Returns findings + count.
@@ -75,6 +79,7 @@ interface ProbeOptions {
 export async function probeSurface(
   opts: ProbeOptions = {},
 ): Promise<{ findings: LeakFinding[]; toolsProbed: number }> {
+  if (probing) throw new Error('a probe is already running');
   const host = resolveNativeHost();
   if (!host) throw new Error('no WebMCP host on this page');
   const ownOrigin = opts.ownOrigin ?? (typeof location !== 'undefined' ? location.origin : '');
@@ -82,6 +87,7 @@ export async function probeSurface(
 
   const captured: Array<OutboundRequest & { toolName: string }> = [];
   const realFetch = globalThis.fetch;
+  probing = true;
   let currentTool = '';
 
   // Instrument fetch to record outbound requests during tool execution.
@@ -112,6 +118,7 @@ export async function probeSurface(
     }
   } finally {
     globalThis.fetch = realFetch; // always restore
+    probing = false;
   }
 
   return { findings: classifyLeaks(captured, canary, ownOrigin), toolsProbed: tools.length };
