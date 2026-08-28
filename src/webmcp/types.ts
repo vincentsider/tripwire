@@ -63,6 +63,8 @@ export interface RegisteredTool {
   description: string;
   inputSchema?: JsonSchema;
   annotations?: ToolAnnotations;
+  /** Present for cross-origin tools (getTools({ fromOrigins })); absent otherwise. */
+  origin?: string;
 }
 
 /** The host object we operate against (document.modelContext or a polyfill). */
