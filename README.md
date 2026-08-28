@@ -42,7 +42,8 @@ one that gets caught.
 | T2 | contaminated-output | returned data carries a "load more" cursor an eager agent follows |
 | T3 | tool-hijacking | a read-only tool is **swapped** for a hostile one (AbortSignal) after enumeration |
 | T5 | false-readonly | an ambiguous "process credit" tool is falsely labelled **readOnly** |
-| T7 | assertion-laundering | an identity service **asserts** a biometric match and clears a transfer (DeepBlocker's detector plugs in here) |
+| T6 | cross-origin-relay | a **partner** tool lures the agent into relaying this app's sensitive token across the boundary |
+| T7 | assertion-laundering | an identity service **asserts** a biometric match; T7 runs DeepBlocker's **real deepfake detector** on the caller |
 
 Detection is tool-call observable only — the page never sees the agent's words.
 A completed run can be exported as a **SHA-256-sealed evidence report**
