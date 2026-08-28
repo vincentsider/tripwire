@@ -14,6 +14,7 @@
 // Worker signs.
 
 import { analyzeSurface, type SurfaceAudit } from '../range/mode2.ts';
+import { fingerprintSurface } from '../range/fingerprint.ts';
 import type { RegisteredTool } from '../webmcp/types.ts';
 
 const DEFAULT_API = 'https://tripwire.vincent-7e0.workers.dev';
@@ -122,10 +123,55 @@ export async function confirmVerification(
   }
 }
 
+interface BadgeState {
+  state: 'active' | 'revoked' | 'expired' | 'unverified' | 'none';
+  fingerprint?: string;
+  assuranceScore?: number | null;
+  signedAt?: string;
+}
+
 /** Read the current badge state for an origin (also what the hub's check_badge uses). */
-export async function checkBadge(origin: string, opts: SdkOptions = {}): Promise<unknown> {
+export async function checkBadge(origin: string, opts: SdkOptions = {}): Promise<BadgeState> {
   const resp = await fetch(`${apiBase(opts)}/api/badge?origin=${encodeURIComponent(origin)}`);
-  return resp.json();
+  return (await resp.json()) as BadgeState;
+}
+
+export type PreflightTrust = 'ok' | 'drifted' | 'revoked' | 'expired' | 'unverified' | 'none' | 'unknown';
+
+export interface PreflightResult {
+  trust: PreflightTrust;
+  state: BadgeState;
+  liveFingerprint?: string;
+}
+
+/**
+ * Agent-side preflight (item 9): before an agent uses a badged site, fetch the
+ * signed fingerprint for the origin and compare it to the tools the agent has
+ * ACTUALLY discovered. `ok` = the live surface matches the signed audit;
+ * `drifted` = it changed since the audit (do not trust the seal). This is the
+ * consumer half of the border check — the hub calls it before granting travel.
+ */
+export async function preflight(
+  origin: string,
+  discoveredTools: ReadonlyArray<RegisteredTool>,
+  opts: SdkOptions = {},
+): Promise<PreflightResult> {
+  let state: BadgeState;
+  try {
+    state = await checkBadge(origin, opts);
+  } catch {
+    return { trust: 'unknown', state: { state: 'none' } };
+  }
+  if (state.state !== 'active' || !state.fingerprint) {
+    const trust: PreflightTrust =
+      state.state === 'revoked' ? 'revoked'
+      : state.state === 'expired' ? 'expired'
+      : state.state === 'unverified' ? 'unverified'
+      : 'none';
+    return { trust, state };
+  }
+  const liveFingerprint = await fingerprintSurface(discoveredTools);
+  return { trust: liveFingerprint === state.fingerprint ? 'ok' : 'drifted', state, liveFingerprint };
 }
 
 export { probeSurface } from './probe.ts';

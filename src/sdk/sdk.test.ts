@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { classifyLeaks } from './probe.ts';
-import { audit, requestVerification, confirmVerification } from './index.ts';
+import { audit, requestVerification, confirmVerification, preflight } from './index.ts';
+import { fingerprintSurface } from '../range/fingerprint.ts';
 import type { RegisteredTool } from '../webmcp/types.ts';
 
 const tools: RegisteredTool[] = [
@@ -62,5 +63,25 @@ describe('SDK submit + verification', () => {
   it('confirmVerification() reports verified true/false', async () => {
     stubBrowser(async () => new Response(JSON.stringify({ verified: true }), { status: 200 }));
     expect(await confirmVerification({ origin: 'https://site.example' })).toMatchObject({ ok: true, verified: true });
+  });
+});
+
+describe('agent-side preflight', () => {
+  it('ok when the live surface matches the signed fingerprint', async () => {
+    const fp = await fingerprintSurface(tools);
+    stubBrowser(async () => new Response(JSON.stringify({ state: 'active', fingerprint: fp }), { status: 200 }));
+    const r = await preflight('https://site.example', tools);
+    expect(r.trust).toBe('ok');
+  });
+
+  it('drifted when the live surface differs from the signed fingerprint', async () => {
+    stubBrowser(async () => new Response(JSON.stringify({ state: 'active', fingerprint: 'a'.repeat(64) }), { status: 200 }));
+    const r = await preflight('https://site.example', tools);
+    expect(r.trust).toBe('drifted');
+  });
+
+  it('passes through non-active states (revoked/unverified/none)', async () => {
+    stubBrowser(async () => new Response(JSON.stringify({ state: 'revoked' }), { status: 200 }));
+    expect((await preflight('https://site.example', tools)).trust).toBe('revoked');
   });
 });
