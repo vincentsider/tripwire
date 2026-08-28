@@ -9,6 +9,12 @@
 // fingerprint from the tools present RIGHT NOW, and renders a verdict in a shadow
 // DOM. A tool-swap or cloak shows "tools changed", never a green seal. It never
 // verifies against a dev polyfill — only a native host counts as a live check.
+//
+// Presentation is customisable via data-attributes, but the VERDICT is not:
+//   data-theme   "light" (default) | "dark" | "auto" (follow prefers-color-scheme)
+//   data-variant "default" (dot + label + sub) | "compact" (dot + label only)
+// The tone/label always come from decideBadge, so a site can restyle the badge
+// but can never make it claim more than the signed, live-checked state allows.
 
 import { fingerprintSurface } from '../range/fingerprint.ts';
 import { decideBadge, type BadgeStateJson, type Tone } from './decide.ts';
@@ -32,7 +38,25 @@ function nativeHost(): { getTools(): Promise<RegisteredTool[]> } | null {
   return null;
 }
 
-function render(apiBase: string, origin: string, label: string, tone: Tone, sub: string): void {
+type Theme = 'light' | 'dark' | 'auto';
+
+function themeVars(theme: Theme): string {
+  // Palette pairs: [background, primary text, muted sub, border-alpha].
+  const light = '--tw-bg:#fff;--tw-fg:#0a0e1a;--tw-sub:#64748b';
+  const dark = '--tw-bg:#0d121c;--tw-fg:#f2f6fc;--tw-sub:#94a3b8';
+  if (theme === 'dark') return `:host{${dark}}`;
+  if (theme === 'auto') return `:host{${light}}@media (prefers-color-scheme:dark){:host{${dark}}}`;
+  return `:host{${light}}`;
+}
+
+function render(
+  apiBase: string,
+  origin: string,
+  label: string,
+  tone: Tone,
+  sub: string,
+  opts: { theme: Theme; compact: boolean },
+): void {
   const mount = document.createElement('span');
   const parent = scriptEl?.parentNode ?? document.body;
   parent.insertBefore(mount, scriptEl?.nextSibling ?? null);
@@ -42,10 +66,12 @@ function render(apiBase: string, origin: string, label: string, tone: Tone, sub:
   // Only controlled strings (label/sub from decideBadge, color from a fixed map,
   // href URL-encoded) reach the DOM; the raw origin is never injected as HTML.
   const style =
+    themeVars(opts.theme) +
     '.tw{display:inline-flex;align-items:center;gap:8px;font:500 12px/1.2 ui-sans-serif,system-ui,sans-serif;' +
-    'text-decoration:none;border:1px solid ' + color + '33;border-radius:8px;padding:6px 10px;background:#fff;color:#0a0e1a}' +
-    '.dot{width:8px;height:8px;border-radius:50%;background:' + color + '}' +
-    '.lab{color:' + color + ';font-weight:600}.sub{color:#64748b;font-weight:400}';
+    'text-decoration:none;border:1px solid ' + color + '33;border-radius:8px;padding:6px 10px;' +
+    'background:var(--tw-bg);color:var(--tw-fg)}' +
+    '.dot{width:8px;height:8px;border-radius:50%;background:' + color + ';flex:none}' +
+    '.lab{color:' + color + ';font-weight:600}.sub{color:var(--tw-sub);font-weight:400}';
   const styleEl = document.createElement('style');
   styleEl.textContent = style;
   const a = document.createElement('a');
@@ -58,10 +84,13 @@ function render(apiBase: string, origin: string, label: string, tone: Tone, sub:
   const lab = document.createElement('span');
   lab.className = 'lab';
   lab.textContent = 'Tripwire: ' + label;
-  const sb = document.createElement('span');
-  sb.className = 'sub';
-  sb.textContent = sub;
-  a.append(dot, lab, sb);
+  a.append(dot, lab);
+  if (!opts.compact && sub) {
+    const sb = document.createElement('span');
+    sb.className = 'sub';
+    sb.textContent = sub;
+    a.append(sb);
+  }
   shadow.append(styleEl, a);
 }
 
@@ -89,8 +118,12 @@ async function run(): Promise<void> {
     }
   }
 
+  const themeAttr = scriptEl?.dataset.theme;
+  const theme: Theme = themeAttr === 'dark' || themeAttr === 'auto' ? themeAttr : 'light';
+  const compact = scriptEl?.dataset.variant === 'compact';
+
   const d = decideBadge(state, liveFingerprint);
-  render(apiBase, origin, d.label, d.tone, d.sub);
+  render(apiBase, origin, d.label, d.tone, d.sub, { theme, compact });
 }
 
 void run();

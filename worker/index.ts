@@ -25,7 +25,7 @@ import {
   handleManifest,
   handleGetManifest,
 } from './badge.ts';
-import { handleScan, handleAuditFromScan } from './scan.ts';
+import { handleScan, handleAuditFromScan, handleAuditSelf } from './scan.ts';
 import { validateScorecard, validateLead } from './validate.ts';
 import { insertScorecard, insertLead, topScorecards, getScorecardById } from './supabase.ts';
 import { sendReportEmail, isEmailConfigured } from './email.ts';
@@ -140,6 +140,7 @@ export default {
       '/api/audit',
       '/api/audit/revoke',
       '/api/audit/from-scan',
+      '/api/audit/self',
       '/api/scan',
       '/api/badge',
       '/api/pubkey',
@@ -167,6 +168,7 @@ export default {
       if (url.pathname === '/api/audit' && req.method === 'POST') return handleAudit(req, env);
       if (url.pathname === '/api/audit/revoke' && req.method === 'POST') return handleRevoke(req, env);
       if (url.pathname === '/api/audit/from-scan' && req.method === 'POST') return handleAuditFromScan(req, env);
+      if (url.pathname === '/api/audit/self' && req.method === 'POST') return handleAuditSelf(req, env);
       if (url.pathname === '/api/scan' && req.method === 'POST') return handleScan(req, env);
       if (url.pathname === '/api/badge' && req.method === 'GET') return handleBadge(req, env);
       if (url.pathname === '/api/pubkey' && req.method === 'GET') return handlePubkey(req, env);

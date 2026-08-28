@@ -127,6 +127,115 @@ export async function verifyBundledClip(
   }
 }
 
+// ── Mode 2: audit a site's tools + badge ─────────────────────────────────────
+//
+// These talk to the same Worker. Unlike persistence, Mode 2 is the product, so
+// these surface errors to the caller instead of silently no-opping.
+
+/** Base for direct (non-degrading) Mode 2 calls: same-origin when unset. */
+function mode2Url(path: string): string {
+  const base = (ORIGIN ?? '').replace(/\/$/, '');
+  return `${base}${path}`;
+}
+
+async function mode2Post<T>(path: string, body: unknown): Promise<{ ok: boolean; status: number; data: T | null }> {
+  try {
+    const resp = await fetch(mode2Url(path), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    let data: T | null = null;
+    try {
+      data = (await resp.json()) as T;
+    } catch {
+      data = null;
+    }
+    return { ok: resp.ok, status: resp.status, data };
+  } catch {
+    return { ok: false, status: 0, data: null };
+  }
+}
+
+export interface VerifyInstructions {
+  wellKnown: { path: string; content: string };
+  dns: { record: string; type: string; value: string };
+}
+
+/** Step 1: request an ownership challenge token for an origin. */
+export function requestVerification(origin: string) {
+  return mode2Post<{ origin: string; token: string; instructions: VerifyInstructions; error?: string }>(
+    '/api/verify-origin',
+    { origin },
+  );
+}
+
+/** Step 2: ask Tripwire to fetch the proof and mark the origin verified. */
+export function confirmVerification(origin: string) {
+  return mode2Post<{ origin: string; verified: boolean; error?: string }>('/api/verify-origin/confirm', { origin });
+}
+
+export interface ScanFinding {
+  toolName: string;
+  check: string;
+  verdict: 'PASS' | 'PARTIAL' | 'FAIL';
+  layer: string;
+  evidence?: string;
+}
+
+export interface ScanResult {
+  url: string;
+  origin: string;
+  host: 'native' | 'polyfill' | 'none';
+  tools: number;
+  fingerprint?: string;
+  findings: ScanFinding[];
+  assuranceScore?: number;
+  signed: boolean;
+  scannedAt: string;
+  note: string;
+}
+
+/** Scan any URL (unsigned preview). */
+export function scanUrl(url: string) {
+  return mode2Post<ScanResult & { error?: string }>('/api/scan', { url });
+}
+
+export interface MintedBadge {
+  origin: string;
+  sha256: string;
+  signature: string;
+  keyId: string;
+  expiresAt: string;
+  report?: { fingerprint?: string; findings?: ScanFinding[]; assuranceScore?: number | null };
+  error?: string;
+}
+
+/** Self-serve: mint a signed badge for an origin the caller has verified. */
+export function createBadge(url: string) {
+  return mode2Post<MintedBadge>('/api/audit/self', { url });
+}
+
+export interface BadgeState {
+  origin: string;
+  state: 'active' | 'revoked' | 'expired' | 'unverified' | 'none';
+  fingerprint?: string;
+  assuranceScore?: number | null;
+  assuranceRung?: number;
+  signedAt?: string;
+}
+
+/** Read the current live badge state for an origin. */
+export async function checkBadge(origin: string): Promise<BadgeState | null> {
+  try {
+    const resp = await fetch(mode2Url(`/api/badge?origin=${encodeURIComponent(origin)}`));
+    if (!resp.ok) return null;
+    return (await resp.json()) as BadgeState;
+  } catch {
+    return null;
+  }
+}
+
 export interface LeadResult {
   ok: boolean;
   /** True only if a report email was actually sent (Resend configured). */

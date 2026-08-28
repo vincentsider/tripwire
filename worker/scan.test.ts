@@ -190,3 +190,25 @@ describe('POST /api/audit/from-scan', () => {
     expect(await resp.json()).toMatchObject({ error: 'no_webmcp_host' });
   });
 });
+
+describe('POST /api/audit/self', () => {
+  it('needs no admin token but refuses an unverified origin', async () => {
+    const state = stubDb({ verified: false });
+    scanResult({ host: 'polyfill', tools: scannedTools });
+    const resp = await worker.fetch(post('/api/audit/self', { url: TARGET }), env(), ctx);
+    expect(resp.status).toBe(403);
+    expect(await resp.json()).toMatchObject({ error: expect.stringContaining('not verified') });
+    expect(state.auditInserted).toBe(false);
+  });
+
+  it('signs and persists a badge for a verified origin (no admin token)', async () => {
+    const state = stubDb({ verified: true });
+    scanResult({ host: 'polyfill', tools: scannedTools });
+    const resp = await worker.fetch(post('/api/audit/self', { url: TARGET }), env(), ctx);
+    expect(resp.status).toBe(200);
+    const body = (await resp.json()) as Record<string, unknown>;
+    expect(body).toMatchObject({ origin: 'https://city.example', source: 'scan' });
+    expect(body.signature).toBeTypeOf('string');
+    expect(state.auditInserted).toBe(true);
+  });
+});

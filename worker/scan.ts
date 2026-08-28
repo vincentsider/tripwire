@@ -11,8 +11,11 @@
 //
 //   POST /api/scan            public, best-effort, returns an UNSIGNED preview.
 //                             A scan never mints a badge — no ownership proof.
-//   POST /api/audit/from-scan admin-gated, signs a scanned surface ONLY for an
-//                             already-verified origin (ownership still required).
+//   POST /api/audit/self      self-serve: signs a scanned surface for an origin
+//                             the caller has already PROVEN they own. This is the
+//                             non-technical operator's one-click "create my badge"
+//                             (ownership proof is the gate; rate-limited).
+//   POST /api/audit/from-scan admin-gated variant for Tripwire operators.
 //
 // This keeps the founding rule intact: a signature exists only behind proven
 // origin control; everything else is an observation, labelled as such.
@@ -102,26 +105,10 @@ export async function handleScan(req: Request, env: Env): Promise<Response> {
   );
 }
 
-/** POST /api/audit/from-scan { url } -> admin-gated signed audit of a scanned,
- *  already-verified origin. The operator path for customer zero (item 11). */
-export async function handleAuditFromScan(req: Request, env: Env): Promise<Response> {
-  const provided = req.headers.get('x-admin-token') ?? '';
-  if (!env.ADMIN_TOKEN || !timingSafeEqual(provided, env.ADMIN_TOKEN)) {
-    return jsonPublic({ error: 'forbidden' }, { status: 403, req });
-  }
-  if (!isSigningConfigured(env)) return jsonPublic({ error: 'signing_unavailable' }, { status: 503, req });
-  if (!env.BROWSER) return jsonPublic({ error: 'scan_unavailable' }, { status: 503, req });
-
-  const body = await readJsonSmall(req);
-  const target = validateTarget((body as { url?: unknown })?.url);
-  if (!target) return jsonPublic({ error: 'invalid url' }, { status: 400, req });
-
-  // Ownership is still mandatory to SIGN: the scanned origin must be verified.
-  const o = await getOrigin(env, target.origin);
-  if (!o || !o.verified_at) {
-    return jsonPublic({ error: 'origin not verified — complete /api/verify-origin first' }, { status: 403, req });
-  }
-
+/** Scan a verified origin, re-derive, sign, and persist the audit. Shared by the
+ *  self-serve and admin mint paths. Returns a Response (success or error). The
+ *  caller has ALREADY enforced the gate (ownership proof and/or admin token). */
+async function mintScannedAudit(req: Request, env: Env, target: { url: string; origin: string }): Promise<Response> {
   const scan = await scanWithBrowser(env, target.url);
   if (scan.host === 'error') return jsonPublic({ error: scan.error ?? 'scan_failed' }, { status: 502, req });
   if (scan.host === 'none') return jsonPublic({ error: 'no_webmcp_host' }, { status: 422, req });
@@ -156,6 +143,47 @@ export async function handleAuditFromScan(req: Request, env: Env): Promise<Respo
     { origin: target.origin, source: 'scan', host: scan.host, report: sealed.report, sha256: sealed.sha256, signature, keyId: keyId(env), expiresAt },
     { req },
   );
+}
+
+/** POST /api/audit/self { url } -> self-serve signed audit for an origin the
+ *  caller has PROVEN they own. Ownership proof is the only gate (plus a rate
+ *  limit); no admin token. This is the operator's one-click "create my badge". */
+export async function handleAuditSelf(req: Request, env: Env): Promise<Response> {
+  if (!(await checkRate(env, `${clientIp(req)}:audit-self`))) {
+    return jsonPublic({ error: 'rate_limited' }, { status: 429, req });
+  }
+  if (!isSigningConfigured(env)) return jsonPublic({ error: 'signing_unavailable' }, { status: 503, req });
+  if (!env.BROWSER) return jsonPublic({ error: 'scan_unavailable' }, { status: 503, req });
+
+  const body = await readJsonSmall(req);
+  const target = validateTarget((body as { url?: unknown })?.url);
+  if (!target) return jsonPublic({ error: 'invalid url' }, { status: 400, req });
+
+  const o = await getOrigin(env, target.origin);
+  if (!o || !o.verified_at) {
+    return jsonPublic({ error: 'origin not verified — complete /api/verify-origin first' }, { status: 403, req });
+  }
+  return mintScannedAudit(req, env, target);
+}
+
+/** POST /api/audit/from-scan { url } -> admin-gated variant for Tripwire operators. */
+export async function handleAuditFromScan(req: Request, env: Env): Promise<Response> {
+  const provided = req.headers.get('x-admin-token') ?? '';
+  if (!env.ADMIN_TOKEN || !timingSafeEqual(provided, env.ADMIN_TOKEN)) {
+    return jsonPublic({ error: 'forbidden' }, { status: 403, req });
+  }
+  if (!isSigningConfigured(env)) return jsonPublic({ error: 'signing_unavailable' }, { status: 503, req });
+  if (!env.BROWSER) return jsonPublic({ error: 'scan_unavailable' }, { status: 503, req });
+
+  const body = await readJsonSmall(req);
+  const target = validateTarget((body as { url?: unknown })?.url);
+  if (!target) return jsonPublic({ error: 'invalid url' }, { status: 400, req });
+
+  const o = await getOrigin(env, target.origin);
+  if (!o || !o.verified_at) {
+    return jsonPublic({ error: 'origin not verified — complete /api/verify-origin first' }, { status: 403, req });
+  }
+  return mintScannedAudit(req, env, target);
 }
 
 const MAX_BODY_BYTES = 8 * 1024;
