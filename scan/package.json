@@ -1,0 +1,25 @@
+{
+  "name": "tripwire-scan-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Headless WebMCP tool-surface enumeration service for Tripwire (self-serve URL scan).",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "npm run build && node dist/server.js",
+    "test": "vitest run",
+    "install:browser": "playwright install --with-deps chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

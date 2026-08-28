@@ -46,7 +46,7 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 /** Validate a self-reported tool surface into RegisteredTools, or null. */
-function validateTools(v: unknown): RegisteredTool[] | null {
+export function validateTools(v: unknown): RegisteredTool[] | null {
   if (!Array.isArray(v) || v.length === 0 || v.length > MAX_TOOLS) return null;
   const out: RegisteredTool[] = [];
   for (const item of v) {

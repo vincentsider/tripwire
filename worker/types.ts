@@ -44,6 +44,9 @@ export interface Env {
   BADGE_TTL_DAYS?: string; // audit expiry, default 90
   OWNERSHIP_GRACE_DAYS?: string; // days a proof may be absent before revoke, default 3
   RECHECK_BATCH?: string; // max origins re-checked per cron tick, default 25
+  // Headless scan service (item 10/11). Enumerates a live page's WebMCP tools
+  // out-of-band; the Worker still re-derives everything and signs nothing from a
+  // scan. Without SCAN_SERVICE_URL the /api/scan endpoint fails closed (503).
 
   // Secrets (wrangler secret put) — NEVER in wrangler.toml or the repo.
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -54,7 +57,9 @@ export interface Env {
   RESEND_FROM?: string; // e.g. "Tripwire <reports@deepblocker.ai>"
   // Mode 2 signing + admin (secrets).
   ED25519_PRIVATE_KEY?: string; // PKCS8, base64 — signs badges/reports
-  ADMIN_TOKEN?: string; // gates POST /api/audit/revoke
+  ADMIN_TOKEN?: string; // gates POST /api/audit/revoke and /api/audit/from-scan
+  SCAN_SERVICE_URL?: string; // headless scan backend base URL (Playwright service)
+  SCAN_SERVICE_TOKEN?: string; // shared secret the Worker sends to the scan service
 
   // Bindings.
   RATE_LIMITER?: RateLimiter;

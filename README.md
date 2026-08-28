@@ -92,10 +92,19 @@ signed, revocable, fingerprint-bound **badge** — "SSL Labs grade" for the agen
   badged site's live surface against the signed fingerprint before trusting it.
 - **Rung 1** (`/api/manifest`): a signed behaviour manifest (accountability).
   **Rung 2** (leak probe in the SDK): watch a canary escape cross-origin.
+- **Scheduled ownership re-check** (hourly cron): if a verified site pulls its
+  ownership proof, Tripwire un-verifies it and revokes its badges — after a grace
+  window so a transient outage never causes a false revocation.
+- **URL scan** (`/api/scan`): point Tripwire at any URL and it opens the page in
+  an out-of-band headless browser (see [`scan/`](scan/README.md)), enumerates the
+  live WebMCP surface, and returns an **unsigned** preview. A scan never mints a
+  badge — signing still requires proven origin control (`/api/audit/from-scan` is
+  the admin path that signs a scanned surface for an already-verified origin).
 
 Endpoints: `POST /api/verify-origin[/confirm]` · `POST /api/audit` · `GET /api/badge`
 (= the hub's `check_badge`) · `POST /api/manifest` · `GET /api/pubkey` ·
-`POST /api/audit/revoke` (admin). Schema in `supabase/migrations/0002`–`0003`.
+`POST /api/scan` · `POST /api/audit/from-scan` (admin) · `POST /api/audit/revoke`
+(admin). Schema in `supabase/migrations/0002`–`0004`.
 
 ## Architecture
 
@@ -173,6 +182,21 @@ wrangler secret put RESEND_API_KEY
 wrangler secret put RESEND_FROM             # e.g. "Tripwire <reports@yourdomain>"
 ```
 
+### 5. Optional — the headless URL scan service (Mode 2 `/api/scan`)
+
+Without it, `POST /api/scan` fails closed (503). To enable scanning any URL's live
+WebMCP surface, deploy the small Playwright service in [`scan/`](scan/README.md)
+(Docker or bare Node) to any host that can run a browser (Fly, Railway, a VM),
+then point the Worker at it:
+
+```bash
+wrangler secret put SCAN_SERVICE_URL        # e.g. https://tripwire-scan.fly.dev
+wrangler secret put SCAN_SERVICE_TOKEN      # same shared secret you set on the service
+```
+
+The scan service only observes; the Worker re-validates and re-derives everything,
+and signs nothing that lacks origin ownership.
+
 ### Configuration reference
 
 | Name | Where | Needed for | Enables |
@@ -185,6 +209,10 @@ wrangler secret put RESEND_FROM             # e.g. "Tripwire <reports@yourdomain
 | `DEEPFAKE_ROUTER_URL` | secret | live T7 | detector endpoint |
 | `RESEND_API_KEY` | secret | email | report email |
 | `RESEND_FROM` | secret | email | report email (verified sender) |
+| `SCAN_SERVICE_URL` | secret | URL scan | `/api/scan` + `/api/audit/from-scan` |
+| `SCAN_SERVICE_TOKEN` | secret | URL scan | shared secret sent to the scan service |
+| `OWNERSHIP_GRACE_DAYS` | `wrangler.toml` `[vars]` | — (default 3) | grace before revoke on lost proof |
+| `ADMIN_TOKEN` | secret | admin | `/api/audit/revoke` + `/api/audit/from-scan` |
 
 Secrets are set with `wrangler secret put` and are **never** committed or placed
 in `wrangler.toml`. `.env.production` holds only the non-secret
