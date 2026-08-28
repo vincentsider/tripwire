@@ -14,7 +14,15 @@
 //   *                        static assets (SPA)
 
 import type { Env, ExecutionContext } from './types.ts';
-import { json, preflight } from './http.ts';
+import { json, preflight, reflectPreflight } from './http.ts';
+import {
+  handleVerifyOrigin,
+  handleVerifyOriginConfirm,
+  handleAudit,
+  handleRevoke,
+  handleBadge,
+  handlePubkey,
+} from './badge.ts';
 import { validateScorecard, validateLead } from './validate.ts';
 import { insertScorecard, insertLead, topScorecards, getScorecardById } from './supabase.ts';
 import { sendReportEmail, isEmailConfigured } from './email.ts';
@@ -120,7 +128,20 @@ export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
 
-    if (req.method === 'OPTIONS') return preflight(req, env);
+    // Mode-2 endpoints are the public product surface: any audited site calls
+    // them cross-origin, so they use permissive (reflected) CORS.
+    const MODE2 = new Set([
+      '/api/verify-origin',
+      '/api/verify-origin/confirm',
+      '/api/audit',
+      '/api/audit/revoke',
+      '/api/badge',
+      '/api/pubkey',
+    ]);
+
+    if (req.method === 'OPTIONS') {
+      return MODE2.has(url.pathname) ? reflectPreflight(req) : preflight(req, env);
+    }
 
     if (url.pathname.startsWith('/api/')) {
       if (url.pathname === '/api/health' && req.method === 'GET') {
@@ -133,6 +154,13 @@ export default {
       if (url.pathname === '/api/verify-audio' && req.method === 'POST') {
         return handleVerifyAudio(req, env, ctx);
       }
+      // Mode 2 (badge).
+      if (url.pathname === '/api/verify-origin' && req.method === 'POST') return handleVerifyOrigin(req, env);
+      if (url.pathname === '/api/verify-origin/confirm' && req.method === 'POST') return handleVerifyOriginConfirm(req, env);
+      if (url.pathname === '/api/audit' && req.method === 'POST') return handleAudit(req, env);
+      if (url.pathname === '/api/audit/revoke' && req.method === 'POST') return handleRevoke(req, env);
+      if (url.pathname === '/api/badge' && req.method === 'GET') return handleBadge(req, env);
+      if (url.pathname === '/api/pubkey' && req.method === 'GET') return handlePubkey(req, env);
       return json({ error: 'not_found' }, { status: 404, req, env });
     }
 

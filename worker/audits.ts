@@ -1,0 +1,119 @@
+// worker/audits.ts
+//
+// PostgREST access for Mode-2 origin verification + signed surface audits.
+// Service-role only (Worker-side); every value written is validated first.
+
+import type { Env } from './types.ts';
+
+function sbHeaders(env: Env, extra?: Record<string, string>): Record<string, string> {
+  return {
+    apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+    'Content-Type': 'application/json',
+    ...extra,
+  };
+}
+function sbUrl(env: Env, path: string): string {
+  return `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${path}`;
+}
+
+export interface OriginRow {
+  origin: string;
+  challenge_token: string;
+  verified_at: string | null;
+}
+
+/** Create or refresh an origin's challenge token (keeps verified_at as-is). */
+export async function upsertOriginChallenge(env: Env, origin: string, token: string): Promise<void> {
+  const resp = await fetch(sbUrl(env, 'origins?on_conflict=origin'), {
+    method: 'POST',
+    headers: sbHeaders(env, { Prefer: 'resolution=merge-duplicates,return=minimal' }),
+    body: JSON.stringify({ origin, challenge_token: token }),
+  });
+  if (!resp.ok) throw new Error(`origins upsert failed: ${resp.status}`);
+}
+
+export async function getOrigin(env: Env, origin: string): Promise<OriginRow | null> {
+  const q = `origins?origin=eq.${encodeURIComponent(origin)}&select=origin,challenge_token,verified_at&limit=1`;
+  const resp = await fetch(sbUrl(env, q), { headers: sbHeaders(env) });
+  if (!resp.ok) return null;
+  const rows = (await resp.json()) as OriginRow[];
+  return rows[0] ?? null;
+}
+
+export async function setOriginVerified(env: Env, origin: string): Promise<void> {
+  const resp = await fetch(sbUrl(env, `origins?origin=eq.${encodeURIComponent(origin)}`), {
+    method: 'PATCH',
+    headers: sbHeaders(env, { Prefer: 'return=minimal' }),
+    body: JSON.stringify({ verified_at: new Date().toISOString() }),
+  });
+  if (!resp.ok) throw new Error(`origin verify failed: ${resp.status}`);
+}
+
+export interface AuditInsert {
+  origin: string;
+  fingerprint: string;
+  findings: unknown;
+  assurance_score: number | null;
+  assurance_rung: number;
+  report_sha256: string;
+  signature: string;
+  key_id: string;
+  expires_at?: string | null;
+}
+
+export async function insertAudit(env: Env, row: AuditInsert): Promise<{ id: string }> {
+  const resp = await fetch(sbUrl(env, 'tool_audits'), {
+    method: 'POST',
+    headers: sbHeaders(env, { Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  });
+  if (!resp.ok) throw new Error(`tool_audits insert failed: ${resp.status}`);
+  const rows = (await resp.json()) as Array<{ id: string }>;
+  const first = rows[0];
+  if (!first) throw new Error('tool_audits insert returned no row');
+  return { id: first.id };
+}
+
+export interface AuditRow {
+  id: string;
+  origin: string;
+  fingerprint: string;
+  findings: unknown;
+  assurance_score: number | null;
+  assurance_rung: number;
+  report_sha256: string;
+  signature: string;
+  key_id: string;
+  signed_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+}
+
+/** The most recent audit for an origin (any state). */
+export async function getLatestAudit(env: Env, origin: string): Promise<AuditRow | null> {
+  const q =
+    `tool_audits?origin=eq.${encodeURIComponent(origin)}` +
+    '&select=id,origin,fingerprint,findings,assurance_score,assurance_rung,report_sha256,signature,key_id,signed_at,expires_at,revoked_at' +
+    '&order=signed_at.desc&limit=1';
+  const resp = await fetch(sbUrl(env, q), { headers: sbHeaders(env) });
+  if (!resp.ok) return null;
+  const rows = (await resp.json()) as AuditRow[];
+  return rows[0] ?? null;
+}
+
+/** Revoke every audit for an origin (or one id). Returns rows affected count is not tracked. */
+export async function revokeAudits(env: Env, opts: { origin?: string; id?: string }): Promise<void> {
+  const filter = opts.id
+    ? `id=eq.${encodeURIComponent(opts.id)}`
+    : opts.origin
+      ? `origin=eq.${encodeURIComponent(opts.origin)}`
+      : null;
+  if (!filter) throw new Error('revoke needs an origin or id');
+  const resp = await fetch(sbUrl(env, `tool_audits?${filter}&revoked_at=is.null`), {
+    method: 'PATCH',
+    headers: sbHeaders(env, { Prefer: 'return=minimal' }),
+    body: JSON.stringify({ revoked_at: new Date().toISOString() }),
+  });
+  if (!resp.ok) throw new Error(`revoke failed: ${resp.status}`);
+}

@@ -95,6 +95,80 @@ export type Database = {
         };
         Relationships: [];
       };
+      origins: {
+        Row: {
+          challenge_token: string;
+          created_at: string;
+          origin: string;
+          verified_at: string | null;
+        };
+        Insert: {
+          challenge_token: string;
+          created_at?: string;
+          origin: string;
+          verified_at?: string | null;
+        };
+        Update: {
+          challenge_token?: string;
+          created_at?: string;
+          origin?: string;
+          verified_at?: string | null;
+        };
+        Relationships: [];
+      };
+      tool_audits: {
+        Row: {
+          assurance_rung: number;
+          assurance_score: number | null;
+          expires_at: string | null;
+          findings: Json;
+          fingerprint: string;
+          id: string;
+          key_id: string;
+          origin: string;
+          report_sha256: string;
+          revoked_at: string | null;
+          signature: string;
+          signed_at: string;
+        };
+        Insert: {
+          assurance_rung?: number;
+          assurance_score?: number | null;
+          expires_at?: string | null;
+          findings?: Json;
+          fingerprint: string;
+          id?: string;
+          key_id: string;
+          origin: string;
+          report_sha256: string;
+          revoked_at?: string | null;
+          signature: string;
+          signed_at?: string;
+        };
+        Update: {
+          assurance_rung?: number;
+          assurance_score?: number | null;
+          expires_at?: string | null;
+          findings?: Json;
+          fingerprint?: string;
+          id?: string;
+          key_id?: string;
+          origin?: string;
+          report_sha256?: string;
+          revoked_at?: string | null;
+          signature?: string;
+          signed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tool_audits_origin_fkey';
+            columns: ['origin'];
+            isOneToOne: false;
+            referencedRelation: 'origins';
+            referencedColumns: ['origin'];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

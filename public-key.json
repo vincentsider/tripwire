@@ -1,0 +1,7 @@
+{
+  "keyId": "k1",
+  "alg": "Ed25519",
+  "format": "spki",
+  "publicKey": "MCowBQYDK2VwAyEARzh2V+SNig7xtfush0GWYhDapfIQff+ADC8EMzRTRlo=",
+  "note": "Public key that signs Tripwire Mode-2 Assurance Reports. Verify a report by recomputing canonicalSurfaceReport(report) and checking the Ed25519 signature against this key. Also served at /api/pubkey."
+}

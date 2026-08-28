@@ -29,6 +29,9 @@ not_found_handling = "single-page-application"
 # names the internal backend.
 SUPABASE_URL = "https://cdmbaujqfnknilruuhht.supabase.co"
 DETECTOR_DAILY_CAP = "500"
+TRIPWIRE_PUBKEY = "MCowBQYDK2VwAyEARzh2V+SNig7xtfush0GWYhDapfIQff+ADC8EMzRTRlo="
+TRIPWIRE_KEY_ID = "k1"
+BADGE_TTL_DAYS = "90"
 # Comma-separated extra origins allowed to call the API (e.g. a quarantine
 # subdomain). Empty = same-origin only, which needs no CORS.
 ALLOWED_ORIGINS = ""
