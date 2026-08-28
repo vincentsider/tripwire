@@ -127,15 +127,21 @@ export async function verifyBundledClip(
   }
 }
 
-/** Submit an email opt-in for the report. Returns whether it was accepted. */
+export interface LeadResult {
+  ok: boolean;
+  /** True only if a report email was actually sent (Resend configured). */
+  emailed: boolean;
+}
+
+/** Submit an email opt-in. Reports whether it was accepted and whether an email was actually sent. */
 export async function submitLead(
   email: string,
   consent: boolean,
   extra?: { agentLabel?: string; scorecardId?: string },
-): Promise<boolean> {
+): Promise<LeadResult> {
   const body: Record<string, unknown> = { email, consent };
   if (extra?.agentLabel) body.agent_label = extra.agentLabel;
   if (extra?.scorecardId) body.scorecard_id = extra.scorecardId;
-  const out = (await postJson('/api/lead', body)) as { ok?: boolean } | null;
-  return out?.ok === true;
+  const out = (await postJson('/api/lead', body)) as { ok?: boolean; emailed?: boolean } | null;
+  return { ok: out?.ok === true, emailed: out?.emailed === true };
 }

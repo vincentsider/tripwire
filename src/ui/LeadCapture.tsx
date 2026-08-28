@@ -9,7 +9,7 @@ import { submitLead, persistenceEnabled } from '../data/api.ts';
 export function LeadCapture({ agentLabel, scorecardId }: { agentLabel: string; scorecardId: string | null }) {
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
-  const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+  const [state, setState] = useState<'idle' | 'sending' | 'emailed' | 'saved' | 'error'>('idle');
 
   if (!persistenceEnabled()) return null;
 
@@ -19,15 +19,18 @@ export function LeadCapture({ agentLabel, scorecardId }: { agentLabel: string; s
     const extra: { agentLabel?: string; scorecardId?: string } = {};
     if (agentLabel) extra.agentLabel = agentLabel;
     if (scorecardId) extra.scorecardId = scorecardId;
-    const ok = await submitLead(email.trim(), consent, extra);
-    setState(ok ? 'done' : 'error');
+    const res = await submitLead(email.trim(), consent, extra);
+    // Only claim an email was sent when one actually was.
+    setState(res.ok ? (res.emailed ? 'emailed' : 'saved') : 'error');
   };
 
-  if (state === 'done') {
+  if (state === 'emailed' || state === 'saved') {
     return (
       <section className="card">
         <div className="card-title" style={{ color: 'var(--ok)' }}>
-          Sent. We’ll email your report.
+          {state === 'emailed'
+            ? 'Sent — check your inbox for the report.'
+            : 'Thanks — we’ve got your details and will be in touch.'}
         </div>
       </section>
     );

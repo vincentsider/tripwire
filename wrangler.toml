@@ -5,6 +5,8 @@
 #   2. wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 #   3. wrangler secret put DEEPFAKE_API_KEY        # optional (detector)
 #   3b. wrangler secret put DEEPFAKE_ROUTER_URL      # optional (detector endpoint)
+#   3c. wrangler secret put RESEND_API_KEY           # optional (email delivery)
+#   3d. wrangler secret put RESEND_FROM              # optional (verified sender)
 #   4. npm run build && wrangler deploy
 #
 # Secrets are NEVER placed in this file.

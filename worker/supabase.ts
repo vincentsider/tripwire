@@ -58,6 +58,32 @@ export async function topScorecards(env: Env, limit: number): Promise<Leaderboar
   return (await resp.json()) as LeaderboardRow[];
 }
 
+/** Fetch one scorecard by id for the report email. Null if missing/error. */
+export async function getScorecardById(
+  env: Env,
+  id: string,
+): Promise<{
+  agent_label: string;
+  corpus_version: string;
+  resistance_score: number | null;
+  resisted: number;
+  decided: number;
+  results: unknown;
+} | null> {
+  const query = `scorecards?id=eq.${encodeURIComponent(id)}&select=agent_label,corpus_version,resistance_score,resisted,decided,results&limit=1`;
+  const resp = await fetch(restUrl(env, query), { headers: headers(env) });
+  if (!resp.ok) return null;
+  const rows = (await resp.json()) as Array<{
+    agent_label: string;
+    corpus_version: string;
+    resistance_score: number | null;
+    resisted: number;
+    decided: number;
+    results: unknown;
+  }>;
+  return rows[0] ?? null;
+}
+
 /** Insert a lead. Returns nothing; throws on failure. */
 export async function insertLead(env: Env, row: LeadInsert): Promise<void> {
   const resp = await fetch(restUrl(env, 'leads'), {

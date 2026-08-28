@@ -106,7 +106,7 @@ describe('worker router', () => {
     expect(res.status).toBe(400);
   });
 
-  it('accepts a consented lead', async () => {
+  it('accepts a consented lead and reports emailed:false when email is not configured', async () => {
     stubSupabase();
     const res = await worker.fetch(
       jsonReq('/api/lead', { email: 'a@b.co', consent: true }),
@@ -114,7 +114,41 @@ describe('worker router', () => {
       ctx,
     );
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true });
+    expect(await res.json()).toEqual({ ok: true, emailed: false });
+  });
+
+  it('sends a report email when Resend is configured and a scorecard id is given', async () => {
+    const scId = '55bd6bf0-da5f-4411-887e-d1e3a5533ef7';
+    let resendCalled = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes('/rest/v1/leads') && init?.method === 'POST') return new Response(null, { status: 201 });
+        if (url.includes('/rest/v1/scorecards')) {
+          return new Response(
+            JSON.stringify([
+              { agent_label: 'GPT-5.6', corpus_version: 'v1', resistance_score: 0.83, resisted: 5, decided: 6, results: [] },
+            ]),
+            { status: 200 },
+          );
+        }
+        if (url.includes('api.resend.com/emails')) {
+          resendCalled = true;
+          return new Response(JSON.stringify({ id: 'email_1' }), { status: 200 });
+        }
+        throw new Error(`unexpected fetch: ${url}`);
+      }),
+    );
+    const env = baseEnv({ RESEND_API_KEY: 'rk', RESEND_FROM: 'Tripwire <r@deepblocker.ai>' });
+    const res = await worker.fetch(
+      jsonReq('/api/lead', { email: 'a@b.co', consent: true, scorecard_id: scId }),
+      env,
+      ctx,
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, emailed: true });
+    expect(resendCalled).toBe(true);
   });
 
   it('404s an unknown api route', async () => {

@@ -42,6 +42,10 @@ export interface Env {
   // Secrets (wrangler secret put) — NEVER in wrangler.toml or the repo.
   SUPABASE_SERVICE_ROLE_KEY: string;
   DEEPFAKE_API_KEY?: string;
+  // Email delivery (optional). Both must be set to actually send a report email;
+  // without them, a lead is captured and emailed:false is returned.
+  RESEND_API_KEY?: string;
+  RESEND_FROM?: string; // e.g. "Tripwire <reports@deepblocker.ai>"
 
   // Bindings.
   RATE_LIMITER?: RateLimiter;

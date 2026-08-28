@@ -16,7 +16,8 @@
 import type { Env, ExecutionContext } from './types.ts';
 import { json, preflight } from './http.ts';
 import { validateScorecard, validateLead } from './validate.ts';
-import { insertScorecard, insertLead, topScorecards } from './supabase.ts';
+import { insertScorecard, insertLead, topScorecards, getScorecardById } from './supabase.ts';
+import { sendReportEmail, isEmailConfigured } from './email.ts';
 import { checkRate, underDailyCap, clientIp } from './limits.ts';
 import { analyzeAudio, warmDetector, MAX_AUDIO_BYTES } from './detector.ts';
 
@@ -64,10 +65,22 @@ async function handleLead(req: Request, env: Env): Promise<Response> {
   if (!parsed.ok) return json({ error: parsed.error }, { status: 400, req, env });
   try {
     await insertLead(env, parsed.value);
-    return json({ ok: true }, { req, env });
   } catch {
     return json({ error: 'persist_failed' }, { status: 502, req, env });
   }
+
+  // Best-effort report email (only if configured AND we have a scorecard to send).
+  // Never blocks or fails the capture: emailed reflects whether it actually sent.
+  let emailed = false;
+  if (isEmailConfigured(env) && parsed.value.scorecard_id) {
+    try {
+      const sc = await getScorecardById(env, parsed.value.scorecard_id);
+      if (sc) emailed = await sendReportEmail(env, parsed.value.email, sc);
+    } catch {
+      emailed = false;
+    }
+  }
+  return json({ ok: true, emailed }, { req, env });
 }
 
 async function handleVerifyAudio(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
