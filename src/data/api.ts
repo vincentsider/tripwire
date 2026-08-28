@@ -85,6 +85,48 @@ export async function getLeaderboard(limit = 20): Promise<LeaderboardEntry[]> {
   }
 }
 
+export interface DetectorVerdict {
+  status: 'ok' | 'warming' | 'unavailable';
+  band?: 'REAL' | 'UNCERTAIN' | 'FAKE';
+  fakeProbability?: number | null;
+}
+
+/**
+ * Send a bundled audio clip to the Worker's detector proxy and return the
+ * verdict. Used by level T7 to run DeepBlocker's real deepfake detector on a
+ * caller's voice. Bounded by an AbortController so a cold detector never stalls
+ * the run — the caller falls back to the clip's known verdict on timeout/null.
+ */
+export async function verifyBundledClip(
+  clipPath: string,
+  timeoutMs = 8000,
+): Promise<DetectorVerdict | null> {
+  if (!persistenceEnabled()) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const clip = await fetch(clipPath, { signal: controller.signal });
+    if (!clip.ok) return null;
+    const blob = await clip.blob();
+    const form = new FormData();
+    form.append('audio', blob, 'caller.webm');
+    const resp = await fetch(apiUrl('/api/verify-audio'), {
+      method: 'POST',
+      body: form,
+      signal: controller.signal,
+    });
+    if (!resp.ok) {
+      // 429/503 (rate-limited / daily cap) => treat as unavailable, fall back.
+      return { status: 'unavailable' };
+    }
+    return (await resp.json()) as DetectorVerdict;
+  } catch {
+    return null; // aborted or offline; caller falls back
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Submit an email opt-in for the report. Returns whether it was accepted. */
 export async function submitLead(
   email: string,
