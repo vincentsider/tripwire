@@ -30,6 +30,7 @@ import { insertScorecard, insertLead, topScorecards, getScorecardById } from './
 import { sendReportEmail, isEmailConfigured } from './email.ts';
 import { checkRate, underDailyCap, clientIp } from './limits.ts';
 import { analyzeAudio, warmDetector, MAX_AUDIO_BYTES } from './detector.ts';
+import { runOwnershipRecheck } from './maintenance.ts';
 
 async function readJson(req: Request): Promise<unknown> {
   try {
@@ -175,9 +176,15 @@ export default {
     return new Response('Not found', { status: 404 });
   },
 
-  // Cron keep-warm (wrangler [triggers] crons). Runs through the judging window
-  // so the detector is never cold when a judge tries the live level.
-  async scheduled(_event: unknown, env: Env, ctx: ExecutionContext): Promise<void> {
+  // Cron dispatch (wrangler [triggers] crons). Branch on the pattern so each
+  // schedule does exactly its own job:
+  //   "*/3 * * * *"  detector keep-warm (never cold in the judging window)
+  //   "17 * * * *"   hourly ownership re-check (revoke badges whose proof left)
+  async scheduled(event: { cron?: string }, env: Env, ctx: ExecutionContext): Promise<void> {
+    if (event?.cron === '17 * * * *') {
+      ctx.waitUntil(runOwnershipRecheck(env).then(() => undefined));
+      return;
+    }
     ctx.waitUntil(warmDetector(env));
   },
 };

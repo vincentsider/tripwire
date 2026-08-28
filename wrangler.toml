@@ -49,6 +49,8 @@ simple = { limit = 30, period = 60 }
 binding = "DAILY"
 id = "7b2cbce3a0c144b282814e3067940219"
 
-# Keep the detector warm across the judging window.
+# Cron triggers:
+#   */3 * * * *  keep the detector warm across the judging window
+#   17 * * * *   hourly ownership re-check (revoke badges whose proof was pulled)
 [triggers]
-crons = ["*/3 * * * *"]
+crons = ["*/3 * * * *", "17 * * * *"]

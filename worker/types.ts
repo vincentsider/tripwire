@@ -42,6 +42,8 @@ export interface Env {
   TRIPWIRE_PUBKEY?: string; // Ed25519 public key (spki, base64) — safe to publish
   TRIPWIRE_KEY_ID?: string; // which key signed (default "k1")
   BADGE_TTL_DAYS?: string; // audit expiry, default 90
+  OWNERSHIP_GRACE_DAYS?: string; // days a proof may be absent before revoke, default 3
+  RECHECK_BATCH?: string; // max origins re-checked per cron tick, default 25
 
   // Secrets (wrangler secret put) — NEVER in wrangler.toml or the repo.
   SUPABASE_SERVICE_ROLE_KEY: string;

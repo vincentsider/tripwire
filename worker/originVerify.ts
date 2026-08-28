@@ -36,23 +36,28 @@ function withTimeout(ms: number): { signal: AbortSignal; done: () => void } {
   return { signal: c.signal, done: () => clearTimeout(t) };
 }
 
-/** Check the well-known file for the token. */
-export async function checkWellKnown(origin: string, token: string): Promise<boolean> {
+// Tri-state so the maintenance re-check can tell "the site removed the proof"
+// (absent) from "the site was momentarily unreachable" (unreachable) and never
+// revoke on a transient blip.
+export type ProofStatus = 'present' | 'absent' | 'unreachable';
+
+/** Check the well-known file for the token (tri-state). */
+export async function probeWellKnown(origin: string, token: string): Promise<ProofStatus> {
   const { signal, done } = withTimeout(FETCH_TIMEOUT_MS);
   try {
     const resp = await fetch(`${origin}/.well-known/tripwire-challenge.txt`, { redirect: 'manual', signal });
-    if (!resp.ok) return false;
+    if (!resp.ok) return resp.status === 404 ? 'absent' : 'unreachable';
     const text = (await resp.text()).slice(0, 4096);
-    return text.split(/\s+/).includes(token);
+    return text.split(/\s+/).includes(token) ? 'present' : 'absent';
   } catch {
-    return false;
+    return 'unreachable';
   } finally {
     done();
   }
 }
 
-/** Check a DNS TXT record `_tripwire.<host>` for the token, via DNS-over-HTTPS. */
-export async function checkDnsTxt(origin: string, token: string): Promise<boolean> {
+/** Check a DNS TXT record `_tripwire.<host>` for the token (tri-state). */
+export async function probeDnsTxt(origin: string, token: string): Promise<ProofStatus> {
   const { signal, done } = withTimeout(FETCH_TIMEOUT_MS);
   try {
     const host = new URL(origin).host.split(':')[0];
@@ -60,18 +65,29 @@ export async function checkDnsTxt(origin: string, token: string): Promise<boolea
       headers: { accept: 'application/dns-json' },
       signal,
     });
-    if (!resp.ok) return false;
+    if (!resp.ok) return 'unreachable';
     const j = (await resp.json()) as { Answer?: Array<{ data?: string }> };
-    return (j.Answer ?? []).some((a) => String(a.data ?? '').replace(/"/g, '').split(/\s+/).includes(token));
+    const answers = j.Answer ?? [];
+    const present = answers.some((a) => String(a.data ?? '').replace(/"/g, '').split(/\s+/).includes(token));
+    return present ? 'present' : 'absent';
   } catch {
-    return false;
+    return 'unreachable';
   } finally {
     done();
   }
 }
 
-/** Verified if EITHER proof is present. */
+/** Combined tri-state: present if EITHER proof is present; absent only if at least
+ *  one channel was definitively reachable-without-the-token and none was present. */
+export async function probeControl(origin: string, token: string): Promise<ProofStatus> {
+  const wk = await probeWellKnown(origin, token);
+  if (wk === 'present') return 'present';
+  const dns = await probeDnsTxt(origin, token);
+  if (dns === 'present') return 'present';
+  return wk === 'absent' || dns === 'absent' ? 'absent' : 'unreachable';
+}
+
+/** Boolean wrapper used by the initial confirm flow. */
 export async function checkOriginControl(origin: string, token: string): Promise<boolean> {
-  if (await checkWellKnown(origin, token)) return true;
-  return checkDnsTxt(origin, token);
+  return (await probeControl(origin, token)) === 'present';
 }

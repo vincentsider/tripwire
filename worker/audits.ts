@@ -42,12 +42,49 @@ export async function getOrigin(env: Env, origin: string): Promise<OriginRow | n
 }
 
 export async function setOriginVerified(env: Env, origin: string): Promise<void> {
+  const now = new Date().toISOString();
   const resp = await fetch(sbUrl(env, `origins?origin=eq.${encodeURIComponent(origin)}`), {
     method: 'PATCH',
     headers: sbHeaders(env, { Prefer: 'return=minimal' }),
-    body: JSON.stringify({ verified_at: new Date().toISOString() }),
+    body: JSON.stringify({ verified_at: now, proof_last_ok: now }),
   });
   if (!resp.ok) throw new Error(`origin verify failed: ${resp.status}`);
+}
+
+export interface RecheckRow {
+  origin: string;
+  challenge_token: string;
+  verified_at: string | null;
+  proof_last_ok: string | null;
+}
+
+/** Verified origins to re-check, oldest proof_last_ok first. */
+export async function getVerifiedOriginsForRecheck(env: Env, limit: number): Promise<RecheckRow[]> {
+  const capped = Math.max(1, Math.min(limit, 200));
+  const q =
+    'origins?verified_at=not.is.null&select=origin,challenge_token,verified_at,proof_last_ok' +
+    `&order=proof_last_ok.asc.nullsfirst&limit=${capped}`;
+  const resp = await fetch(sbUrl(env, q), { headers: sbHeaders(env) });
+  if (!resp.ok) return [];
+  return (await resp.json()) as RecheckRow[];
+}
+
+/** Record that the ownership proof was seen present now. */
+export async function touchProofOk(env: Env, origin: string): Promise<void> {
+  await fetch(sbUrl(env, `origins?origin=eq.${encodeURIComponent(origin)}`), {
+    method: 'PATCH',
+    headers: sbHeaders(env, { Prefer: 'return=minimal' }),
+    body: JSON.stringify({ proof_last_ok: new Date().toISOString() }),
+  });
+}
+
+/** Un-verify an origin (ownership proof gone past grace). */
+export async function unverifyOrigin(env: Env, origin: string): Promise<void> {
+  await fetch(sbUrl(env, `origins?origin=eq.${encodeURIComponent(origin)}`), {
+    method: 'PATCH',
+    headers: sbHeaders(env, { Prefer: 'return=minimal' }),
+    body: JSON.stringify({ verified_at: null, proof_last_ok: null }),
+  });
 }
 
 export interface AuditInsert {

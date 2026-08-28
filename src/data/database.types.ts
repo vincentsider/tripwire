@@ -141,18 +141,21 @@ export type Database = {
           challenge_token: string;
           created_at: string;
           origin: string;
+          proof_last_ok: string | null;
           verified_at: string | null;
         };
         Insert: {
           challenge_token: string;
           created_at?: string;
           origin: string;
+          proof_last_ok?: string | null;
           verified_at?: string | null;
         };
         Update: {
           challenge_token?: string;
           created_at?: string;
           origin?: string;
+          proof_last_ok?: string | null;
           verified_at?: string | null;
         };
         Relationships: [];
