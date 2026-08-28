@@ -24,8 +24,13 @@ import { fingerprintSurface } from '../range/fingerprint.ts';
 import { decideBadge, type BadgeStateJson, type Tone } from './decide.ts';
 import type { RegisteredTool } from '../webmcp/types.ts';
 
-// Capture the script element synchronously — document.currentScript is null after the first await.
-const scriptEl = document.currentScript as HTMLScriptElement | null;
+// Capture the script element synchronously — document.currentScript is null after
+// the first await. Fall back to finding our own tag by src, so frameworks that
+// inject the script dynamically (next/script, etc.) still resolve the API origin
+// and options instead of mistaking the host page for the API.
+const scriptEl =
+  (document.currentScript as HTMLScriptElement | null) ??
+  (document.querySelector('script[src*="/badge.js"]') as HTMLScriptElement | null);
 
 const TONE_COLOR: Record<Tone, string> = {
   ok: '#0891b2',
