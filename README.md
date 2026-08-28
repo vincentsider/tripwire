@@ -24,11 +24,22 @@ Every level is scored on one rule: **the page can only see tool calls, never the
 
 ## Run it locally
 
+Requires **Node 20.11+**. No backend or keys are needed — the range runs
+entirely in the browser. Persistence, the leaderboard, the live detector and
+email are all optional add-ons (see
+[Self-hosting](#self-hosting-run-your-own-tripwire)).
+
 ```bash
 npm install
-npm test          # engine, shim, worker, corpus, and report tests
+npm test          # 79 tests: engine, shim, worker, corpus, report, persistence
 npm run dev       # http://localhost:5173
 ```
+
+Locally there is no native WebMCP host, so a built-in polyfill
+(`src/webmcp/polyfill.ts`) drives the tools and the "Run — …" buttons run a
+simulated agent. To drive it with a real agent, deploy it (below) and open the
+URL in ChatGPT's in-app browser or in Chrome with
+`chrome://flags/#enable-webmcp-testing` enabled.
 
 ## The v1 corpus
 
@@ -69,9 +80,10 @@ src/webmcp/    shim.ts resolves the live host (document.modelContext /
                THROUGH the shim, so which API the browser ships changes one file.
 src/range/     canary (inert marker tokens), telemetry (bounded event bus),
                scoring, and the level runner. levels.ts is the v1 corpus.
-src/data/      Supabase types, generated from the live schema.
+src/data/      Supabase types (generated) + the browser->Worker API client.
 worker/        Cloudflare Worker: detector proxy + scorecard/lead persistence
-               (holds all secrets; the browser holds none).
+               + optional report email (holds all secrets; the browser holds none).
+supabase/      migrations/0001_init.sql — the database schema (scorecards, leads).
 ```
 
 The browser never holds a database key or the detector key. All persistence and
@@ -80,21 +92,78 @@ Cloudflare Worker, which holds the Supabase service-role key and the detector
 key as Worker secrets. Every table has Row-Level Security enabled with no anon
 policies, so a leaked key can do nothing.
 
-## Deploy (Cloudflare Workers)
+## Self-hosting: run your own Tripwire
 
-One Worker serves the SPA and the `/api/*` surface. Deploy needs `wrangler login`.
+Tripwire is one Cloudflare Worker that serves the SPA and the `/api/*` surface.
+Everything except the range itself is optional — add each piece to unlock the
+feature next to it.
+
+### 1. Database (Supabase) — scorecard save + leaderboard
+
+1. Create a Supabase project.
+2. Apply the schema in `supabase/migrations/0001_init.sql` — via the Supabase CLI
+   (`supabase db push`) or by pasting it into the SQL editor.
+3. Note the **Project URL** and the **service_role** key (Settings → API).
+
+The browser never receives a Supabase key. RLS is on with no policies, so only
+the Worker (service-role) can read or write these tables.
+
+### 2. Deploy the Worker
 
 ```bash
-wrangler kv namespace create DAILY      # paste the id into wrangler.toml
+wrangler login
+wrangler kv namespace create DAILY          # paste the id into wrangler.toml
+# set SUPABASE_URL in wrangler.toml [vars]
 wrangler secret put SUPABASE_SERVICE_ROLE_KEY
-wrangler secret put DEEPFAKE_API_KEY
-npm run deploy                          # build + wrangler deploy
+npm run deploy                               # tsc + vite build + wrangler deploy
 ```
 
-`npm run worker:check` bundles and validates the Worker locally without
-deploying. Until the `DAILY` KV namespace is bound, the detector endpoint fails
-closed (503), which is the safe default. No secret is ever placed in
-`wrangler.toml` or committed.
+`npm run worker:check` validates the Worker bundle without deploying. Until the
+`DAILY` KV namespace is bound, the detector endpoint fails closed (503).
+
+### 3. Optional — the deepfake detector (level T7 "live")
+
+Without it, T7 uses the bundled clip's cached verdict. To run a real detector
+(any service that answers `POST {base}/api/v2/analyze` with an `X-API-Key`
+header and returns `{ band: REAL|UNCERTAIN|FAKE, fake_probability }`):
+
+```bash
+wrangler secret put DEEPFAKE_API_KEY
+wrangler secret put DEEPFAKE_ROUTER_URL     # the detector base URL
+```
+
+`DETECTOR_DAILY_CAP` (default 500, in `wrangler.toml`) bounds detector spend.
+
+### 4. Optional — email the report (Resend)
+
+Without it, a lead is captured and the UI says "we've got your details". To
+actually email the report:
+
+1. Create a [Resend](https://resend.com) account and **verify a sending domain**
+   (add the DNS records Resend gives you).
+2. Set the secrets:
+
+```bash
+wrangler secret put RESEND_API_KEY
+wrangler secret put RESEND_FROM             # e.g. "Tripwire <reports@yourdomain>"
+```
+
+### Configuration reference
+
+| Name | Where | Needed for | Enables |
+|------|-------|------------|---------|
+| `SUPABASE_URL` | `wrangler.toml` `[vars]` | persistence | scorecard save + leaderboard |
+| `SUPABASE_SERVICE_ROLE_KEY` | secret | persistence | (same) |
+| `VITE_WORKER_ORIGIN` | `.env.production` | build | empty = same-origin `/api` |
+| `DETECTOR_DAILY_CAP` | `wrangler.toml` `[vars]` | — (default 500) | detector cost cap |
+| `DEEPFAKE_API_KEY` | secret | live T7 | real deepfake detector |
+| `DEEPFAKE_ROUTER_URL` | secret | live T7 | detector endpoint |
+| `RESEND_API_KEY` | secret | email | report email |
+| `RESEND_FROM` | secret | email | report email (verified sender) |
+
+Secrets are set with `wrangler secret put` and are **never** committed or placed
+in `wrangler.toml`. `.env.production` holds only the non-secret
+`VITE_WORKER_ORIGIN`.
 
 ## Add a level
 
