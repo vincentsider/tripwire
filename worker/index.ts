@@ -71,6 +71,12 @@ async function handleLead(req: Request, env: Env): Promise<Response> {
 }
 
 async function handleVerifyAudio(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  // Reject an oversized upload BEFORE anything else (cheap DoS guard; also avoids
+  // spending a rate-limit or daily-cap slot on a request we will not process).
+  const declaredLen = Number(req.headers.get('content-length') ?? '0');
+  if (Number.isFinite(declaredLen) && declaredLen > MAX_AUDIO_BYTES + 4096) {
+    return json({ error: 'audio_too_large' }, { status: 413, req, env });
+  }
   if (!(await checkRate(env, `${clientIp(req)}:verify`))) {
     return json({ error: 'rate_limited' }, { status: 429, req, env });
   }

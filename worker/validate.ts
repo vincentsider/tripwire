@@ -92,6 +92,10 @@ export function validateScorecard(body: unknown): Validated<ScorecardInsert> {
 // it becomes a row. Real deliverability is confirmed elsewhere.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// scorecard_id must be a real UUID, or the DB rejects it with a 502 instead of a
+// clean 400. Accept the canonical 8-4-4-4-12 hex form.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Validate a lead-capture body. Consent MUST be explicit true. */
 export function validateLead(body: unknown): Validated<LeadInsert> {
   if (!isObject(body)) return { ok: false, error: 'body must be an object' };
@@ -102,6 +106,8 @@ export function validateLead(body: unknown): Validated<LeadInsert> {
 
   const value: LeadInsert = { email: body.email, consent: true, source: 'tripwire' };
   if (str(body.agent_label, 1, 80)) value.agent_label = body.agent_label;
-  if (str(body.scorecard_id, 36, 36)) value.scorecard_id = body.scorecard_id;
+  if (typeof body.scorecard_id === 'string' && UUID_RE.test(body.scorecard_id)) {
+    value.scorecard_id = body.scorecard_id;
+  }
   return { ok: true, value };
 }

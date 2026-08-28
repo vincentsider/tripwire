@@ -151,6 +151,17 @@ describe('worker router', () => {
     expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
 
+  it('rejects an oversized upload early via Content-Length (413)', async () => {
+    const req = new Request('https://api.tripwire.test/api/verify-audio', {
+      method: 'POST',
+      headers: { 'Content-Length': String(2 * 1024 * 1024) }, // 2 MB
+      body: 'x',
+    });
+    const res = await worker.fetch(req, baseEnv({ DEEPFAKE_API_KEY: 'k' }), ctx);
+    expect(res.status).toBe(413);
+    expect(await res.json()).toMatchObject({ error: 'audio_too_large' });
+  });
+
   it('fails the detector closed (503) when no daily-cap KV is bound', async () => {
     const form = new FormData();
     form.append('audio', new Blob([new Uint8Array(1024)], { type: 'audio/webm' }), 'a.webm');

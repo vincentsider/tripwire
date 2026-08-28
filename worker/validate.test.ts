@@ -101,4 +101,24 @@ describe('validateLead', () => {
       expect('junk' in r.value).toBe(false);
     }
   });
+
+  it('accepts a valid UUID scorecard_id', () => {
+    const r = validateLead({
+      email: 'a@b.co',
+      consent: true,
+      scorecard_id: '55bd6bf0-da5f-4411-887e-d1e3a5533ef7',
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.scorecard_id).toBe('55bd6bf0-da5f-4411-887e-d1e3a5533ef7');
+  });
+
+  it('drops a non-UUID scorecard_id (would 502 at the DB otherwise)', () => {
+    const r = validateLead({
+      email: 'a@b.co',
+      consent: true,
+      scorecard_id: 'x'.repeat(36), // 36 chars but not a UUID
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect('scorecard_id' in r.value).toBe(false);
+  });
 });

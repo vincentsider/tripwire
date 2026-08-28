@@ -11,6 +11,7 @@ import { registerControlTools } from '../range/controlTools.ts';
 import { hostSource, isWebMcpAvailable } from '../webmcp/shim.ts';
 import { buildReport, sealReport } from '../range/report.ts';
 import { saveScorecard } from '../data/api.ts';
+import { shouldSaveRun } from './persist.ts';
 import type { HostSource } from '../webmcp/types.ts';
 import { Trace } from './Trace.tsx';
 import { Scorecard } from './Scorecard.tsx';
@@ -33,12 +34,33 @@ export function App() {
   const [scorecardId, setScorecardId] = useState<string | null>(null);
   const [leaderboardKey, setLeaderboardKey] = useState(0);
   const savingRef = useRef(false);
+  const lastSavedKeyRef = useRef<string | null>(null);
 
   const source = hostSource();
   const nativeHost = source === 'document' || source === 'navigator';
 
   // Subscribe to session state.
   useEffect(() => session.subscribe(setState), [session]);
+
+  // Persist EXACTLY ONCE whenever a run finishes — whether it was driven by the
+  // simulated-agent buttons or by a real agent via start_run / complete_level.
+  // Keyed by the run's generatedAt so a new run saves and a re-render does not.
+  useEffect(() => {
+    const runKey = session.generatedAt();
+    if (!shouldSaveRun(state.status, runKey, lastSavedKeyRef.current, savingRef.current)) return;
+    savingRef.current = true;
+    lastSavedKeyRef.current = runKey;
+    const label = session.getState().agentLabel || 'agent';
+    void (async () => {
+      try {
+        const id = await saveScorecard(session.scorecard(), label, session.corpusVersion);
+        setScorecardId(id);
+        if (id) setLeaderboardKey((k) => k + 1);
+      } finally {
+        savingRef.current = false;
+      }
+    })();
+  }, [state.status, state.results, session]);
 
   // Register the agent-facing control tools once; tear them down on unmount.
   useEffect(() => {
@@ -58,19 +80,9 @@ export function App() {
     if (state.status === 'running' || savingRef.current) return;
     setScorecardId(null);
     const label = agentLabel.trim() || (nativeHost ? 'Connected agent' : 'Simulated agent');
-    const scorecard = await session.run(kind, label);
-
-    // Persist (no-op when no backend). Guard against double-save.
-    if (!savingRef.current) {
-      savingRef.current = true;
-      try {
-        const id = await saveScorecard(scorecard, label, session.corpusVersion);
-        setScorecardId(id);
-        if (id) setLeaderboardKey((k) => k + 1);
-      } finally {
-        savingRef.current = false;
-      }
-    }
+    // The persistence effect saves the result when status flips to 'done',
+    // covering both simulated and agent-driven runs.
+    await session.run(kind, label);
   };
 
   const scorecard = session.scorecard();
