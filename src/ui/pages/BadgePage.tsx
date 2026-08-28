@@ -47,11 +47,13 @@ export function BadgePage() {
   const [theme, setTheme] = useState<Theme>('light');
   const [variant, setVariant] = useState<Variant>('default');
   const [origin, setOrigin] = useState('https://your-site.com');
+  const [mount, setMount] = useState('');
 
   const attrs = [
     `        data-origin="${origin || 'https://your-site.com'}"`,
     theme !== 'light' ? `        data-theme="${theme}"` : '',
     variant !== 'default' ? `        data-variant="${variant}"` : '',
+    mount.trim() ? `        data-mount="${mount.trim()}"` : '',
   ].filter(Boolean);
   const snippet = `<script src="${apiBase}/badge.js"\n${attrs.join('\n')}></script>`;
 
@@ -119,6 +121,28 @@ export function BadgePage() {
           spellCheck={false}
           autoCapitalize="none"
         />
+        <label className="card-title" htmlFor="badge-mount" style={{ display: 'block', margin: '16px 0 8px' }}>
+          Where it appears <span className="muted-3" style={{ fontWeight: 400 }}>(optional)</span>
+        </label>
+        <input
+          id="badge-mount"
+          className="field"
+          placeholder="#tripwire-badge   (a CSS selector — leave blank for inline)"
+          value={mount}
+          onChange={(e) => setMount(e.target.value)}
+          spellCheck={false}
+          autoCapitalize="none"
+        />
+        <p className="muted-3" style={{ fontSize: 12.5, margin: '8px 0 0' }}>
+          Leave blank and the badge appears inline, right where you paste the line — perfect for a page footer
+          or an About page. For a full-screen app (a 3D/2D world, a canvas UI), make a container where you want
+          it and name it here — e.g. <span className="mono">#tripwire-badge</span> for a fixed corner:
+        </p>
+        <CodeBlock
+          code={'<div id="tripwire-badge"\n     style="position:fixed;bottom:12px;right:12px;z-index:9999"></div>'}
+          label="mount container"
+        />
+
         <p className="muted" style={{ margin: '14px 0 0' }}>Paste this where you want the badge to appear:</p>
         <CodeBlock code={snippet} label="badge embed" />
       </div>

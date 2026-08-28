@@ -10,11 +10,15 @@
 // DOM. A tool-swap or cloak shows "tools changed", never a green seal. It never
 // verifies against a dev polyfill — only a native host counts as a live check.
 //
-// Presentation is customisable via data-attributes, but the VERDICT is not:
+// Presentation + placement are customisable via data-attributes, but the
+// VERDICT is not:
 //   data-theme   "light" (default) | "dark" | "auto" (follow prefers-color-scheme)
 //   data-variant "default" (dot + label + sub) | "compact" (dot + label only)
-// The tone/label always come from decideBadge, so a site can restyle the badge
-// but can never make it claim more than the signed, live-checked state allows.
+//   data-mount   CSS selector of an element to render INTO (default: right after
+//                this <script>). Use it to place the badge inside a full-screen
+//                app's own chrome — e.g. a fixed corner div.
+// The tone/label always come from decideBadge, so a site can restyle or reposition
+// the badge but can never make it claim more than the signed, live-checked state.
 
 import { fingerprintSurface } from '../range/fingerprint.ts';
 import { decideBadge, type BadgeStateJson, type Tone } from './decide.ts';
@@ -49,7 +53,45 @@ function themeVars(theme: Theme): string {
   return `:host{${light}}`;
 }
 
+/**
+ * Where to mount the badge. By default it inserts right after the <script> tag
+ * (so on a normal page it lands where you paste the line). With data-mount="<css
+ * selector>" it renders INTO the element you name instead — the way to place it
+ * inside a full-screen app's own HTML chrome (a fixed corner, a nav bar, a
+ * panel). The selector is the owner's own attribute; we querySelector it and
+ * append a node — never inject it as HTML.
+ */
+function waitForElement(sel: string, timeoutMs: number): Promise<Element | null> {
+  let first: Element | null = null;
+  try {
+    first = document.querySelector(sel);
+  } catch {
+    return Promise.resolve(null); // invalid selector
+  }
+  if (first) return Promise.resolve(first);
+  return new Promise((resolve) => {
+    const deadline = Date.now() + timeoutMs;
+    const iv = setInterval(() => {
+      const el = document.querySelector(sel);
+      if (el || Date.now() > deadline) {
+        clearInterval(iv);
+        resolve(el);
+      }
+    }, 200);
+  });
+}
+
+async function resolveMount(): Promise<{ parent: Node; before: Node | null }> {
+  const sel = scriptEl?.dataset.mount;
+  if (sel) {
+    const el = await waitForElement(sel, 6000);
+    if (el) return { parent: el, before: null };
+  }
+  return { parent: scriptEl?.parentNode ?? document.body, before: scriptEl?.nextSibling ?? null };
+}
+
 function render(
+  target: { parent: Node; before: Node | null },
   apiBase: string,
   origin: string,
   label: string,
@@ -58,8 +100,7 @@ function render(
   opts: { theme: Theme; compact: boolean },
 ): void {
   const mount = document.createElement('span');
-  const parent = scriptEl?.parentNode ?? document.body;
-  parent.insertBefore(mount, scriptEl?.nextSibling ?? null);
+  target.parent.insertBefore(mount, target.before);
   const shadow = mount.attachShadow({ mode: 'open' });
   const color = TONE_COLOR[tone];
   const href = `${apiBase}/api/badge?origin=${encodeURIComponent(origin)}`;
@@ -123,7 +164,8 @@ async function run(): Promise<void> {
   const compact = scriptEl?.dataset.variant === 'compact';
 
   const d = decideBadge(state, liveFingerprint);
-  render(apiBase, origin, d.label, d.tone, d.sub, { theme, compact });
+  const target = await resolveMount();
+  render(target, apiBase, origin, d.label, d.tone, d.sub, { theme, compact });
 }
 
 void run();
