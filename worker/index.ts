@@ -22,6 +22,8 @@ import {
   handleRevoke,
   handleBadge,
   handlePubkey,
+  handleManifest,
+  handleGetManifest,
 } from './badge.ts';
 import { validateScorecard, validateLead } from './validate.ts';
 import { insertScorecard, insertLead, topScorecards, getScorecardById } from './supabase.ts';
@@ -137,6 +139,7 @@ export default {
       '/api/audit/revoke',
       '/api/badge',
       '/api/pubkey',
+      '/api/manifest',
     ]);
 
     if (req.method === 'OPTIONS') {
@@ -161,6 +164,8 @@ export default {
       if (url.pathname === '/api/audit/revoke' && req.method === 'POST') return handleRevoke(req, env);
       if (url.pathname === '/api/badge' && req.method === 'GET') return handleBadge(req, env);
       if (url.pathname === '/api/pubkey' && req.method === 'GET') return handlePubkey(req, env);
+      if (url.pathname === '/api/manifest' && req.method === 'POST') return handleManifest(req, env);
+      if (url.pathname === '/api/manifest' && req.method === 'GET') return handleGetManifest(req, env);
       return json({ error: 'not_found' }, { status: 404, req, env });
     }
 

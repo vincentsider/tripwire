@@ -102,6 +102,44 @@ export async function getLatestAudit(env: Env, origin: string): Promise<AuditRow
   return rows[0] ?? null;
 }
 
+export interface ManifestInsert {
+  origin: string;
+  fingerprint: string;
+  manifest: unknown;
+  manifest_sha256: string;
+  signature: string;
+  key_id: string;
+}
+
+export async function insertManifest(env: Env, row: ManifestInsert): Promise<void> {
+  const resp = await fetch(sbUrl(env, 'manifests'), {
+    method: 'POST',
+    headers: sbHeaders(env, { Prefer: 'return=minimal' }),
+    body: JSON.stringify(row),
+  });
+  if (!resp.ok) throw new Error(`manifests insert failed: ${resp.status}`);
+}
+
+export async function getLatestManifest(
+  env: Env,
+  origin: string,
+): Promise<{ fingerprint: string; manifest: unknown; manifest_sha256: string; signature: string; key_id: string; signed_at: string } | null> {
+  const q =
+    `manifests?origin=eq.${encodeURIComponent(origin)}` +
+    '&select=fingerprint,manifest,manifest_sha256,signature,key_id,signed_at&order=signed_at.desc&limit=1';
+  const resp = await fetch(sbUrl(env, q), { headers: sbHeaders(env) });
+  if (!resp.ok) return null;
+  const rows = (await resp.json()) as Array<{
+    fingerprint: string;
+    manifest: unknown;
+    manifest_sha256: string;
+    signature: string;
+    key_id: string;
+    signed_at: string;
+  }>;
+  return rows[0] ?? null;
+}
+
 /** Revoke every audit for an origin (or one id). Returns rows affected count is not tracked. */
 export async function revokeAudits(env: Env, opts: { origin?: string; id?: string }): Promise<void> {
   const filter = opts.id

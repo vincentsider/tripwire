@@ -95,6 +95,47 @@ export type Database = {
         };
         Relationships: [];
       };
+      manifests: {
+        Row: {
+          fingerprint: string;
+          id: string;
+          key_id: string;
+          manifest: Json;
+          manifest_sha256: string;
+          origin: string;
+          signature: string;
+          signed_at: string;
+        };
+        Insert: {
+          fingerprint: string;
+          id?: string;
+          key_id: string;
+          manifest: Json;
+          manifest_sha256: string;
+          origin: string;
+          signature: string;
+          signed_at?: string;
+        };
+        Update: {
+          fingerprint?: string;
+          id?: string;
+          key_id?: string;
+          manifest?: Json;
+          manifest_sha256?: string;
+          origin?: string;
+          signature?: string;
+          signed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'manifests_origin_fkey';
+            columns: ['origin'];
+            isOneToOne: false;
+            referencedRelation: 'origins';
+            referencedColumns: ['origin'];
+          },
+        ];
+      };
       origins: {
         Row: {
           challenge_token: string;

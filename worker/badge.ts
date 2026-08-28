@@ -15,12 +15,24 @@ import {
   insertAudit,
   getLatestAudit,
   revokeAudits,
+  insertManifest,
+  getLatestManifest,
 } from './audits.ts';
 import { newChallengeToken, normalizeOrigin, checkOriginControl } from './originVerify.ts';
 import { signEd25519, keyId, isSigningConfigured } from './crypto.ts';
 import { analyzeSurface } from '../src/range/mode2.ts';
-import { fingerprintSurface } from '../src/range/fingerprint.ts';
+import { fingerprintSurface, stableStringify } from '../src/range/fingerprint.ts';
 import { buildSurfaceReport, sealSurfaceReport } from '../src/range/surfaceReport.ts';
+
+const FINGERPRINT_RE = /^[0-9a-f]{64}$/;
+
+async function sha256hex(s: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  const bytes = new Uint8Array(digest);
+  let hex = '';
+  for (const b of bytes) hex += b.toString(16).padStart(2, '0');
+  return hex;
+}
 import type { RegisteredTool } from '../src/webmcp/types.ts';
 
 const MAX_TOOLS = 300;
@@ -225,6 +237,65 @@ export async function handleBadge(req: Request, env: Env): Promise<Response> {
   if (!origin) return jsonPublic({ error: 'invalid origin' }, { status: 400, req });
   try {
     return jsonPublic(await computeBadgeState(env, origin), { req });
+  } catch {
+    return jsonPublic({ error: 'lookup_failed' }, { status: 502, req });
+  }
+}
+
+/** POST /api/manifest { origin, fingerprint, manifest } -> signed behaviour manifest (rung 1). */
+export async function handleManifest(req: Request, env: Env): Promise<Response> {
+  if (!(await checkRate(env, `${clientIp(req)}:manifest`))) {
+    return jsonPublic({ error: 'rate_limited' }, { status: 429, req });
+  }
+  if (!isSigningConfigured(env)) return jsonPublic({ error: 'signing_unavailable' }, { status: 503, req });
+
+  const body = await readJson(req);
+  if (!body || typeof body !== 'object') return jsonPublic({ error: 'invalid body' }, { status: 400, req });
+  const b = body as Record<string, unknown>;
+  const origin = normalizeOrigin(b.origin);
+  if (!origin) return jsonPublic({ error: 'invalid origin' }, { status: 400, req });
+
+  const reqOrigin = req.headers.get('Origin');
+  if (!reqOrigin || normalizeOrigin(reqOrigin) !== origin) {
+    return jsonPublic({ error: 'manifest must be published from the origin' }, { status: 403, req });
+  }
+  const o = await getOrigin(env, origin);
+  if (!o || !o.verified_at) return jsonPublic({ error: 'origin not verified' }, { status: 403, req });
+
+  const fingerprint = typeof b.fingerprint === 'string' && FINGERPRINT_RE.test(b.fingerprint) ? b.fingerprint : null;
+  if (!fingerprint) return jsonPublic({ error: 'invalid fingerprint' }, { status: 400, req });
+  if (!b.manifest || typeof b.manifest !== 'object' || Array.isArray(b.manifest)) {
+    return jsonPublic({ error: 'manifest must be an object' }, { status: 400, req });
+  }
+
+  // Sign the canonical {origin, fingerprint, manifest}. Tripwire attests the site
+  // MADE these claims and binds them to the surface — it does not prove them true.
+  const canonical = stableStringify({ origin, fingerprint, manifest: b.manifest });
+  const manifestSha256 = await sha256hex(canonical);
+  const signature = await signEd25519(env, canonical);
+
+  try {
+    await insertManifest(env, {
+      origin,
+      fingerprint,
+      manifest: b.manifest,
+      manifest_sha256: manifestSha256,
+      signature,
+      key_id: keyId(env),
+    });
+  } catch {
+    return jsonPublic({ error: 'persist_failed' }, { status: 502, req });
+  }
+  return jsonPublic({ origin, fingerprint, manifestSha256, signature, keyId: keyId(env) }, { req });
+}
+
+/** GET /api/manifest?origin=... -> the latest signed manifest, or null. */
+export async function handleGetManifest(req: Request, env: Env): Promise<Response> {
+  const origin = normalizeOrigin(new URL(req.url).searchParams.get('origin'));
+  if (!origin) return jsonPublic({ error: 'invalid origin' }, { status: 400, req });
+  try {
+    const m = await getLatestManifest(env, origin);
+    return jsonPublic(m ? { origin, ...m } : { origin, manifest: null }, { req });
   } catch {
     return jsonPublic({ error: 'lookup_failed' }, { status: 502, req });
   }

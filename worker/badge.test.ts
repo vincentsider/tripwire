@@ -61,6 +61,9 @@ function stubDb(opts: { verified?: boolean; audit?: Record<string, unknown> | nu
       if (url.includes('/rest/v1/tool_audits') && method === 'PATCH') {
         return new Response(null, { status: 204 });
       }
+      if (url.includes('/rest/v1/manifests') && method === 'POST') {
+        return new Response(null, { status: 201 });
+      }
       throw new Error(`unexpected fetch: ${method} ${url}`);
     }),
   );
@@ -175,6 +178,31 @@ describe('Mode 2 — verify-origin + revoke + pubkey', () => {
     expect(bad.status).toBe(403);
     const good = await worker.fetch(post('/api/audit/revoke', { origin: AUDITED }, { 'x-admin-token': 'admin-secret' }), env(), ctx);
     expect(good.status).toBe(200);
+  });
+
+  it('signs a behaviour manifest for a verified origin (rung 1)', async () => {
+    stubDb({ verified: true });
+    const fp = 'a'.repeat(64);
+    const manifest = { tools: [{ name: 'search_docs', reads: ['query'], sends: [], stores: 'nothing' }] };
+    const res = await worker.fetch(
+      post('/api/manifest', { origin: AUDITED, fingerprint: fp, manifest }, { Origin: AUDITED }),
+      env(),
+      ctx,
+    );
+    expect(res.status).toBe(200);
+    const out = (await res.json()) as { manifestSha256: string; signature: string };
+    expect(out.manifestSha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(out.signature.length).toBeGreaterThan(0);
+  });
+
+  it('rejects a manifest for an unverified origin (403)', async () => {
+    stubDb({ verified: false });
+    const res = await worker.fetch(
+      post('/api/manifest', { origin: AUDITED, fingerprint: 'a'.repeat(64), manifest: {} }, { Origin: AUDITED }),
+      env(),
+      ctx,
+    );
+    expect(res.status).toBe(403);
   });
 
   it('serves the public key', async () => {
