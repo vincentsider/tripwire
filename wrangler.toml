@@ -17,6 +17,12 @@ compatibility_date = "2026-08-01"
 # @cloudflare/puppeteer (Browser Rendering) imports node:buffer etc.
 compatibility_flags = ["nodejs_compat"]
 
+# Canonical custom domain. Keep the workers.dev URL serving too (workers_dev =
+# true) so existing badge embeds pointed at it do not break during the move.
+# Requires the deepblocker.ai zone on this account.
+workers_dev = true
+routes = [{ pattern = "tripwire.deepblocker.ai", custom_domain = true }]
+
 # Static SPA. The Worker handles /api/*; everything else falls through to assets,
 # and unknown routes serve index.html for client-side routing.
 [assets]

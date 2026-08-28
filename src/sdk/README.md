@@ -17,7 +17,7 @@ const preview = await selfAuditPreview();     // findings + Assurance Score, in-
 const result  = await audit();                // signed report; must run on the audited origin
 
 // 3. Show the live badge:
-// <script src="https://tripwire.vincent-7e0.workers.dev/badge.js" data-origin="https://your.site"></script>
+// <script src="https://tripwire.deepblocker.ai/badge.js" data-origin="https://your.site"></script>
 ```
 
 `probeSurface()` runs the optional **leak probe** (rung 2): it EXECUTES your tools
