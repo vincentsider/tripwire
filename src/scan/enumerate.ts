@@ -1,16 +1,17 @@
-// scan/src/enumerate.ts
+// src/scan/enumerate.ts
 //
-// Two pure, testable pieces of the headless scan:
+// Two pure, testable pieces of a headless scan, shared by the Worker's
+// Browser-Rendering scan (worker/browserScan.ts):
 //
-//   enumerateInPage  — runs INSIDE the target page (serialized by Playwright).
+//   enumerateInPage  — runs INSIDE the target page (serialized to the browser).
 //                      Finds a WebMCP host and reads its raw tool descriptors.
-//   normalizeSurface — runs in Node on the raw result: coerces + caps every
-//                      field so a hostile page cannot return something huge or
-//                      weird. The Tripwire Worker still re-validates strictly.
+//   normalizeSurface — runs in the Worker on the raw result: coerces + caps
+//                      every field so a hostile page cannot return something
+//                      huge or weird. The Worker then re-validates strictly.
 //
-// Neither piece trusts the page: the page's descriptors are DATA. We copy only
-// the declared fields (name/description/inputSchema/annotations), never execute
-// a tool, and never keep a function reference.
+// Neither piece trusts the page: descriptors are DATA. We copy only the declared
+// fields (name/description/inputSchema/annotations), never execute a tool, and
+// never keep a function reference.
 
 export const MAX_TOOLS = 300;
 export const MAX_NAME = 128;
@@ -34,7 +35,7 @@ export interface NormalTool {
 /**
  * Executed in the page context. Polls for a WebMCP host for up to `waitMs`,
  * then returns the raw tool list. Must be self-contained (no closure over
- * module scope) because Playwright serializes it to a string.
+ * module scope) because it is serialized to a string for the browser.
  */
 export async function enumerateInPage(waitMs: number): Promise<RawScan> {
   const deadline = Date.now() + waitMs;

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { enumerateInPage, normalizeSurface, MAX_TOOLS, type RawScan } from './enumerate.js';
+import { enumerateInPage, normalizeSurface, MAX_TOOLS, type RawScan } from './enumerate.ts';
 
 // enumerateInPage reads the global `window`; simulate it in Node.
 function setWindow(w: unknown): void {

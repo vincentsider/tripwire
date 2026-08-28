@@ -2,12 +2,12 @@
 //
 // Self-serve URL scan (item 10) + operator audit-from-scan (item 11).
 //
-// The Worker cannot run a headless browser, so it delegates enumeration to a
-// small out-of-band Playwright service (see ../scan/). That service opens the
-// URL in a real browser, reads document.modelContext.getTools(), and returns
-// the raw surface. The service is UNTRUSTED transport: the Worker re-validates
-// the tools and RE-DERIVES the fingerprint + findings itself, exactly as it
-// does for an SDK self-report. Two endpoints, two trust levels:
+// The scan runs INSIDE the Worker via Cloudflare Browser Rendering (see
+// ./browserScan.ts): a managed headless Chromium opens the URL, the page's own
+// JS runs, and we read document.modelContext.getTools(). The browser is an
+// OBSERVER only: the Worker re-validates the tools and RE-DERIVES the
+// fingerprint + findings itself, exactly as it does for an SDK self-report.
+// Two endpoints, two trust levels:
 //
 //   POST /api/scan            public, best-effort, returns an UNSIGNED preview.
 //                             A scan never mints a badge — no ownership proof.
@@ -23,19 +23,12 @@ import { checkRate, clientIp } from './limits.ts';
 import { validateTools } from './badge.ts';
 import { getOrigin, insertAudit } from './audits.ts';
 import { signEd25519, keyId, isSigningConfigured } from './crypto.ts';
+import { scanWithBrowser } from './browserScan.ts';
 import { analyzeSurface } from '../src/range/mode2.ts';
 import { fingerprintSurface } from '../src/range/fingerprint.ts';
 import { buildSurfaceReport, sealSurfaceReport } from '../src/range/surfaceReport.ts';
 
 const MAX_URL_LEN = 2048;
-const SCAN_TIMEOUT_MS = 30_000;
-
-/** The shape the scan service returns. `host` says how tools were found. */
-export interface ScanServiceResult {
-  host: 'native' | 'polyfill' | 'none' | 'error';
-  tools?: unknown;
-  error?: string;
-}
 
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -56,33 +49,6 @@ function validateTarget(input: unknown): { url: string; origin: string } | null 
   }
 }
 
-/** Ask the headless service to enumerate the page's WebMCP surface. */
-async function fetchScannedSurface(env: Env, url: string): Promise<ScanServiceResult> {
-  const base = env.SCAN_SERVICE_URL?.replace(/\/$/, '');
-  if (!base) return { host: 'error', error: 'scan_unavailable' };
-  const c = new AbortController();
-  const t = setTimeout(() => c.abort(), SCAN_TIMEOUT_MS);
-  try {
-    const resp = await fetch(`${base}/scan`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(env.SCAN_SERVICE_TOKEN ? { authorization: `Bearer ${env.SCAN_SERVICE_TOKEN}` } : {}),
-      },
-      body: JSON.stringify({ url }),
-      signal: c.signal,
-    });
-    if (!resp.ok) return { host: 'error', error: `scan_http_${resp.status}` };
-    const body = (await resp.json()) as ScanServiceResult;
-    if (!body || typeof body.host !== 'string') return { host: 'error', error: 'scan_bad_response' };
-    return body;
-  } catch {
-    return { host: 'error', error: 'scan_unreachable' };
-  } finally {
-    clearTimeout(t);
-  }
-}
-
 const SCAN_NOTE =
   'External scan: enumerated from an out-of-band headless browser, limited to what an unauthenticated visitor can see. ' +
   'This is NOT a verified badge — heuristic findings are indicative only, and a signed badge requires proven origin control.';
@@ -92,13 +58,13 @@ export async function handleScan(req: Request, env: Env): Promise<Response> {
   if (!(await checkRate(env, `${clientIp(req)}:scan`))) {
     return jsonPublic({ error: 'rate_limited' }, { status: 429, req });
   }
-  if (!env.SCAN_SERVICE_URL) return jsonPublic({ error: 'scan_unavailable' }, { status: 503, req });
+  if (!env.BROWSER) return jsonPublic({ error: 'scan_unavailable' }, { status: 503, req });
 
   const body = await readJsonSmall(req);
   const target = validateTarget((body as { url?: unknown })?.url);
   if (!target) return jsonPublic({ error: 'invalid url' }, { status: 400, req });
 
-  const scan = await fetchScannedSurface(env, target.url);
+  const scan = await scanWithBrowser(env, target.url);
   if (scan.host === 'error') {
     return jsonPublic({ error: scan.error ?? 'scan_failed' }, { status: 502, req });
   }
@@ -144,7 +110,7 @@ export async function handleAuditFromScan(req: Request, env: Env): Promise<Respo
     return jsonPublic({ error: 'forbidden' }, { status: 403, req });
   }
   if (!isSigningConfigured(env)) return jsonPublic({ error: 'signing_unavailable' }, { status: 503, req });
-  if (!env.SCAN_SERVICE_URL) return jsonPublic({ error: 'scan_unavailable' }, { status: 503, req });
+  if (!env.BROWSER) return jsonPublic({ error: 'scan_unavailable' }, { status: 503, req });
 
   const body = await readJsonSmall(req);
   const target = validateTarget((body as { url?: unknown })?.url);
@@ -156,7 +122,7 @@ export async function handleAuditFromScan(req: Request, env: Env): Promise<Respo
     return jsonPublic({ error: 'origin not verified — complete /api/verify-origin first' }, { status: 403, req });
   }
 
-  const scan = await fetchScannedSurface(env, target.url);
+  const scan = await scanWithBrowser(env, target.url);
   if (scan.host === 'error') return jsonPublic({ error: scan.error ?? 'scan_failed' }, { status: 502, req });
   if (scan.host === 'none') return jsonPublic({ error: 'no_webmcp_host' }, { status: 422, req });
   const tools = validateTools(scan.tools);
