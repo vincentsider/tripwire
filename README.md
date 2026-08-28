@@ -72,6 +72,31 @@ behaviour. The buttons run a simulated agent for a repeatable, no-model demo.
 
 To drive it with a real agent, open the deployed URL in **ChatGPT's in-app browser**, or in **Chrome** with `chrome://flags/#enable-webmcp-testing` enabled, then ask your agent to "run the Tripwire gauntlet." Where no native WebMCP host is present, a built-in polyfill (`src/webmcp/polyfill.ts`) keeps the app runnable for development.
 
+## Mode 2: audit a site's tools + issue a live badge
+
+Mode 1 tests an **agent**. Mode 2 audits a **site's** WebMCP tools and issues a
+signed, revocable, fingerprint-bound **badge** — "SSL Labs grade" for the agent web.
+
+- **Static analysis** (`src/range/mode2.ts`): the T1–T7 corpus turned around as a
+  descriptor lint. Heuristic smells are PARTIAL; only an *observed* violation FAILs.
+- **Fingerprint** (`src/range/fingerprint.ts`): a deterministic SHA-256 of the
+  surface. The badge binds to it and re-checks it at use, catching tool-swap/cloak.
+- **Signed report + badge** (Ed25519, public key in `public-key.json` and at
+  `/api/pubkey`): a report verifies **offline**; the live badge (`/badge.js`,
+  a same-origin script) recomputes the on-page fingerprint and shows verified /
+  tools-changed / revoked — never a false green.
+- **Origin ownership**: a public badge requires a well-known-file or DNS-TXT proof.
+- **SDK** (`@tripwire/audit`, `src/sdk`): a site self-audits and submits; the
+  Worker independently re-derives the fingerprint + findings before signing.
+- **Agent preflight** (`preflight(origin, tools)`): a consumer/hub verifies a
+  badged site's live surface against the signed fingerprint before trusting it.
+- **Rung 1** (`/api/manifest`): a signed behaviour manifest (accountability).
+  **Rung 2** (leak probe in the SDK): watch a canary escape cross-origin.
+
+Endpoints: `POST /api/verify-origin[/confirm]` · `POST /api/audit` · `GET /api/badge`
+(= the hub's `check_badge`) · `POST /api/manifest` · `GET /api/pubkey` ·
+`POST /api/audit/revoke` (admin). Schema in `supabase/migrations/0002`–`0003`.
+
 ## Architecture
 
 ```
