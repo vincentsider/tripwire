@@ -16,13 +16,12 @@ export function App() {
         <Outlet />
       </main>
       {!isLanding && (
-        <footer style={{ borderTop: '1px solid var(--hair)' }}>
-          <div
-            className="page"
-            style={{ paddingTop: 18, paddingBottom: 28, fontSize: 12, color: 'var(--ink-3)', display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'space-between' }}
-          >
-            <span>Open source (Apache-2.0). Inert payloads only — see SECURITY.md. A DeepBlocker project.</span>
-            <a href="https://github.com/vincentsider/tripwire" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink-2)' }}>
+        <footer className="app-foot">
+          <div className="app-foot-inner">
+            <span>Open source · Apache-2.0 · engineered by{' '}
+              <a href="https://deepblocker.ai" target="_blank" rel="noopener noreferrer">DeepBlocker</a>
+            </span>
+            <a href="https://github.com/vincentsider/tripwire" target="_blank" rel="noopener noreferrer">
               github.com/vincentsider/tripwire
             </a>
           </div>

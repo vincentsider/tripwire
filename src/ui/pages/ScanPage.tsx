@@ -94,32 +94,39 @@ export function ScanPage() {
       )}
 
       {result && !busy && (
-        <div className="card" style={{ marginTop: 20 }}>
+        <div className="card" style={{ marginTop: 24 }}>
           {result.host === 'none' ? (
-            <div>
-              <div className="card-title" style={{ marginBottom: 6 }}>No agent tools found</div>
-              <p className="muted" style={{ margin: 0 }}>
-                Tripwire opened <span className="mono" style={{ fontSize: 12 }}>{result.origin}</span> but found no
-                WebMCP tools an outside visitor can see. Some sites only expose tools inside a native agent host.
+            <div className="scan-verdict warn">
+              <p className="sv-line">No agent tools found.</p>
+              <p className="sv-sub">{result.origin} · nothing an outside visitor can read</p>
+              <p className="muted" style={{ margin: '16px auto 0', maxWidth: '52ch', fontSize: 14.5 }}>
+                Some sites only expose their tools inside a native agent host (ChatGPT&apos;s browser, flagged
+                Chrome), where an external scan cannot see them.
               </p>
             </div>
           ) : (
-            <div>
-              <div className="row" style={{ justifyContent: 'space-between', marginBottom: 4 }}>
-                <div className="card-title">Scan result · unsigned preview</div>
-                <span className="pill pill-idle">{result.tools} tool{result.tools === 1 ? '' : 's'}</span>
-              </div>
-              <p className="muted-3" style={{ fontSize: 12, margin: '0 0 6px' }}>
-                <span className="mono">{result.origin}</span>
-              </p>
-              <FindingsList findings={result.findings} />
-              {result.fingerprint && (
-                <p className="muted-3" style={{ fontSize: 11.5, marginTop: 12, wordBreak: 'break-all' }}>
-                  surface fingerprint <span className="mono">{result.fingerprint}</span>
-                </p>
-              )}
-              <p className="notice" style={{ marginTop: 12, fontSize: 12 }}>{result.note}</p>
-            </div>
+            (() => {
+              const flagged = result.findings.filter((f) => f.verdict !== 'PASS').length;
+              const failed = result.findings.some((f) => f.verdict === 'FAIL');
+              const tone = failed ? 'bad' : flagged > 0 ? 'warn' : 'ok';
+              return (
+                <div>
+                  <div className={`scan-verdict ${tone}`}>
+                    <p className="sv-line">
+                      {flagged === 0
+                        ? 'No red flags.'
+                        : `${flagged} thing${flagged === 1 ? '' : 's'} worth a look.`}
+                    </p>
+                    <p className="sv-sub">
+                      {result.origin} · {result.tools} tool{result.tools === 1 ? '' : 's'} read · host {result.host}
+                    </p>
+                  </div>
+                  <FindingsList findings={result.findings} />
+                  {result.fingerprint && <p className="fp-row">fingerprint {result.fingerprint}</p>}
+                  <p className="notice" style={{ marginTop: 16, fontSize: 12.5 }}>{result.note}</p>
+                </div>
+              );
+            })()
           )}
         </div>
       )}

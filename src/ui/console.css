@@ -327,3 +327,111 @@
 .console .grid-main {
   gap: 24px;
 }
+
+/* ── Palette vars: components style via var(--…) inline, so redefining the
+   theme tokens inside .console re-skins Trace/Scorecard/Leaderboard for free. */
+.console {
+  --bg: transparent;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(2, 16, 32, 0.55);
+  --hair: rgba(255, 255, 255, 0.12);
+  --hair-2: rgba(255, 255, 255, 0.2);
+  --ink: #f4f8ff;
+  --ink-2: #a9cfec;
+  --ink-3: #7fa8c8;
+  --signal: #22d3ee;
+  --signal-bright: #67e8f9;
+  --signal-strong: #0e7490;
+  --signal-soft: rgba(34, 211, 238, 0.14);
+  --ok: #34e0b4;
+  --ok-soft: rgba(52, 224, 180, 0.14);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.14);
+  --danger: #fb5b76;
+  --danger-soft: rgba(251, 91, 118, 0.15);
+  --red-team: #ff8fa1;
+}
+
+/* ── Scan verdict (result hero) ───────────────────────────────────────── */
+.scan-verdict {
+  text-align: center;
+  padding: 6px 0 18px;
+}
+.scan-verdict .sv-line {
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0;
+}
+.scan-verdict.ok .sv-line {
+  color: #67e8f9;
+  text-shadow: 0 0 40px rgba(34, 211, 238, 0.45);
+}
+.scan-verdict.warn .sv-line {
+  color: #ffd9a0;
+  text-shadow: 0 0 40px rgba(251, 191, 36, 0.35);
+}
+.scan-verdict.bad .sv-line {
+  color: #ffb3ba;
+  text-shadow: 0 0 40px rgba(251, 91, 118, 0.35);
+}
+.scan-verdict .sv-sub {
+  margin: 10px 0 0;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #7fa8c8;
+}
+.console .finding {
+  padding: 15px 17px;
+  border-left: 3px solid transparent;
+}
+.console .finding:has(.pill-partial) {
+  border-left-color: rgba(251, 191, 36, 0.6);
+}
+.console .finding:has(.pill-fail) {
+  border-left-color: rgba(251, 91, 118, 0.65);
+}
+.console .finding .fname {
+  font-size: 13.5px;
+}
+.console .finding .fev {
+  font-size: 14px;
+  line-height: 1.55;
+}
+.console .fp-row {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+  color: #7fa8c8;
+  word-break: break-all;
+  margin: 14px 0 0;
+}
+
+/* ── App footer on console pages ──────────────────────────────────────── */
+.app-foot {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(1, 10, 22, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.app-foot-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 22px clamp(20px, 5vw, 64px) 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  color: #7fa8c8;
+}
+.app-foot-inner a {
+  color: #67e8f9;
+  text-decoration: none;
+}
+.app-foot-inner a:hover {
+  color: #fff;
+}

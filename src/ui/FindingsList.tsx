@@ -29,11 +29,6 @@ export function FindingsList({ findings }: { findings: ScanFinding[] }) {
 
   return (
     <div>
-      <div className="muted" style={{ fontSize: 13 }}>
-        {flagged.length === 0
-          ? `No red flags. ${passed} checks passed.`
-          : `${flagged.length} thing${flagged.length === 1 ? '' : 's'} worth a look · ${passed} checks passed.`}
-      </div>
       {flagged.length > 0 && (
         <div className="findings">
           {flagged.map((f, i) => (
@@ -48,6 +43,9 @@ export function FindingsList({ findings }: { findings: ScanFinding[] }) {
           ))}
         </div>
       )}
+      <div className="muted-3" style={{ fontSize: 12.5, marginTop: 12, fontFamily: 'var(--mono, monospace)' }}>
+        {passed} check{passed === 1 ? '' : 's'} passed
+      </div>
     </div>
   );
 }
