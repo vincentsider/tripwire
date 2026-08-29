@@ -196,6 +196,17 @@ The browser only observes (it reads declared tool descriptors, never runs a
 tool); the Worker re-validates and re-derives everything, and signs nothing that
 lacks origin ownership.
 
+### 6. Optional — native WebMCP in Chrome (origin trial)
+
+Mode 1 registers real WebMCP tools. A visiting agent can use them if its browser
+exposes a native host — an extension, or Chrome with the WebMCP feature on. To
+turn that on for your visitors *without* a `chrome://flags` step, register a
+[Chrome origin trial](https://developer.chrome.com/origintrials/) for the WebMCP
+feature on your origin and serve the token as an `Origin-Trial` response header
+(see the commented entry in `public/_headers`). Subdomain-match / third-party
+tokens **must** travel as a header, not a `<meta>` tag. The polyfill stays as the
+universal fallback, so the in-page demo works with or without the trial.
+
 ### Configuration reference
 
 | Name | Where | Needed for | Enables |

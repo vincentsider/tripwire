@@ -178,7 +178,10 @@ export default {
     }
 
     // Everything else is the SPA. not_found_handling=single-page-application
-    // in wrangler.toml serves index.html for client-side routes.
+    // in wrangler.toml serves index.html for client-side routes. The WebMCP
+    // origin-trial token is attached via public/_headers (the asset server serves
+    // static files directly, bypassing this handler, so a header set here would
+    // not reach them).
     if (env.ASSETS) return env.ASSETS.fetch(req);
     return new Response('Not found', { status: 404 });
   },

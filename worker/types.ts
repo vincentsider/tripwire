@@ -57,6 +57,8 @@ export interface Env {
   // Mode 2 signing + admin (secrets).
   ED25519_PRIVATE_KEY?: string; // PKCS8, base64 — signs badges/reports
   ADMIN_TOKEN?: string; // gates POST /api/audit/revoke and /api/audit/from-scan
+  // (The Chrome WebMCP origin-trial token is served via public/_headers, not here —
+  //  the asset server bypasses the Worker for static files.)
 
   // Bindings.
   RATE_LIMITER?: RateLimiter;
