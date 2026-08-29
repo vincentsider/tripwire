@@ -26,6 +26,12 @@ import {
   handleGetManifest,
 } from './badge.ts';
 import { handleScan, handleAuditFromScan, handleAuditSelf } from './scan.ts';
+import {
+  fingerprintSurface,
+  FINGERPRINT_ALGO,
+  FINGERPRINT_GOLDEN_SURFACE,
+  FINGERPRINT_GOLDEN_HASH,
+} from '../src/range/fingerprint.ts';
 import { validateScorecard, validateLead } from './validate.ts';
 import { insertScorecard, insertLead, topScorecards, getScorecardById } from './supabase.ts';
 import { sendReportEmail, isEmailConfigured } from './email.ts';
@@ -155,6 +161,22 @@ export default {
       if (url.pathname === '/api/health' && req.method === 'GET') {
         ctx.waitUntil(warmDetector(env));
         return json({ ok: true, service: 'tripwire' }, { req, env });
+      }
+      // Fingerprint drift tripwire: the DEPLOYED worker recomputes the golden
+      // surface and reports whether it still matches the pin. badge.js imports
+      // the same module, so a mismatch here means the two bundles have drifted
+      // (Bug 2). A monitor can poll this after every deploy.
+      if (url.pathname === '/api/fingerprint-selftest' && req.method === 'GET') {
+        const actual = await fingerprintSurface(FINGERPRINT_GOLDEN_SURFACE);
+        return json(
+          {
+            algo: FINGERPRINT_ALGO,
+            expected: FINGERPRINT_GOLDEN_HASH,
+            actual,
+            ok: actual === FINGERPRINT_GOLDEN_HASH,
+          },
+          { req, env, status: actual === FINGERPRINT_GOLDEN_HASH ? 200 : 500 },
+        );
       }
       if (url.pathname === '/api/scorecard' && req.method === 'POST') return handleScorecard(req, env);
       if (url.pathname === '/api/leaderboard' && req.method === 'GET') return handleLeaderboard(req, env);

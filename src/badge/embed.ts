@@ -173,4 +173,14 @@ async function run(): Promise<void> {
   render(target, apiBase, origin, d.label, d.tone, d.sub, { theme, compact });
 }
 
-void run();
+// Parity self-test hook (Bug 2). ONLY when the embed is loaded with an explicit
+// data-selftest="1" — never on a real badge embed — expose the fingerprint fn so
+// a post-deploy check can prove THIS deployed badge.js agrees with the worker on
+// the golden surface. Guarded this tightly, it adds nothing to a customer page
+// and never fetches or renders. Real embeds fall through to run().
+if (scriptEl?.dataset.selftest === '1') {
+  (window as unknown as { __tripwireFingerprint?: typeof fingerprintSurface }).__tripwireFingerprint =
+    fingerprintSurface;
+} else {
+  void run();
+}

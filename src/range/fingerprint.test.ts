@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { fingerprintSurface, canonicalSurface, stableStringify } from './fingerprint.ts';
+import {
+  fingerprintSurface,
+  canonicalSurface,
+  stableStringify,
+  FINGERPRINT_GOLDEN_SURFACE,
+  FINGERPRINT_GOLDEN_HASH,
+} from './fingerprint.ts';
 import type { RegisteredTool } from '../webmcp/types.ts';
 
 const surface: RegisteredTool[] = [
@@ -68,11 +74,6 @@ describe('surface fingerprint', () => {
     expect(await fingerprintSurface([surface[0]!])).not.toBe(base);
   });
 
-  it('distinguishes cross-origin exposure (origin field)', async () => {
-    const withOrigin: RegisteredTool[] = [surface[0]!, { ...surface[1]!, origin: 'https://partner.example' }];
-    expect(await fingerprintSurface(withOrigin)).not.toBe(await fingerprintSurface(surface));
-  });
-
   it('an empty surface has a stable fingerprint', async () => {
     expect(await fingerprintSurface([])).toBe(await fingerprintSurface([]));
   });
@@ -86,5 +87,109 @@ describe('surface fingerprint', () => {
   it('stableStringify sorts object keys', () => {
     expect(stableStringify({ b: 1, a: 2 })).toBe('{"a":2,"b":1}');
     expect(stableStringify([3, { y: 1, x: 2 }])).toBe('[3,{"x":2,"y":1}]');
+  });
+});
+
+// --- Host-invariance: the central Bug-1 guarantee -------------------------
+//
+// A native WebMCP host (Chrome, once the origin trial shipped) decorates every
+// tool it hands back with `origin`, `title`, and even a self-referential
+// `window`. The polyfill (Safari, Firefox, headless mint) does not. The badge
+// only verifies if the fingerprint computed at MINT (worker, polyfill-ish) and
+// the fingerprint computed at VERIFY (visitor's native host) are equal for the
+// same declared tools. So host decoration MUST NOT move the hash — otherwise no
+// badge could ever read "tools verified" for a Chrome visitor. Caught in the
+// field by customer zero, openclawcity.ai.
+describe('surface fingerprint — host decoration is invisible', () => {
+  // Build a native-host view of the SAME surface: each tool carries the host's
+  // stamped origin/title plus a circular back-reference, as Chrome's host does.
+  function asNativeHostView(tools: RegisteredTool[]): RegisteredTool[] {
+    return tools.map((t) => {
+      const decorated = {
+        ...t,
+        origin: 'https://site.example',
+        title: `${t.name} (from https://site.example)`,
+      } as RegisteredTool & { window?: unknown };
+      // A circular reference, like a stamped window that points back at itself.
+      const win: Record<string, unknown> = { self: null };
+      win.self = win;
+      decorated.window = win;
+      return decorated;
+    });
+  }
+
+  it('the same tools fingerprint identically with or without host stamps', async () => {
+    const bare = await fingerprintSurface(surface);
+    const native = await fingerprintSurface(asNativeHostView(surface));
+    expect(native).toBe(bare);
+  });
+
+  it('a stamped origin alone does not change the fingerprint', async () => {
+    const withOrigin: RegisteredTool[] = [surface[0]!, { ...surface[1]!, origin: 'https://partner.example' }];
+    expect(await fingerprintSurface(withOrigin)).toBe(await fingerprintSurface(surface));
+  });
+
+  it('a self-referential (circular) tool does not hang and stays deterministic', async () => {
+    const circular = { name: 'loop', description: 'x' } as RegisteredTool & { annotations: unknown };
+    const ann: Record<string, unknown> = {};
+    ann.back = ann; // annotations point at themselves
+    circular.annotations = ann;
+    const a = await fingerprintSurface([circular]);
+    const b = await fingerprintSurface([circular]);
+    expect(a).toBe(b);
+    expect(a).toMatch(/^[0-9a-f]{64}$/);
+  });
+});
+
+// --- Shared references (DAG, not a cycle) are structural, not identity -----
+//
+// The circular guard is PATH-SCOPED: it breaks only an object that is its own
+// ancestor. A sub-object referenced by two sibling tools is a DAG, not a cycle,
+// and must serialise in full both times — so a surface hashes the same whether
+// the host shared one schema object or handed back two equal copies. Mint and
+// verify build tool objects independently and may share references differently;
+// without path-scoping they could diverge on identical declared tools.
+describe('surface fingerprint — shared references hash like duplicated equals', () => {
+  it('a shared schema object hashes the same as two equal copies', async () => {
+    const shared = { type: 'object', properties: { q: { type: 'string' } } };
+    const withSharing: RegisteredTool[] = [
+      { name: 'a_tool', description: 'A', inputSchema: shared },
+      { name: 'b_tool', description: 'B', inputSchema: shared },
+    ];
+    const withCopies: RegisteredTool[] = [
+      { name: 'a_tool', description: 'A', inputSchema: { type: 'object', properties: { q: { type: 'string' } } } },
+      { name: 'b_tool', description: 'B', inputSchema: { type: 'object', properties: { q: { type: 'string' } } } },
+    ];
+    expect(await fingerprintSurface(withSharing)).toBe(await fingerprintSurface(withCopies));
+  });
+});
+
+// --- Golden vector: locks the canonical form across BOTH deployed bundles --
+//
+// The worker (mint + scan) and the browser badge.js both import THIS module.
+// Bug 2 was the two deployed artifacts disagreeing on an identical payload
+// because they were built from different trees. This pinned hash makes any
+// change to the canonical form a loud, intentional test failure — so a stale
+// build can never silently ship a fingerprint the other side won't match.
+// If you change canonicalisation on purpose, update this value in the same
+// commit and rebuild/redeploy the worker AND badge.js together.
+describe('surface fingerprint — pinned golden vector (drift tripwire)', () => {
+  // Reference surface + pin come from the module itself — the same constants
+  // the worker's /api/fingerprint-selftest asserts against — so build-time and
+  // run-time verify one source of truth.
+  const GOLDEN_SURFACE = FINGERPRINT_GOLDEN_SURFACE;
+  const GOLDEN_HASH = FINGERPRINT_GOLDEN_HASH;
+
+  it('the reference surface still hashes to the pinned value', async () => {
+    expect(await fingerprintSurface(GOLDEN_SURFACE)).toBe(GOLDEN_HASH);
+  });
+
+  it('and a native-host view of it also hashes to the pinned value', async () => {
+    const nativeView = GOLDEN_SURFACE.map((t) => {
+      const win: Record<string, unknown> = {};
+      win.self = win;
+      return { ...t, origin: 'https://blog.example', title: t.name, window: win } as RegisteredTool;
+    });
+    expect(await fingerprintSurface(nativeView)).toBe(GOLDEN_HASH);
   });
 });

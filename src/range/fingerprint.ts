@@ -9,13 +9,19 @@
 
 import type { RegisteredTool } from '../webmcp/types.ts';
 
-/** Canonical per-tool shape that goes into the hash. */
+/** Canonical per-tool shape that goes into the hash.
+ *
+ * DELIBERATELY EXCLUDED: anything a HOST stamps onto a tool after registration
+ * — `origin`, `title`, `window`, and any other environment decoration. Chrome's
+ * native WebMCP host adds these; the polyfill does not. If they entered the
+ * hash, the same tools would fingerprint differently per browser, and no badge
+ * could ever verify for a native-host visitor (found in the field by customer
+ * zero, openclawcity.ai). Only what the SITE declared at registration counts. */
 export interface FingerprintTool {
   name: string;
   description: string;
   inputSchema: unknown;
   annotations: unknown;
-  origin: string | null;
 }
 
 /**
@@ -23,15 +29,33 @@ export interface FingerprintTool {
  * primitives as JSON. Deterministic regardless of key insertion order, so the
  * same logical value always serialises to the same bytes.
  */
-export function stableStringify(value: unknown): string {
+export function stableStringify(value: unknown, seen?: WeakSet<object>): string {
   if (value === null || typeof value !== 'object') {
     const s = JSON.stringify(value);
     return s === undefined ? 'null' : s;
   }
-  if (Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
-  const obj = value as Record<string, unknown>;
-  const keys = Object.keys(obj).sort();
-  return '{' + keys.map((k) => JSON.stringify(k) + ':' + stableStringify(obj[k])).join(',') + '}';
+  // Circular guard, PATH-SCOPED: a native host can stamp self-referential
+  // objects (e.g. a window) into tool structures. We break only true cycles —
+  // an object that is its own ancestor — by tracking the current descent path
+  // and removing each node on the way back up. A shared sub-object that appears
+  // in two SIBLING branches (a DAG, not a cycle) is therefore serialised in
+  // full both times, so the hash depends only on structure, never on whether
+  // the host happened to share a reference. Mint and verify read the tools
+  // independently and may share references differently; path-scoping keeps them
+  // identical where a visited-ever set would not.
+  const track = seen ?? new WeakSet<object>();
+  if (track.has(value as object)) return '"[circular]"';
+  track.add(value as object);
+  let out: string;
+  if (Array.isArray(value)) {
+    out = '[' + value.map((v) => stableStringify(v, track)).join(',') + ']';
+  } else {
+    const obj = value as Record<string, unknown>;
+    const keys = Object.keys(obj).sort();
+    out = '{' + keys.map((k) => JSON.stringify(k) + ':' + stableStringify(obj[k], track)).join(',') + '}';
+  }
+  track.delete(value as object);
+  return out;
 }
 
 /** Collapse whitespace runs and trim, so cosmetic spacing does not change the hash. */
@@ -46,7 +70,6 @@ export function toFingerprintTools(tools: ReadonlyArray<RegisteredTool>): Finger
     description: normalizeWhitespace(t.description ?? ''),
     inputSchema: t.inputSchema ?? null,
     annotations: t.annotations ?? null,
-    origin: t.origin ?? null,
   }));
 }
 
@@ -83,3 +106,38 @@ export async function fingerprintSurface(tools: ReadonlyArray<RegisteredTool>): 
   const digest = await subtle.digest('SHA-256', new TextEncoder().encode(canonical));
   return toHex(digest);
 }
+
+// --- Drift tripwire (Bug 2) -----------------------------------------------
+//
+// The worker (mint + scan) and the browser badge.js both import THIS module,
+// so they can only ever disagree if one was built/deployed from a stale tree.
+// These three constants are the single source of truth a build-time test AND a
+// live worker endpoint (/api/fingerprint-selftest) both assert against. If the
+// deployed worker returns anything but FINGERPRINT_GOLDEN_HASH, the two bundles
+// have drifted — exactly the silent failure customer zero hit.
+//
+// Bump FINGERPRINT_ALGO and refresh the golden hash IN THE SAME COMMIT whenever
+// you change the canonical form on purpose, then rebuild and redeploy the
+// worker and badge.js TOGETHER (`npm run deploy`, never a bare `wrangler deploy`).
+
+/** Canonical-form version. Changes here are deliberate, versioned events. */
+export const FINGERPRINT_ALGO = 'sha256/v2-no-host-decoration';
+
+/** A fixed reference surface whose fingerprint is pinned below. */
+export const FINGERPRINT_GOLDEN_SURFACE: RegisteredTool[] = [
+  {
+    name: 'search_articles',
+    description: 'Search published articles by keyword.',
+    inputSchema: { type: 'object', properties: { q: { type: 'string' } }, required: ['q'] },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'post_comment',
+    description: 'Post a comment on an article.',
+    inputSchema: { type: 'object', properties: { body: { type: 'string' } }, required: ['body'] },
+    annotations: { readOnlyHint: false, untrustedContentHint: true },
+  },
+];
+
+/** Expected fingerprint of FINGERPRINT_GOLDEN_SURFACE under the current algo. */
+export const FINGERPRINT_GOLDEN_HASH = 'e7dc8eab2b7ee0b120cabb3e3ded3f6423a67ccb4d0de1e996b31640c500761b';
