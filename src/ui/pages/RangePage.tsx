@@ -43,6 +43,9 @@ export function RangePage() {
   useEffect(() => {
     const runKey = session.generatedAt();
     if (!shouldSaveRun(state.status, runKey, lastSavedKeyRef.current, savingRef.current)) return;
+    // Demo runs never touch the leaderboard: only agent-driven runs or runs the
+    // visitor deliberately labelled are worth ranking.
+    if ((session.getState().agentLabel || 'Simulated agent') === 'Simulated agent') return;
     savingRef.current = true;
     lastSavedKeyRef.current = runKey;
     const label = session.getState().agentLabel || 'agent';
