@@ -44,10 +44,12 @@
   --hair: #1e2633;
   --hair-2: #2a3446;
 
-  /* Text. */
+  /* Text. --ink-3 is the smallest type on the site (10.5–12.5px labels,
+     fingerprints, microcopy); at #6b7788 it measured 4.33:1 on --bg, under AA.
+     Lifted to ~6.5:1 so the smallest sizes are actually legible. */
   --ink: #f2f6fc;
   --ink-2: #aab6c8;
-  --ink-3: #6b7788;
+  --ink-3: #8a96a8;
 
   /* Semantics. */
   --ok: #34d399;
@@ -302,8 +304,12 @@ input.field:focus {
   color: var(--ink-2);
   text-decoration: none;
   padding: 7px 11px;
-  border-radius: 8px;
+  border-radius: 10px;
   transition: 0.14s ease;
+  /* Border-box so the bordered variant below stays the same height as its
+     borderless siblings instead of rendering 2px taller. */
+  box-sizing: border-box;
+  line-height: 18px;
 }
 .nav-link:hover {
   color: var(--ink);

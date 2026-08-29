@@ -6,13 +6,18 @@
 
 type P = { size?: number };
 
+// Stroke scales with render size: a 1.5 stroke on a 24 viewBox drawn at 16px
+// reads visually heavier than the same stroke at 24px, so the set would ship at
+// three different optical weights down the page. Compensate.
+const strokeFor = (size: number) => (size >= 24 ? 1.5 : size >= 20 ? 1.4 : 1.25);
+
 const base = (size: number) => ({
   width: size,
   height: size,
   viewBox: '0 0 24 24',
   fill: 'none' as const,
   stroke: 'currentColor',
-  strokeWidth: 1.5,
+  strokeWidth: strokeFor(size),
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
   'aria-hidden': true,

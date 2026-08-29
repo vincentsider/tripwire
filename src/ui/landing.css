@@ -9,6 +9,18 @@
   --lp-max: 1200px;
   --lp-gutter: clamp(20px, 4vw, 40px);
   --lp-sec-y: clamp(76px, 9.5vw, 132px);
+
+  /* Four radii, three surfaces, one hairline. The page previously accumulated
+     eleven radii and four indistinguishable white overlays — values nobody can
+     tell apart are not a system, they are noise. */
+  --r-sm: 4px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-full: 999px;
+  --s-1: #0d121c;
+  --s-2: #111827;
+  --s-raise: rgba(255, 255, 255, 0.03);
+  --line: #1e2633;
 }
 
 .lp-wrap {
@@ -19,11 +31,14 @@
 
 /* ── Reveal ───────────────────────────────────────────────────────────────
    Elements start slightly low and transparent; useReveal adds .in. */
+/* No will-change here on purpose: it was promoting ~20 elements to permanent
+   compositor layers for a one-shot fade, which costs memory for the life of the
+   page (and made composited frames capture inconsistently). Opacity/transform
+   are already cheap to animate. */
 .lp [data-reveal] {
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
 }
 .lp [data-reveal].in {
   opacity: 1;
@@ -49,10 +64,12 @@
 }
 
 /* ── Type scale ───────────────────────────────────────────────────────── */
+/* Sized so the headline sets as two balanced lines in this column rather than
+   three ragged ones — the break shape matters more than raw size. */
 .lp-h1 {
-  font-size: clamp(2.75rem, 6vw, 4.6rem);
-  line-height: 1.0;
-  letter-spacing: -0.038em;
+  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+  line-height: 1.06;
+  letter-spacing: -0.032em;
   font-weight: 600;
   margin: 0 0 22px;
   color: var(--ink);
@@ -84,12 +101,17 @@
   max-width: 58ch;
   margin: 0;
 }
+/* Cyan is reserved for two things only: the primary CTA, and a verified/signed
+   state. It previously marked nine unrelated categories (eyebrows, links,
+   arrows, icons, chips, emphasis), which flattens the page into one note and
+   leaves nothing to signal "this is the trusted thing". */
 .lp-kicker {
   font-family: var(--mono);
   font-size: 11.5px;
+  line-height: 1.4;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--signal);
+  color: var(--ink-3);
   margin-bottom: 14px;
 }
 .lp-eyebrow {
@@ -97,13 +119,14 @@
   align-items: center;
   gap: 9px;
   font-size: 12.5px;
+  line-height: 1.4;
   letter-spacing: 0.01em;
   color: var(--ink-3);
-  border: 1px solid var(--hair);
-  border-radius: 100px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
   padding: 6px 13px 6px 11px;
   margin-bottom: 26px;
-  background: rgba(255, 255, 255, 0.014);
+  background: var(--s-raise);
 }
 .lp-live {
   width: 6px;
@@ -209,56 +232,101 @@
   color: var(--ink-3);
   margin: 0;
 }
-.lp-caption {
-  font-size: 11.5px;
+.lp-lead strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+/* Names the audience in the first viewport — previously the words "site
+   owners" / "agent builders" did not appear until ~1900px down the page. */
+.lp-for {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.lp-for span {
+  font-size: 12px;
   color: var(--ink-3);
-  margin: 14px 2px 0;
-  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  padding: 5px 11px;
+  line-height: 1.4;
 }
 
-/* ── Sections ─────────────────────────────────────────────────────────── */
+/* ── Sections ─────────────────────────────────────────────────────────────
+   Rhythm is deliberately uneven. Six sections at identical padding scroll as
+   six equal-weight slabs with no crescendo; the argument sections get room,
+   the supporting ones get less, and the close gets the most. */
 .lp-sec {
   padding-block: var(--lp-sec-y);
 }
+.lp-sec-tight {
+  padding-block: clamp(56px, 6.5vw, 84px);
+}
+.lp-sec-wide {
+  padding-block: clamp(92px, 12vw, 168px);
+}
 .lp-sec-alt {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006));
-  border-top: 1px solid var(--hair);
-  border-bottom: 1px solid var(--hair);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 .lp-sec-head {
   max-width: 660px;
   margin-bottom: clamp(38px, 4.6vw, 60px);
 }
 
-/* ── Problem beats ────────────────────────────────────────────────────── */
-.lp-beats {
+/* ── Problem: copy column + the injected-descriptor artifact ──────────────
+   Deliberately NOT another three-across grid — three sections sharing one
+   composition makes the page scroll as repeated slabs with no crescendo. */
+.lp-problem {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1px;
-  background: var(--hair);
-  border: 1px solid var(--hair);
-  border-radius: 14px;
-  overflow: hidden;
+  gap: clamp(34px, 4vw, 56px);
+  align-items: start;
 }
-@media (min-width: 860px) {
-  .lp-beats {
-    grid-template-columns: repeat(3, 1fr);
+@media (min-width: 940px) {
+  .lp-problem {
+    grid-template-columns: 1fr 1fr;
   }
 }
-.lp-beat {
-  background: var(--bg);
-  padding: clamp(24px, 2.6vw, 34px);
+.lp-beats {
+  list-style: none;
+  counter-reset: beat;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
-.lp-beat-n {
+.lp-beat {
+  counter-increment: beat;
+  position: relative;
+  padding: 0 0 26px 40px;
+  border-left: 1px solid var(--line);
+}
+.lp-beat:last-child {
+  padding-bottom: 0;
+  border-left-color: transparent;
+}
+.lp-beat::before {
+  content: counter(beat, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: -2px;
+  transform: translateX(-50%);
+  background: var(--bg);
   font-family: var(--mono);
-  font-size: 12px;
-  color: var(--signal);
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  color: var(--ink-3);
+  padding: 2px 0;
+  line-height: 1.4;
 }
 .lp-beat h3 {
   font-size: 17px;
+  line-height: 1.35;
   letter-spacing: -0.015em;
-  margin: 14px 0 10px;
+  margin: 0 0 8px;
   color: var(--ink);
   font-weight: 600;
 }
@@ -267,6 +335,68 @@
   font-size: 14.5px;
   line-height: 1.62;
   color: var(--ink-2);
+}
+
+/* The attack, shown rather than described. */
+.lp-inject {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--s-1);
+  overflow: hidden;
+}
+.lp-inject-head {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--s-raise);
+}
+.lp-inject-code {
+  margin: 0;
+  padding: 18px 16px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.lp-inject-code .k {
+  color: var(--ink-3);
+}
+.lp-inject-code .s {
+  color: var(--ink-2);
+}
+.lp-inject-code .poison {
+  color: var(--warn);
+  background: rgba(251, 191, 36, 0.12);
+  border-bottom: 1px dashed rgba(251, 191, 36, 0.55);
+  padding: 1px 2px;
+  border-radius: var(--r-sm);
+}
+.lp-inject-verdict {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 13px 16px;
+  border-top: 1px solid var(--line);
+  background: rgba(251, 191, 36, 0.05);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.lp-inject-flag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border-radius: var(--r-full);
+  padding: 3px 9px;
 }
 
 /* ── Doors ────────────────────────────────────────────────────────────── */
@@ -366,32 +496,45 @@
   transform: translateX(4px);
 }
 
-/* ── Props ────────────────────────────────────────────────────────────── */
+/* ── Trust mechanics: a stacked ledger, not a third card grid ─────────── */
 .lp-props {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(22px, 3vw, 40px);
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
 }
-@media (min-width: 880px) {
-  .lp-props {
-    grid-template-columns: repeat(3, 1fr);
+.lp-prop {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 18px;
+  align-items: start;
+  padding: clamp(22px, 2.6vw, 30px) 0;
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 860px) {
+  .lp-prop {
+    grid-template-columns: 40px 0.9fr 1.3fr;
+    gap: 28px;
+    align-items: center;
+  }
+  .lp-prop h3 {
+    margin: 0;
   }
 }
 .lp-prop-ico {
   width: 40px;
   height: 40px;
-  border-radius: 11px;
+  border-radius: var(--r-md);
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid var(--hair-2);
-  color: var(--signal-bright);
-  margin-bottom: 16px;
+  background: var(--s-raise);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
 }
 .lp-prop h3 {
   font-size: 17px;
+  line-height: 1.35;
   letter-spacing: -0.018em;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-weight: 600;
   color: var(--ink);
 }
@@ -403,24 +546,6 @@
 }
 
 /* ── Proof ────────────────────────────────────────────────────────────── */
-.lp-proof {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(34px, 4vw, 56px);
-  align-items: center;
-  padding: clamp(28px, 3.4vw, 46px);
-  border: 1px solid var(--hair);
-  border-radius: 16px;
-  background: linear-gradient(150deg, rgba(6, 182, 212, 0.055), transparent 55%), var(--surface);
-}
-@media (min-width: 900px) {
-  .lp-proof {
-    grid-template-columns: 1.1fr 0.9fr;
-  }
-}
-.lp-proof .lp-h2 {
-  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
-}
 .lp-inline-link {
   display: inline-flex;
   align-items: center;
@@ -441,14 +566,19 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1px;
-  background: var(--hair);
-  border: 1px solid var(--hair);
-  border-radius: 12px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   overflow: hidden;
 }
+@media (min-width: 760px) {
+  .lp-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
 .lp-stat {
-  background: var(--surface-2);
-  padding: 20px 18px;
+  background: var(--s-2);
+  padding: 24px 20px;
 }
 .lp-stat-n {
   display: block;
@@ -469,9 +599,13 @@
 /* ── Scope ────────────────────────────────────────────────────────────── */
 /* Keeps the same left rail as every other section — a page that shifts its
    margin section to section reads as unaligned, however good the type is. */
+/* The rule hangs in the gutter via a negative margin so the body text stays on
+   the same left rail as every heading. Indenting the copy instead would make
+   the page's spine wander by ~25px in its most credibility-critical section. */
 .lp-scope {
   border-left: 2px solid var(--signal-strong);
   padding-left: clamp(20px, 2.6vw, 30px);
+  margin-left: calc(-1 * clamp(20px, 2.6vw, 30px) - 2px);
   max-width: 76ch;
 }
 .lp-scope p {
@@ -498,140 +632,163 @@
   margin-bottom: 28px;
 }
 
-/* ── Surface panel (hero visual) ──────────────────────────────────────── */
-.sp {
-  border: 1px solid var(--hair-2);
-  border-radius: 15px;
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.9), rgba(10, 14, 22, 0.96));
-  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.02) inset,
-    0 0 60px -30px rgba(6, 182, 212, 0.4);
+/* ── Hero artifact: the signed report ────────────────────────────────────
+   No window chrome and no traffic lights. The hero asset is the thing the
+   product actually issues, using real values from the openclawcity.ai audit,
+   so it needs no "illustrative" caption undercutting it. */
+.rep {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--s-2), var(--s-1));
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.95);
   overflow: hidden;
 }
-.sp-bar {
+.rep-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border-bottom: 1px solid var(--hair);
-  background: rgba(255, 255, 255, 0.022);
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
 }
-.sp-dots {
-  display: inline-flex;
-  gap: 5px;
-}
-.sp-dots i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--hair-2);
-}
-.sp-url {
-  font-size: 12px;
-  color: var(--ink-2);
-}
-.sp-state {
-  margin-left: auto;
-  font-size: 11px;
+.rep-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--ink-3);
-  transition: color 0.4s ease;
+  line-height: 1.4;
 }
-.sp-state.done {
+.rep-origin {
+  display: block;
+  font-size: 14px;
+  color: var(--ink);
+  margin-top: 5px;
+  line-height: 1.3;
+}
+.rep-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--signal-bright);
-}
-.sp-body {
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sp-row {
-  border: 1px solid var(--hair);
-  border-radius: 10px;
-  padding: 12px 13px;
-  background: rgba(255, 255, 255, 0.016);
+  background: var(--signal-soft);
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  border-radius: var(--r-full);
+  padding: 5px 12px;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.94);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.sp-row.in {
+.rep-state.in {
   opacity: 1;
   transform: none;
 }
-.sp-row.bad {
-  border-color: rgba(251, 191, 36, 0.42);
-  background: rgba(251, 191, 36, 0.055);
+.rep-tick {
+  font-size: 11px;
 }
-.sp-row-top {
+.rep-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.rep-metric {
+  background: var(--s-1);
+  padding: 16px 18px;
+}
+.rep-metric-n {
+  display: block;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.rep-metric-l {
+  display: block;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.rep-tools {
+  list-style: none;
+  margin: 0;
+  padding: 10px 18px 14px;
+}
+.rep-tools li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.sp-name {
+  gap: 12px;
+  padding: 8px 0;
   font-size: 12.5px;
-  color: var(--ink);
-  font-weight: 500;
+  color: var(--ink-2);
+  border-bottom: 1px solid rgba(30, 38, 51, 0.6);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.sp-verdict {
+.rep-tools li.in {
+  opacity: 1;
+  transform: none;
+}
+.rep-tools li:last-child {
+  border-bottom: 0;
+}
+.rep-v {
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 3px 8px;
-  border-radius: 100px;
+  border-radius: var(--r-full);
 }
-.sp-verdict.pass {
+.rep-v.pass {
   background: var(--ok-soft);
   color: var(--ok);
 }
-.sp-verdict.flag {
+.rep-v.partial {
   background: var(--warn-soft);
   color: var(--warn);
 }
-.sp-desc {
-  margin: 0;
-  font-size: 12.5px;
-  line-height: 1.55;
+.rep-more {
+  font-size: 11.5px;
   color: var(--ink-3);
+  justify-content: flex-start !important;
 }
-.sp-poison {
-  color: var(--warn);
-  background: rgba(251, 191, 36, 0.12);
-  border-bottom: 1px dashed rgba(251, 191, 36, 0.5);
-  padding: 1px 3px;
-  border-radius: 3px;
-}
-.sp-ev {
-  margin: 8px 0 0;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  line-height: 1.5;
-  color: var(--warn);
-  opacity: 0.9;
-}
-.sp-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 11px 14px;
-  border-top: 1px solid var(--hair);
-  background: rgba(255, 255, 255, 0.014);
+.rep-seal {
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--s-raise);
   opacity: 0;
   transition: opacity 0.6s ease;
 }
-.sp-foot.in {
+.rep-seal.in {
   opacity: 1;
 }
-.sp-fp,
-.sp-seal {
-  font-size: 10.5px;
-  color: var(--ink-3);
+.rep-seal-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
 }
-.sp-seal {
-  color: var(--signal);
+.rep-seal-k {
+  font-size: 11px;
+  color: var(--ink-3);
+  flex: none;
+}
+.rep-seal-v {
+  font-size: 11px;
+  color: var(--ink-2);
+  text-align: right;
+  word-break: break-all;
 }
 
 /* ── Small screens ────────────────────────────────────────────────────────
