@@ -30,15 +30,16 @@ export function Home() {
         <span className="mote" style={{ left: '83%', bottom: '28%', animationDelay: '-6s' }} aria-hidden="true" />
 
         <div className="wrap" data-reveal style={{ position: 'relative', zIndex: 3 }}>
-          <p className="kick">Trust for the agent web</p>
+          <p className="kick">Built for WebMCP</p>
           <h1 className="h-hero">
-            Is your agent safe?
+            The first trust layer
             <br />
-            Is your site?
+            for the agent web.
           </h1>
           <p className="sub">
-            Test agents against real attacks. Scan any site&apos;s tools. Prove yours are honest — with a signed,
-            revocable badge.
+            WebMCP lets websites hand tools straight to AI agents — and a tool&apos;s description is an instruction.
+            Tripwire audits what those tools really say, tests agents against real attacks, and seals honest sites with
+            a signed, revocable badge.
           </p>
           <div className="btns">
             <Link to="/scan" className="btn btn-fill">
