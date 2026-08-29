@@ -626,3 +626,32 @@ h2.sec {
     transform: rotate(360deg);
   }
 }
+
+
+/* ── Nav: light variant for the landing page ─────────────────────────────
+   Same component, palette swapped by route. Values inherit the DeepBlocker
+   brand (warm paper / warm ink) so the header matches the page under it. */
+.nav-light {
+  background: rgba(251, 251, 249, 0.82);
+  border-bottom-color: #e4e6e1;
+}
+.nav-light .brand {
+  color: #0f1b24;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-size: 17px;
+}
+.nav-light .brand-mark {
+  border-color: rgba(15, 27, 36, 0.22);
+}
+.nav-light .brand-mark::after {
+  border-color: #c0392b;
+}
+.nav-light .nav-link {
+  color: #6b7883;
+}
+.nav-light .nav-link:hover,
+.nav-light .nav-link.active {
+  color: #0f1b24;
+}

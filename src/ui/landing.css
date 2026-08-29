@@ -1,39 +1,105 @@
 /* src/ui/landing.css
- * Landing craft layer — cinematic minimalism, scoped under .lp so the console
- * pages keep their own denser, instrument-like look.
+ * Tripwire landing — light editorial, inheriting the DeepBlocker brand
+ * (warm paper, Fraunces display, Inter body, Plex Mono for data).
  *
- * Rules this file holds itself to, taken from the reference sites:
- *   1. Monochrome. Neutral greys, white as the only emphasis. No colour set.
- *   2. No boxes. No cards, no bordered panels, no filled chips, no data tables.
- *   3. One idea per viewport, with real emptiness around it.
- *   4. Very few words, very large type.
- *   5. Content sits on a wide margin, not inside a centred 1200px box.
+ * Rules, all evidenced from award-winning light deep-tech pages:
+ *   1. Paper, not white. Ink, not black. Both carry a hue.
+ *   2. Shadows are TINTED toward the ink hue and ramped over 4-6 layers with a
+ *      hairline ring on top. A neutral rgba(0,0,0,.1) is the amateur tell.
+ *   3. Structure comes from tinted hairlines and rules, not bordered boxes.
+ *   4. Four section ENVIRONMENTS rotated (paper / tint / ink slab / accent),
+ *      the slab and the accent used once each. One attribute flips a section.
+ *   5. Tracking tightens as size grows; the type scale has a deliberate gap.
+ *   6. Radii stay 2-12px. 16-24px reads consumer-app.
+ *   7. One accent, used with restraint. Cyan is demoted to a "verified" state.
  */
 
-.lp {
-  /* Neutral, not blue-tinted: warm-neutral greyscale reads far more premium
-     than the "tech blue-black" this page used before. */
-  --ink-0: #ffffff;
-  --ink-1: #e8e8e8;
-  --ink-2: #9a9a9a;
-  --ink-3: #6a6a6a;
-  --ground: #0b0b0c;
-  --rule: rgba(255, 255, 255, 0.11);
-  --edge: clamp(22px, 5vw, 76px);
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'InterVar';
+  src: url('/fonts/inter.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
 
-  background: var(--ground);
-  color: var(--ink-1);
-  /* Full-bleed: the landing escapes the app's centred container. */
+.lp {
+  /* Paper + ink, both hue-carrying (DeepBlocker brand values). */
+  --paper: #fbfbf9;
+  --paper-2: #f4f5f2;
+  --card: #ffffff;
+  --ink: #0f1b24;
+  --ink-2: #3d4b56;
+  --ink-3: #6b7883;
+  --hair: #e4e6e1;
+  --hair-2: #d3d6d0;
+
+  /* Semantics: red carries findings, cyan is reserved for "verified". */
+  --red: #c0392b;
+  --red-soft: #fbeae7;
+  --amber: #b7791f;
+  --verified: #0891b2;
+  --verified-soft: #e1f5fa;
+  --navy: #12303f;
+
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --body: 'InterVar', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --data: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Tinted shadow ramp — never neutral black. */
+  --lift: 0 1px 2px rgba(15, 27, 36, 0.04), 0 4px 8px rgba(15, 27, 36, 0.04),
+    0 12px 20px rgba(15, 27, 36, 0.04), 0 28px 44px rgba(15, 27, 36, 0.05),
+    0 60px 90px rgba(15, 27, 36, 0.06), 0 0 0 1px rgba(15, 27, 36, 0.06);
+
+  --edge: clamp(20px, 5vw, 72px);
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
   margin-inline: calc(50% - 50vw);
   width: 100vw;
   overflow-x: clip;
 }
 
+/* ── Section environments ─────────────────────────────────────────────────
+   One attribute re-binds the tokens; nothing inside knows what colour it is. */
+.lp [data-env='tint'] {
+  --paper: #f4f5f2;
+  --card: #fbfbf9;
+  background: var(--paper);
+}
+.lp [data-env='slab'] {
+  --paper: #12303f;
+  --card: #17394a;
+  --ink: #f3f6f7;
+  --ink-2: #b7c6cd;
+  --ink-3: #8fa3ad;
+  --hair: rgba(255, 255, 255, 0.13);
+  --hair-2: rgba(255, 255, 255, 0.2);
+  background: var(--paper);
+  color: var(--ink);
+}
+.lp [data-env='accent'] {
+  --paper: #c0392b;
+  --card: #cf4b3d;
+  --ink: #fff6f4;
+  --ink-2: #f7d6d1;
+  --ink-3: #eebfb8;
+  --hair: rgba(255, 255, 255, 0.22);
+  --hair-2: rgba(255, 255, 255, 0.3);
+  background: var(--paper);
+  color: var(--ink);
+}
+
 /* ── Reveal ───────────────────────────────────────────────────────────── */
 .lp [data-reveal] {
   opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1), transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(14px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .lp [data-reveal].in {
   opacity: 1;
@@ -47,275 +113,413 @@
   }
 }
 
-/* ── Type ─────────────────────────────────────────────────────────────── */
+/* ── Type ─────────────────────────────────────────────────────────────────
+   Display is Fraunces at weight 400 — a serif with real contrast reads as a
+   document, where a bold grotesque reads as a SaaS template. */
 .lp-display {
-  font-size: clamp(2.6rem, 7vw, 6.2rem);
-  line-height: 0.98;
-  letter-spacing: -0.045em;
-  font-weight: 500;
-  margin: 0;
-  color: var(--ink-0);
-}
-.lp-display .dim {
-  color: var(--ink-3);
-}
-.lp-mid {
-  font-size: clamp(1.9rem, 4.6vw, 3.8rem);
-  line-height: 1.06;
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 6vw, 4.9rem);
+  font-weight: 400;
+  line-height: 1.03;
   letter-spacing: -0.035em;
-  font-weight: 500;
   margin: 0;
-  color: var(--ink-0);
+  color: var(--ink);
+  text-wrap: balance;
+}
+.lp-h2 {
+  font-family: var(--display);
+  font-size: clamp(1.9rem, 3.8vw, 3.1rem);
+  font-weight: 400;
+  line-height: 1.09;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.lp-h3 {
+  font-size: clamp(1.02rem, 1.4vw, 1.2rem);
+  font-weight: 550;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--ink);
 }
 .lp-body {
-  font-size: clamp(1rem, 1.25vw, 1.2rem);
-  line-height: 1.6;
+  font-size: clamp(1rem, 1.15vw, 1.1rem);
+  line-height: 1.62;
   color: var(--ink-2);
-  max-width: 46ch;
+  max-width: 44ch;
   margin: 0;
-  font-weight: 300;
 }
-.lp-tag {
+.lp-small {
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 56ch;
+}
+/* Mono all-caps micro-label above every block — the "this measures things" cue. */
+.lp-kicker {
+  font-family: var(--data);
   font-size: 11px;
-  letter-spacing: 0.18em;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-3);
-  margin: 0;
-  font-weight: 400;
+  margin: 0 0 18px;
 }
 
-/* ── Section shell: one idea, one screen ──────────────────────────────── */
-.lp-screen {
-  min-height: 100svh;
-  padding: clamp(84px, 12vh, 150px) var(--edge) clamp(64px, 10vh, 120px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
+/* ── Layout ───────────────────────────────────────────────────────────── */
+.lp-sec {
+  padding: clamp(72px, 9vw, 128px) var(--edge);
+  border-top: 1px solid var(--hair);
+}
+.lp-sec-tall {
+  padding-block: clamp(92px, 12vw, 172px);
+}
+.lp-wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+.lp-head {
+  max-width: 58ch;
+  margin-bottom: clamp(36px, 5vw, 64px);
 }
 
 /* ── Hero ─────────────────────────────────────────────────────────────── */
 .lp-hero {
-  justify-content: space-between;
-  padding-top: clamp(72px, 11vh, 132px);
-  padding-bottom: clamp(40px, 6vh, 72px);
+  padding: clamp(52px, 7vh, 96px) var(--edge) clamp(48px, 6vw, 84px);
+  border-top: 0;
 }
-.lp-hero-type {
-  max-width: 20ch;
-}
-.lp-hero-sub {
-  margin-top: clamp(20px, 2.6vw, 32px);
-}
-
-/* The tripwire, drawn in canvas (see TripwireCanvas): a taut line with traffic
-   drifting across it, blooming where something crosses. The page's one visual,
-   and it is the product's own metaphor rather than ornament. */
-.lp-canvas {
-  display: block;
-  width: 100%;
-  height: clamp(120px, 17vh, 190px);
-  margin-top: clamp(10px, 2vh, 26px);
-}
-
-/* ── The three products: a menu, not three boxes ──────────────────────── */
-.lp-menu {
+.lp-hero-grid {
   display: grid;
   grid-template-columns: 1fr;
-  margin-top: clamp(30px, 4vh, 54px);
+  gap: clamp(36px, 5vw, 68px);
+  align-items: center;
 }
-@media (min-width: 800px) {
-  .lp-menu {
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(24px, 4vw, 72px);
+@media (min-width: 1000px) {
+  .lp-hero-grid {
+    grid-template-columns: 0.9fr 1.1fr;
   }
 }
-.lp-item {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  padding: 22px 0;
-  border-top: 1px solid transparent;
-  transition: opacity 0.4s ease;
+.lp-hero .lp-body {
+  margin-top: 22px;
 }
-@media (max-width: 799px) {
-  .lp-item {
-    border-top-color: var(--rule);
-  }
-}
-.lp-item-n {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: var(--ink-3);
-  transition: color 0.35s ease;
-}
-.lp-item-t {
-  font-size: clamp(1.35rem, 2.1vw, 1.85rem);
-  letter-spacing: -0.03em;
-  font-weight: 500;
-  color: var(--ink-0);
-  margin: 10px 0 8px;
-  line-height: 1.1;
-}
-.lp-item-d {
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--ink-3);
-  margin: 0;
-  max-width: 30ch;
-  font-weight: 300;
-  transition: color 0.35s ease;
-}
-/* Hovering one product quietly recedes the others — focus without a box. */
-.lp-menu:hover .lp-item {
-  opacity: 0.42;
-}
-.lp-menu .lp-item:hover {
-  opacity: 1;
-}
-.lp-item:hover .lp-item-d,
-.lp-item:hover .lp-item-n {
-  color: var(--ink-2);
-}
-
-/* ── The attack, set as editorial type rather than a code panel ───────── */
-.lp-quote {
-  font-size: clamp(1.5rem, 3.4vw, 2.9rem);
-  line-height: 1.32;
-  letter-spacing: -0.025em;
-  font-weight: 300;
-  color: var(--ink-3);
-  margin: clamp(30px, 5vh, 60px) 0 0;
-  max-width: 26ch;
-}
-.lp-quote .hit {
-  color: var(--ink-0);
-  font-weight: 400;
-}
-.lp-verdict {
-  display: block;
-  margin-top: clamp(20px, 3vh, 34px);
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  font-weight: 400;
-}
-
-/* ── Split: statement left, supporting right ──────────────────────────── */
-.lp-split {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(28px, 4vw, 64px);
-  align-items: start;
-}
-@media (min-width: 900px) {
-  .lp-split {
-    grid-template-columns: 1.1fr 0.9fr;
-    align-items: end;
-  }
-}
-
-/* ── Numbered statements ──────────────────────────────────────────────── */
-.lp-rows {
-  margin-top: clamp(34px, 6vh, 72px);
+.lp-cta {
   display: flex;
-  flex-direction: column;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 30px;
 }
-.lp-row {
-  display: grid;
-  grid-template-columns: 1fr;
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-  padding: clamp(24px, 3.4vh, 40px) 0;
-  border-top: 1px solid var(--rule);
-}
-@media (min-width: 860px) {
-  .lp-row {
-    grid-template-columns: 6ch 1fr 1.15fr;
-    gap: clamp(20px, 3vw, 56px);
-    align-items: baseline;
-  }
-}
-.lp-row:last-child {
-  border-bottom: 1px solid var(--rule);
-}
-.lp-row-n {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: var(--ink-3);
-}
-.lp-row-t {
-  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
-  letter-spacing: -0.025em;
-  font-weight: 500;
-  color: var(--ink-0);
-  margin: 0;
-  line-height: 1.2;
-}
-.lp-row-d {
   font-size: 14.5px;
-  line-height: 1.6;
-  color: var(--ink-3);
-  margin: 0;
-  font-weight: 300;
+  font-weight: 550;
+  padding: 11px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.lp-btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+.lp-btn-primary:hover {
+  background: var(--navy);
+}
+.lp-btn-ghost {
+  color: var(--ink);
+  border-color: var(--hair-2);
+}
+.lp-btn-ghost:hover {
+  border-color: var(--ink-3);
+  background: var(--card);
 }
 
-/* ── Figures ──────────────────────────────────────────────────────────── */
-.lp-figs {
+/* ── Stats strip: numbers are the credibility device ──────────────────── */
+.lp-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: clamp(28px, 4vw, 60px) clamp(20px, 3vw, 40px);
-  margin-top: clamp(38px, 6vh, 76px);
+  border-top: 1px solid var(--hair);
+  border-left: 1px solid var(--hair);
 }
-@media (min-width: 820px) {
-  .lp-figs {
+@media (min-width: 760px) {
+  .lp-stats {
     grid-template-columns: repeat(4, 1fr);
   }
 }
-.lp-fig-n {
-  display: block;
-  font-size: clamp(2.4rem, 4.4vw, 3.6rem);
-  font-weight: 300;
-  letter-spacing: -0.045em;
-  color: var(--ink-0);
-  line-height: 1;
+.lp-stat {
+  padding: 22px clamp(14px, 2vw, 26px);
+  border-right: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
 }
-.lp-fig-l {
+.lp-stat-n {
   display: block;
-  margin-top: 12px;
-  font-size: 12px;
+  font-family: var(--display);
+  font-size: clamp(1.7rem, 2.5vw, 2.3rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink);
+}
+.lp-stat-l {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--data);
+  font-size: 10.5px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
 
-/* ── Links: text with a rule, never a filled pill ─────────────────────── */
-.lp-link {
-  display: inline-block;
-  font-size: clamp(1rem, 1.4vw, 1.15rem);
-  color: var(--ink-0);
+/* ── Ruled index instead of a card grid ───────────────────────────────── */
+.lp-index {
+  border-top: 1px solid var(--hair);
+}
+.lp-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: clamp(22px, 3vw, 32px) 0;
+  border-bottom: 1px solid var(--hair);
   text-decoration: none;
-  padding-bottom: 7px;
-  border-bottom: 1px solid var(--rule);
-  transition: border-color 0.35s ease;
+  color: inherit;
+  transition: background 0.25s ease;
+}
+@media (min-width: 860px) {
+  .lp-row {
+    grid-template-columns: 5ch 1.05fr 1.4fr auto;
+    gap: clamp(18px, 3vw, 44px);
+    align-items: baseline;
+  }
+}
+a.lp-row:hover {
+  background: var(--card);
+}
+.lp-row-n {
+  font-family: var(--data);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+.lp-row-d {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0;
+}
+.lp-row-go {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-3);
+  white-space: nowrap;
+  transition: color 0.25s ease;
+}
+a.lp-row:hover .lp-row-go {
+  color: var(--red);
+}
+
+/* ── Inspection Pass (hero visual) ────────────────────────────────────── */
+.ip {
+  position: relative;
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: var(--lift);
+  overflow: hidden;
+}
+.ip-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--hair);
+  font-family: var(--data);
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.ip-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--red);
+}
+.ip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+/* Two stacked copies of the same descriptor; the hostile reading is revealed
+   only inside the sweep band, via a mask. Both are real, selectable text. */
+.ip-stack {
+  position: relative;
+  padding: clamp(22px, 2.6vw, 32px) clamp(18px, 2.4vw, 28px);
+}
+.ip-layer {
+  margin: 0;
+  font-family: var(--data);
+  font-size: clamp(12.5px, 1vw, 13.5px);
+  line-height: 1.9;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink-2);
+}
+.ip-layer .k {
+  color: var(--ink-3);
+}
+.ip-hostile {
+  position: absolute;
+  inset: clamp(22px, 2.6vw, 32px) clamp(18px, 2.4vw, 28px);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 13%, transparent 18%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 13%, transparent 18%);
+  -webkit-mask-size: 560% 100%;
+  mask-size: 560% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  animation: ip-sweep 9s linear infinite;
+}
+.ip-hostile .hit {
+  color: var(--red);
+  font-weight: 500;
+  background: var(--red-soft);
+  box-shadow: 0 1px 0 rgba(192, 57, 43, 0.45);
+}
+@keyframes ip-sweep {
+  0% { -webkit-mask-position: 118% 0; mask-position: 118% 0; }
+  100% { -webkit-mask-position: -18% 0; mask-position: -18% 0; }
+}
+.ip-scan {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--red);
+  opacity: 0.5;
+  animation: ip-line 9s linear infinite;
+}
+@keyframes ip-line {
+  0% { left: 97%; }
+  100% { left: 3%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ip-hostile {
+    animation: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .ip-scan {
+    display: none;
+  }
+}
+.ip-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  border-top: 1px solid var(--hair);
+  font-family: var(--data);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.ip-flag {
+  color: var(--red);
+  background: var(--red-soft);
+  border-radius: 4px;
+  padding: 3px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+.ip-cap {
+  margin: 14px 2px 0;
+  font-family: var(--data);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+
+/* ── Quote / split ────────────────────────────────────────────────────── */
+.lp-lead-q {
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
   font-weight: 400;
+  line-height: 1.44;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  max-width: 32ch;
+  margin: 0;
 }
-.lp-link:hover {
-  border-bottom-color: var(--ink-0);
+.lp-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(28px, 4vw, 60px);
+  align-items: start;
 }
+@media (min-width: 900px) {
+  .lp-split {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Seal: the one place cyan appears ─────────────────────────────────── */
+.lp-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--data);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--verified);
+  background: var(--verified-soft);
+  border: 1px solid rgba(8, 145, 178, 0.22);
+  border-radius: 5px;
+  padding: 7px 12px;
+}
+.lp-fp {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin: 16px 0 0;
+  word-break: break-all;
+}
+
+/* ── Links + footer ───────────────────────────────────────────────────── */
 .lp-links {
   display: flex;
-  gap: clamp(24px, 4vw, 48px);
+  gap: clamp(20px, 3vw, 38px);
   flex-wrap: wrap;
-  margin-top: clamp(30px, 4vh, 48px);
+  margin-top: clamp(26px, 4vh, 42px);
+}
+.lp-link {
+  font-size: 15px;
+  font-weight: 550;
+  color: var(--ink);
+  text-decoration: none;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--hair-2);
+  transition: border-color 0.25s ease;
+}
+.lp-link:hover {
+  border-bottom-color: var(--ink);
 }
 .lp-foot {
-  padding: 30px var(--edge) 40px;
-  border-top: 1px solid var(--rule);
+  padding: 26px var(--edge) 40px;
+  border-top: 1px solid var(--hair);
   display: flex;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
   flex-wrap: wrap;
-  font-size: 12px;
+  font-family: var(--data);
+  font-size: 11px;
+  letter-spacing: 0.06em;
   color: var(--ink-3);
 }
 .lp-foot a {
@@ -323,5 +527,5 @@
   text-decoration: none;
 }
 .lp-foot a:hover {
-  color: var(--ink-1);
+  color: var(--ink);
 }

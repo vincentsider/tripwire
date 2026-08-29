@@ -4,13 +4,16 @@
 // section is highlighted. The GitHub link is the one outbound link (the project
 // is open source).
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
 const GITHUB = 'https://github.com/vincentsider/tripwire';
 
 export function Nav() {
+  // The landing is light editorial; the console pages stay dark. The nav is
+  // shared, so it takes its palette from the route rather than being duplicated.
+  const light = useLocation().pathname === '/';
   return (
-    <nav className="nav">
+    <nav className={`nav${light ? ' nav-light' : ''}`}>
       <div className="nav-inner">
         <NavLink to="/" className="brand">
           <span className="brand-mark" aria-hidden />
