@@ -288,9 +288,9 @@ export function Home() {
           <p className="kick">Who&apos;s behind Tripwire</p>
           <h2 className="h-l">Engineered by DeepBlocker.</h2>
           <p className="sub" style={{ marginInline: 'auto' }}>
-            DeepBlocker red-teams organisations with deepfake voice attacks and blocks them live on real calls —
-            offence finds the gap, defence closes it. Tripwire brings that same offence-informed engineering to the
-            agent web.
+            Anyone can be talked into it — now anything can. DeepBlocker defends against AI-era social engineering,
+            whether the target is a person on a phone call or an AI agent on a website: attack the way criminals
+            would, block it live, prove it with evidence. Tripwire points that engineering at the agent web.
           </p>
           <div className="btns">
             <a className="btn btn-line" href="https://deepblocker.ai" target="_blank" rel="noopener noreferrer">
