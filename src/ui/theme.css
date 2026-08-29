@@ -628,30 +628,40 @@ h2.sec {
 }
 
 
-/* ── Nav: light variant for the landing page ─────────────────────────────
-   Same component, palette swapped by route. Values inherit the DeepBlocker
-   brand (warm paper / warm ink) so the header matches the page under it. */
+/* ── Nav: light variant for the landing (Apple-style) ────────────────────
+   Near-white and translucent with a blur and one hairline. Small, quiet links;
+   no boxed button. The mark's crossing dot carries the blue. */
 .nav-light {
-  background: rgba(251, 251, 249, 0.82);
-  border-bottom-color: #e4e6e1;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid #e3e3e6;
+}
+.nav-light .nav-inner {
+  padding-block: 12px;
 }
 .nav-light .brand {
-  color: #0f1b24;
-  font-family: 'Fraunces', Georgia, serif;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  color: #1d1d1f;
+  font-weight: 600;
   font-size: 17px;
-}
-.nav-light .brand-mark {
-  border-color: rgba(15, 27, 36, 0.22);
-}
-.nav-light .brand-mark::after {
-  border-color: #c0392b;
+  letter-spacing: -0.02em;
+  gap: 9px;
+  --logo-hit: #0071e3;
 }
 .nav-light .nav-link {
-  color: #6b7883;
+  font-size: 13px;
+  font-weight: 450;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #1d1d1f;
+  opacity: 0.82;
 }
 .nav-light .nav-link:hover,
 .nav-light .nav-link.active {
-  color: #0f1b24;
+  color: #0071e3;
+  opacity: 1;
+}
+/* The old bordered mark box is unused on the landing. */
+.nav-light .brand-mark {
+  display: none;
 }
