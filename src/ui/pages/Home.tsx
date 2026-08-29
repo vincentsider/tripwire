@@ -12,48 +12,55 @@
 import { Link } from 'react-router-dom';
 import '../landing.css';
 import { useReveal } from '../useReveal.ts';
-import { SurfacePanel } from '../SurfacePanel.tsx';
-import { IconTarget, IconShield, IconScan, IconFingerprint, IconKey, IconRevoke, IconArrow } from '../icons.tsx';
+import { HeroPanels } from '../HeroPanels.tsx';
+import { IconFingerprint, IconKey, IconRevoke, IconArrow } from '../icons.tsx';
 
 export function Home() {
   useReveal();
 
   return (
     <div className="lp">
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      {/* ── Hero: the three products ARE the headline ─────────────────────
+          Three verbs, three panels, three live readouts. A visitor should not
+          have to scroll or read a paragraph to learn that Tripwire does three
+          distinct things. */}
       <section className="lp-hero">
-        <div className="lp-wrap lp-hero-grid">
-          <div className="lp-hero-text" data-reveal>
-            <div className="lp-eyebrow">
-              <span className="lp-live" /> Open source · a DeepBlocker project
-            </div>
+        <div className="lp-status mono" data-reveal>
+          <span className="lp-status-l">
+            <span className="lp-live" /> live
+          </span>
+          <span>trust layer for the agent web</span>
+          <span className="lp-status-r">open source · Apache-2.0</span>
+        </div>
+
+        <div className="lp-wrap">
+          <div className="lp-headline" data-reveal>
             <h1 className="lp-h1">
-              Your agent does what
-              <br />a website <span className="lp-accent">tells it</span>.
+              <span className="lp-l" data-i="01">
+                Test <em>the agent.</em>
+              </span>
+              <span className="lp-l" data-i="02">
+                Scan <em>the site.</em>
+              </span>
+              <span className="lp-l" data-i="03">
+                Seal <em>the surface.</em>
+              </span>
             </h1>
             <p className="lp-lead">
-              <strong>Tripwire audits the tools a website exposes to AI agents, and issues a live signed badge.</strong>{' '}
-              Sites now publish actions an agent can take on your behalf — book, pay, post, fetch. The site writes each
-              tool's description, and a description is an instruction.
-            </p>
-            <div className="lp-cta">
-              <Link to="/scan" className="lp-btn lp-btn-primary">
-                Scan a site <IconArrow />
-              </Link>
-              <Link to="/badge" className="lp-btn lp-btn-ghost">
-                Get a badge
-              </Link>
-            </div>
-            <p className="lp-for">
-              <span>Site owners</span>
-              <span>Agent builders</span>
-              <span>Anyone about to trust one</span>
+              Websites now publish tools that AI agents can call — book, pay, post, fetch. The site writes each
+              tool&apos;s description, and a description is an instruction. Tripwire is the instrument that checks what
+              agents are trusting, on both sides of the wire.
             </p>
           </div>
+        </div>
 
-          <div className="lp-hero-visual" data-reveal>
-            <SurfacePanel />
-          </div>
+        {/* The tripwire: a taut line the whole page hangs from. */}
+        <div className="lp-wire" aria-hidden>
+          <span className="lp-wire-pulse" />
+        </div>
+
+        <div className="lp-wrap">
+          <HeroPanels />
         </div>
       </section>
 
@@ -108,64 +115,6 @@ export function Home() {
                 instruction embedded in description · relay parameter “webhook_url”
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── The three doors ──────────────────────────────────────────────── */}
-      <section className="lp-sec">
-        <div className="lp-wrap">
-          <div className="lp-sec-head" data-reveal>
-            <div className="lp-kicker">What Tripwire does</div>
-            <h2 className="lp-h2">Three ways in.</h2>
-            <p className="lp-sub">Whether you run a site, build an agent, or are simply about to trust one.</p>
-          </div>
-
-          <div className="lp-doors">
-            <Link to="/badge" className="lp-door lp-door-lead" data-reveal>
-              <span className="lp-door-ico">
-                <IconShield size={24} />
-              </span>
-              <div className="lp-door-body">
-                <span className="lp-door-tag">For site owners</span>
-                <h3>Earn a badge for your site</h3>
-                <p>
-                  Prove you own the domain, let Tripwire open your site and read your tools itself, and display a live,
-                  signed badge. Guided, no code beyond one line.
-                </p>
-              </div>
-              <span className="lp-door-go">
-                Start onboarding <IconArrow />
-              </span>
-            </Link>
-
-            <Link to="/range" className="lp-door" data-reveal>
-              <span className="lp-door-ico">
-                <IconTarget size={22} />
-              </span>
-              <div className="lp-door-body">
-                <span className="lp-door-tag">For agent builders</span>
-                <h3>Test your agent</h3>
-                <p>Run it through a range of tool-surface traps and watch, live, what it falls for. Every payload inert.</p>
-              </div>
-              <span className="lp-door-go">
-                Open the range <IconArrow />
-              </span>
-            </Link>
-
-            <Link to="/scan" className="lp-door" data-reveal>
-              <span className="lp-door-ico">
-                <IconScan size={22} />
-              </span>
-              <div className="lp-door-body">
-                <span className="lp-door-tag">For everyone</span>
-                <h3>Scan any site</h3>
-                <p>Paste an address. We open it in a real browser, read its tools, and show you what they declare.</p>
-              </div>
-              <span className="lp-door-go">
-                Scan a URL <IconArrow />
-              </span>
-            </Link>
           </div>
         </div>
       </section>
