@@ -17,6 +17,7 @@ import { AuditWizard } from './ui/pages/AuditWizard.tsx';
 import { ScanPage } from './ui/pages/ScanPage.tsx';
 import { BadgePage } from './ui/pages/BadgePage.tsx';
 import './ui/theme.css';
+import './ui/console.css';
 
 const native = resolveHost();
 if (native.source === 'none') installPolyfill();

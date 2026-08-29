@@ -42,19 +42,21 @@ export function ScanPage() {
   };
 
   return (
-    <div className="page page-narrow">
-      <div className="eyebrow-lg">Mode 2 · scan a site</div>
-      <h1 style={{ fontSize: 30, letterSpacing: '-0.02em', margin: '0 0 10px' }}>Scan any site's agent tools</h1>
-      <p className="muted" style={{ marginBottom: 22 }}>
-        Paste a web address. Tripwire opens it in a real headless browser, reads whatever WebMCP tools it
-        exposes, and reports them with any red flags. This is a look, not a certificate — a signed badge
-        requires the owner to prove control (<Link to="/badge">get a badge</Link>).
-      </p>
+    <div className="page console page-narrow">
+      <div className="cx-head">
+        <p className="cx-kick">Mode 2 · scan a site</p>
+        <h1 className="cx-title">Scan any site&apos;s agent tools.</h1>
+        <p className="cx-sub">
+          Paste a web address. Tripwire opens it in a real browser, reads the tools it hands to AI agents, and shows
+          you what they really say. A look, not a certificate — a signed badge needs the owner (
+          <Link to="/badge">get a badge</Link>).
+        </p>
+      </div>
 
       <form onSubmit={submit} className="row" style={{ marginBottom: 8 }}>
         <input
           className="field"
-          style={{ flex: '1 1 320px' }}
+          style={{ flex: '1 1 420px' }}
           placeholder="https://example.com"
           value={url}
           onChange={(e) => setUrl(e.target.value)}

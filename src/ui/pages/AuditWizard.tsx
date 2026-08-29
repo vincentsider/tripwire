@@ -100,13 +100,15 @@ export function AuditWizard() {
     `<script src="${apiBase}/badge.js"\n        data-origin="${verified ?? 'https://your-site.com'}"></script>`;
 
   return (
-    <div className="page page-narrow">
-      <div className="eyebrow-lg">Mode 2 · get a badge</div>
-      <h1 style={{ fontSize: 30, letterSpacing: '-0.02em', margin: '0 0 10px' }}>Earn your Tripwire badge</h1>
-      <p className="muted" style={{ marginBottom: 24 }}>
-        Three steps, no code beyond pasting one line at the end. Tripwire checks your tools itself and signs
-        the result — you can't fake a pass, and neither can we.
-      </p>
+    <div className="page console page-narrow">
+      <div className="cx-head">
+        <p className="cx-kick">Mode 2 · get a badge</p>
+        <h1 className="cx-title">Earn your Tripwire badge.</h1>
+        <p className="cx-sub">
+          Three steps, no code beyond pasting one line at the end. Tripwire reads your tools itself and signs the
+          result — you can&apos;t fake a pass, and neither can we.
+        </p>
+      </div>
 
       {/* Site address */}
       <div className="card" style={{ marginBottom: 20 }}>

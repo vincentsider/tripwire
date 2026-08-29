@@ -98,28 +98,27 @@ export function RangePage() {
   };
 
   return (
-    <div className="page">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22, gap: 16, flexWrap: 'wrap' }}>
-        <div>
-          <div className="eyebrow" style={{ marginBottom: 8 }}>Mode 1 · test an agent</div>
-          <h1 style={{ fontSize: 30, letterSpacing: '-0.02em', margin: 0 }}>WebMCP assurance range</h1>
-          <p style={{ color: 'var(--ink-2)', fontSize: 14, maxWidth: 560, marginTop: 8, lineHeight: 1.5 }}>
-            Run your AI agent through a corpus of WebMCP tool-surface attacks and watch, live, what
-            gets through. Every payload is an inert marker, never a real exploit.
-          </p>
-        </div>
-        <div style={{ textAlign: 'right' }}>
+    <div className="page console">
+      <header className="cx-head">
+        <p className="cx-kick">Mode 1 · test an agent</p>
+        <h1 className="cx-title">Put your agent on the range.</h1>
+        <p className="cx-sub">
+          Run it through a corpus of real tool-surface attacks and watch, live, what gets through. Every payload is an
+          inert marker — never a real exploit.
+        </p>
+        <p style={{ marginTop: 18 }}>
           <span
             className="pill"
             style={{
-              background: isWebMcpAvailable() ? 'var(--signal-soft)' : 'var(--danger-soft)',
-              color: isWebMcpAvailable() ? 'var(--signal)' : 'var(--danger)',
+              background: isWebMcpAvailable() ? 'rgba(34,211,238,.14)' : 'rgba(251,91,118,.16)',
+              color: isWebMcpAvailable() ? '#67e8f9' : '#ffb3ba',
+              border: '1px solid ' + (isWebMcpAvailable() ? 'rgba(34,211,238,.3)' : 'rgba(251,91,118,.32)'),
             }}
           >
             <span className="dot" style={{ background: 'currentColor' }} />
             {HOST_LABEL[source]}
           </span>
-        </div>
+        </p>
       </header>
 
       <div className="grid-main">

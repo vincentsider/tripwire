@@ -1,0 +1,329 @@
+/* src/ui/console.css
+ * The product pages (/range, /scan, /badge, /embed), skinned to the landing's
+ * standard: the same electric-cyan vault world, liquid-glass panels, Inter at
+ * real sizes. Scoped under .console so the skin lands on every existing
+ * component (.card, .btn, .field, .pill…) without rewriting their markup.
+ */
+
+/* ── The world ────────────────────────────────────────────────────────── */
+.page.console {
+  margin-inline: calc(50% - 50vw);
+  width: 100vw;
+  max-width: none;
+  min-height: calc(100vh - 120px);
+  padding: clamp(48px, 7vh, 84px) clamp(20px, 5vw, 64px) clamp(72px, 9vh, 110px);
+  background:
+    radial-gradient(70% 34% at 50% 0%, rgba(34, 211, 238, 0.12), transparent 70%),
+    radial-gradient(80% 30% at 16% 70%, rgba(6, 182, 212, 0.1), transparent 70%),
+    linear-gradient(180deg, #04223f 0%, #03182e 34%, #020f20 78%, #031a30 100%);
+  color: #f4f8ff;
+  font-family: 'InterVar', 'GeistVar', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.page.console > * {
+  max-width: 1140px;
+  margin-inline: auto;
+}
+.page.console.page-narrow > * {
+  max-width: 880px;
+}
+
+/* ── Page header ──────────────────────────────────────────────────────── */
+.cx-head {
+  text-align: center;
+  margin-bottom: clamp(34px, 5vh, 56px);
+}
+.cx-kick {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #22d3ee;
+  margin: 0 0 16px;
+}
+.cx-title {
+  font-size: clamp(2.3rem, 4.6vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: #fff;
+  text-wrap: balance;
+  text-shadow: 0 0 60px rgba(34, 211, 238, 0.3);
+}
+.cx-sub {
+  font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: #a9cfec;
+  margin: 18px auto 0;
+  max-width: 56ch;
+  text-wrap: balance;
+}
+.cx-sub a {
+  color: #67e8f9;
+  text-decoration: none;
+}
+.cx-sub a:hover {
+  text-decoration: underline;
+}
+
+/* ── Glass cards (skins .card everywhere) ─────────────────────────────── */
+.console .card {
+  position: relative;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.045) 42%, rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 22px 60px rgba(1, 10, 24, 0.55);
+  padding: 24px;
+}
+.console .card-title {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.console .muted,
+.console .lp-body {
+  color: #a9cfec;
+}
+.console .muted-3 {
+  color: #7fa8c8;
+}
+.console .eyebrow {
+  color: #22d3ee;
+  letter-spacing: 0.18em;
+}
+
+/* ── Buttons: brand pills ─────────────────────────────────────────────── */
+.console .btn {
+  font-size: 15px;
+  font-weight: 550;
+  padding: 12px 22px;
+  border-radius: 980px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.console .btn-primary {
+  background: #22d3ee;
+  color: #06202a;
+  border-color: transparent;
+  box-shadow: 0 0 22px rgba(34, 211, 238, 0.5), 0 8px 26px rgba(1, 20, 40, 0.5);
+}
+.console .btn-primary:hover:not(:disabled) {
+  background: #67e8f9;
+  box-shadow: 0 0 34px rgba(34, 211, 238, 0.7), 0 8px 26px rgba(1, 20, 40, 0.5);
+  transform: translateY(-1px);
+}
+.console .btn-ghost {
+  color: #eaf6ff;
+  border-color: rgba(140, 220, 255, 0.35);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.console .btn-ghost:hover:not(:disabled) {
+  border-color: #67e8f9;
+  background: rgba(34, 211, 238, 0.12);
+  color: #fff;
+}
+
+/* ── Inputs ───────────────────────────────────────────────────────────── */
+.console input.field,
+.console .field {
+  font-size: 15px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(2, 16, 32, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f4f8ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.console input.field::placeholder {
+  color: #6f93b3;
+}
+.console input.field:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+}
+
+/* ── Verdict chips ────────────────────────────────────────────────────── */
+.console .pill {
+  font-size: 10.5px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+}
+.console .pill-pass {
+  background: rgba(34, 211, 238, 0.14);
+  color: #67e8f9;
+  border-color: rgba(34, 211, 238, 0.3);
+}
+.console .pill-fail {
+  background: rgba(251, 91, 118, 0.16);
+  color: #ffb3ba;
+  border-color: rgba(251, 91, 118, 0.32);
+}
+.console .pill-partial {
+  background: rgba(251, 191, 36, 0.14);
+  color: #ffd9a0;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+.console .pill-idle {
+  background: rgba(255, 255, 255, 0.07);
+  color: #7fa8c8;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Wizard steps ─────────────────────────────────────────────────────── */
+.console .steps {
+  gap: 18px;
+}
+.console .step {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04) 42%, rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 22px 60px rgba(1, 10, 24, 0.5);
+  grid-template-columns: 44px 1fr;
+  gap: 20px;
+}
+.console .step.active {
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 0 40px rgba(34, 211, 238, 0.22),
+    0 26px 70px rgba(1, 10, 24, 0.6);
+}
+.console .step.done {
+  border-color: rgba(34, 211, 238, 0.3);
+}
+.console .step.locked {
+  opacity: 0.55;
+}
+.console .stepnum {
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+  background: rgba(2, 16, 32, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #a9cfec;
+}
+.console .step.active .stepnum {
+  background: #22d3ee;
+  color: #06202a;
+  border-color: transparent;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.6);
+}
+.console .step.done .stepnum {
+  background: rgba(34, 211, 238, 0.16);
+  color: #67e8f9;
+  border-color: rgba(34, 211, 238, 0.35);
+}
+.console .step h3 {
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.console .step .muted {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── Code blocks ──────────────────────────────────────────────────────── */
+.console .code {
+  background: rgba(1, 12, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.console .code pre {
+  font-size: 13px;
+  color: #c8e6f5;
+}
+.console .copybtn {
+  background: rgba(34, 211, 238, 0.14);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  color: #67e8f9;
+  border-radius: 8px;
+}
+.console .copybtn:hover {
+  background: rgba(34, 211, 238, 0.24);
+  color: #fff;
+}
+
+/* ── Segmented control ────────────────────────────────────────────────── */
+.console .seg {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 980px;
+  background: rgba(2, 16, 32, 0.5);
+  overflow: hidden;
+}
+.console .seg button {
+  font-size: 13.5px;
+  padding: 9px 18px;
+  color: #a9cfec;
+}
+.console .seg button.on {
+  background: #22d3ee;
+  color: #06202a;
+  font-weight: 600;
+}
+
+/* ── Notices + findings (scan page) ───────────────────────────────────── */
+.console .notice {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  color: #a9cfec;
+  font-size: 14.5px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.console .notice.ok {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.32);
+  color: #9beef9;
+}
+.console .notice.warn {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+  color: #ffd9a0;
+}
+.console .notice.bad {
+  background: rgba(251, 91, 118, 0.1);
+  border-color: rgba(251, 91, 118, 0.3);
+  color: #ffb3ba;
+}
+.console .findings {
+  gap: 10px;
+}
+.console .finding {
+  background: rgba(2, 16, 32, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+  padding: 13px 15px;
+  font-size: 14px;
+}
+.console .finding .fname {
+  color: #fff;
+  font-size: 13px;
+}
+.console .finding .fev {
+  color: #a9cfec;
+  font-size: 13.5px;
+}
+.console .linklike {
+  color: #67e8f9 !important;
+}
+
+/* Range-page trace rows inherit .card glass; give the log a touch more air. */
+.console .grid-main {
+  gap: 24px;
+}

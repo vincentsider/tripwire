@@ -100,15 +100,16 @@ Rules:
 - If the mount container is rendered by the app, make sure it exists within a few seconds of load (the badge waits up to 6s for it).`;
 
   return (
-    <div className="page page-narrow">
-      <div className="eyebrow-lg">Mode 2 · the badge</div>
-      <h1 style={{ fontSize: 30, letterSpacing: '-0.02em', margin: '0 0 10px' }}>How the badge works</h1>
-      <p className="muted" style={{ marginBottom: 22 }}>
-        The badge is a single line of HTML you paste into your page. It runs on your site, fetches your
-        signed audit, reads your live tools, and renders a verdict. If your tools change or your ownership
-        proof disappears, it stops showing green — it can never claim more than the truth.
-        Don't have a badge yet? <Link to="/badge">Get one first</Link>.
-      </p>
+    <div className="page console page-narrow">
+      <div className="cx-head">
+        <p className="cx-kick">Mode 2 · the badge</p>
+        <h1 className="cx-title">Your badge, your way.</h1>
+        <p className="cx-sub">
+          One line of HTML. It re-checks your live tools on every page load and can never claim more than the truth.
+          Pick a look and a spot below — the snippet updates as you choose. No badge yet?{' '}
+          <Link to="/badge">Get one first</Link>.
+        </p>
+      </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-title" style={{ marginBottom: 12 }}>Preview</div>
