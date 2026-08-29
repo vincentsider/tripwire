@@ -611,10 +611,10 @@ h2.sec {
 
 /* ── Nav over the landing hero: translucent deep blue, white links ─────── */
 .nav-light {
-  background: rgba(7, 14, 38, 0.9);
+  background: rgba(2, 15, 32, 0.92);
   backdrop-filter: saturate(160%) blur(18px);
   -webkit-backdrop-filter: saturate(160%) blur(18px);
-  border-bottom: 1px solid rgba(140, 180, 255, 0.12);
+  border-bottom: 1px solid rgba(0, 180, 255, 0.14);
 }
 .nav-light .nav-inner {
   padding-block: 13px;
