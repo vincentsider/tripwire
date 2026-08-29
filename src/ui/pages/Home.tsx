@@ -8,6 +8,7 @@
 import { Link } from 'react-router-dom';
 import '../landing.css';
 import { useReveal } from '../useReveal.ts';
+import { TripwireCanvas } from '../TripwireCanvas.tsx';
 
 const PRODUCTS = [
   {
@@ -51,7 +52,7 @@ export function Home() {
         </div>
 
         <div data-reveal>
-          <div className="lp-wire" aria-hidden />
+          <TripwireCanvas />
           <div className="lp-menu">
             {PRODUCTS.map((p) => (
               <Link key={p.n} to={p.to} className="lp-item">
