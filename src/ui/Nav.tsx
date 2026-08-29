@@ -26,7 +26,7 @@ export function Nav() {
           <NavLink to="/scan" className="nav-link">
             Scan a site
           </NavLink>
-          <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="nav-link gh">
+          <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="nav-link">
             GitHub
           </a>
         </div>

@@ -254,18 +254,19 @@ input.field:focus {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(8, 11, 18, 0.82);
+  background: rgba(11, 11, 12, 0.72);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--hair);
 }
 .nav-inner {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 12px 20px;
+  padding: 16px clamp(22px, 5vw, 76px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  max-width: none;
 }
 .brand {
   display: inline-flex;
@@ -278,11 +279,11 @@ input.field:focus {
   letter-spacing: -0.01em;
 }
 .brand-mark {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: var(--surface);
-  border: 1px solid var(--hair-2);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   display: grid;
   place-items: center;
 }
@@ -291,35 +292,30 @@ input.field:focus {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  border: 2.5px solid var(--signal-bright);
+  border: 2.5px solid var(--ink);
 }
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: clamp(16px, 2.4vw, 34px);
   flex-wrap: wrap;
 }
 .nav-link {
-  font-size: 13.5px;
-  color: var(--ink-2);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
   text-decoration: none;
-  padding: 7px 11px;
-  border-radius: 10px;
-  transition: 0.14s ease;
-  /* Border-box so the bordered variant below stays the same height as its
-     borderless siblings instead of rendering 2px taller. */
+  padding: 7px 2px;
+  transition: color 0.25s ease;
   box-sizing: border-box;
   line-height: 18px;
 }
 .nav-link:hover {
   color: var(--ink);
-  background: var(--surface);
 }
 .nav-link.active {
-  color: var(--signal-bright);
-}
-.nav-link.gh {
-  border: 1px solid var(--hair-2);
+  color: var(--ink);
 }
 
 /* ── Page shell ──────────────────────────────────────────────────────────── */

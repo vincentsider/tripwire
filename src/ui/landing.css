@@ -1,57 +1,43 @@
 /* src/ui/landing.css
- * Landing-page craft layer. Scoped under .lp so the console pages (range, scan,
- * badge, embed) keep their existing look untouched. Builds on the tokens in
- * theme.css — no new palette, just a wider type scale, real vertical rhythm and
- * restrained motion.
+ * Landing craft layer — cinematic minimalism, scoped under .lp so the console
+ * pages keep their own denser, instrument-like look.
+ *
+ * Rules this file holds itself to, taken from the reference sites:
+ *   1. Monochrome. Neutral greys, white as the only emphasis. No colour set.
+ *   2. No boxes. No cards, no bordered panels, no filled chips, no data tables.
+ *   3. One idea per viewport, with real emptiness around it.
+ *   4. Very few words, very large type.
+ *   5. Content sits on a wide margin, not inside a centred 1200px box.
  */
 
 .lp {
-  --lp-max: 1200px;
-  --lp-gutter: clamp(20px, 4vw, 40px);
-  --lp-sec-y: clamp(76px, 9.5vw, 132px);
+  /* Neutral, not blue-tinted: warm-neutral greyscale reads far more premium
+     than the "tech blue-black" this page used before. */
+  --ink-0: #ffffff;
+  --ink-1: #e8e8e8;
+  --ink-2: #9a9a9a;
+  --ink-3: #6a6a6a;
+  --ground: #0b0b0c;
+  --rule: rgba(255, 255, 255, 0.11);
+  --edge: clamp(22px, 5vw, 76px);
 
-  /* Four radii, three surfaces, one hairline. The page previously accumulated
-     eleven radii and four indistinguishable white overlays — values nobody can
-     tell apart are not a system, they are noise. */
-  --r-sm: 4px;
-  --r-md: 10px;
-  --r-lg: 16px;
-  --r-full: 999px;
-  --s-1: #0d121c;
-  --s-2: #111827;
-  --s-raise: rgba(255, 255, 255, 0.03);
-  --line: #1e2633;
+  background: var(--ground);
+  color: var(--ink-1);
+  /* Full-bleed: the landing escapes the app's centred container. */
+  margin-inline: calc(50% - 50vw);
+  width: 100vw;
+  overflow-x: clip;
 }
-.lp-wrap {
-  max-width: var(--lp-max);
-  margin: 0 auto;
-  padding-inline: var(--lp-gutter);
-}
-/* ── Reveal ───────────────────────────────────────────────────────────────
-   Elements start slightly low and transparent; useReveal adds .in. */
-/* No will-change here on purpose: it was promoting ~20 elements to permanent
-   compositor layers for a one-shot fade, which costs memory for the life of the
-   page (and made composited frames capture inconsistently). Opacity/transform
-   are already cheap to animate. */
+
+/* ── Reveal ───────────────────────────────────────────────────────────── */
 .lp [data-reveal] {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(22px);
+  transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1), transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .lp [data-reveal].in {
   opacity: 1;
   transform: none;
-}
-/* Stagger siblings so a row of cards lands as a sequence, not a slab. */
-.lp-beats [data-reveal]:nth-child(2),
-.lp-doors [data-reveal]:nth-child(2),
-.lp-props [data-reveal]:nth-child(2) {
-  transition-delay: 90ms;
-}
-.lp-beats [data-reveal]:nth-child(3),
-.lp-doors [data-reveal]:nth-child(3),
-.lp-props [data-reveal]:nth-child(3) {
-  transition-delay: 180ms;
 }
 @media (prefers-reduced-motion: reduce) {
   .lp [data-reveal] {
@@ -60,759 +46,300 @@
     transition: none;
   }
 }
-/* ── Type scale ───────────────────────────────────────────────────────── */
-.lp-h2 {
-  font-size: clamp(1.85rem, 3.4vw, 2.7rem);
-  line-height: 1.08;
-  letter-spacing: -0.028em;
-  font-weight: 600;
-  margin: 0 0 14px;
-  color: var(--ink);
-  text-wrap: balance;
-}
-.lp-sub {
-  font-size: 1rem;
-  line-height: 1.62;
-  color: var(--ink-2);
-  max-width: 58ch;
+
+/* ── Type ─────────────────────────────────────────────────────────────── */
+.lp-display {
+  font-size: clamp(2.6rem, 7vw, 6.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-weight: 500;
   margin: 0;
+  color: var(--ink-0);
 }
-/* Cyan is reserved for two things only: the primary CTA, and a verified/signed
-   state. It previously marked nine unrelated categories (eyebrows, links,
-   arrows, icons, chips, emphasis), which flattens the page into one note and
-   leaves nothing to signal "this is the trusted thing". */
-.lp-kicker {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  line-height: 1.4;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: 14px;
-}
-.lp-live {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--signal-bright);
-  box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.55);
-  animation: lp-pulse 2.4s infinite;
-}
-@keyframes lp-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.5); }
-  70% { box-shadow: 0 0 0 6px rgba(34, 211, 238, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lp-live { animation: none; }
-}
-/* ── Hero: instrument panel ───────────────────────────────────────────────
-   Not text-left / card-right. A status strip, a three-line headline where each
-   line IS a product, a literal tripwire rule, then three live readouts. */
-.lp-hero {
-  position: relative;
-  padding-bottom: clamp(52px, 6vw, 80px);
-  overflow: hidden;
-}
-.lp-hero::before {
-  content: '';
-  position: absolute;
-  top: -22%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(1400px, 130vw);
-  height: 700px;
-  background: radial-gradient(closest-side, rgba(6, 182, 212, 0.1), transparent 70%);
-  pointer-events: none;
-}
-/* Status strip — full-bleed, ruled, monospace. Reads as instrumentation. */
-.lp-status {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 10px clamp(20px, 4vw, 40px);
-  border-bottom: 1px solid var(--line);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.lp-display .dim {
   color: var(--ink-3);
 }
-.lp-status-l {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--signal-bright);
-}
-.lp-status-r {
-  margin-left: auto;
-}
-.lp-headline {
-  padding-top: clamp(34px, 4.6vw, 62px);
-  padding-bottom: clamp(24px, 2.8vw, 36px);
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(22px, 3vw, 48px);
-  align-items: end;
-}
-@media (min-width: 1000px) {
-  .lp-headline {
-    grid-template-columns: 1.15fr 0.85fr;
-  }
-}
-.lp-h1 {
-  display: flex;
-  flex-direction: column;
-  font-size: clamp(2.3rem, 5.2vw, 4.1rem);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
-  font-weight: 600;
+.lp-mid {
+  font-size: clamp(1.9rem, 4.6vw, 3.8rem);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  font-weight: 500;
   margin: 0;
-  color: var(--ink);
+  color: var(--ink-0);
 }
-/* Each headline line is numbered to match its panel below, so the eye links
-   verb -> product without a legend. */
-.lp-l {
-  position: relative;
-  padding-left: clamp(38px, 4vw, 58px);
-}
-.lp-l::before {
-  content: attr(data-i);
-  position: absolute;
-  left: 0;
-  top: 0.62em;
-  font-family: var(--mono);
-  font-size: clamp(10px, 0.85vw, 12px);
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  color: var(--ink-3);
-}
-.lp-l em {
-  font-style: normal;
-  color: var(--ink-3);
-}
-.lp-l:nth-child(1) em { color: rgba(251, 191, 36, 0.85); }
-.lp-l:nth-child(2) em { color: rgba(34, 211, 238, 0.9); }
-.lp-l:nth-child(3) em { color: rgba(52, 211, 153, 0.85); }
-.lp-lead {
-  font-size: clamp(0.95rem, 1.15vw, 1.05rem);
-  line-height: 1.66;
+.lp-body {
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  line-height: 1.6;
   color: var(--ink-2);
   max-width: 46ch;
   margin: 0;
-  padding-bottom: 6px;
+  font-weight: 300;
 }
-/* The tripwire. A taut line the page hangs from, with one travelling pulse. */
+.lp-tag {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ── Section shell: one idea, one screen ──────────────────────────────── */
+.lp-screen {
+  min-height: 100svh;
+  padding: clamp(84px, 12vh, 150px) var(--edge) clamp(64px, 10vh, 120px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+.lp-hero {
+  justify-content: space-between;
+  padding-top: clamp(72px, 11vh, 132px);
+  padding-bottom: clamp(40px, 6vh, 72px);
+}
+.lp-hero-type {
+  max-width: 20ch;
+}
+.lp-hero-sub {
+  margin-top: clamp(20px, 2.6vw, 32px);
+}
+
+/* The tripwire: one taut full-bleed rule with a slow travelling light. The only
+   ornament on the page, and the thing the product is named for. */
 .lp-wire {
   position: relative;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--line) 8%, var(--line) 92%, transparent);
-  margin-bottom: clamp(20px, 2.4vw, 30px);
+  width: 100%;
+  background: var(--rule);
+  margin-top: clamp(34px, 5vh, 64px);
   overflow: hidden;
 }
-.lp-wire-pulse {
-  position: absolute;
-  top: 0;
-  left: -20%;
-  width: 20%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--signal-bright), transparent);
-  animation: lp-travel 5.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-@keyframes lp-travel {
-  0% { left: -20%; }
-  60%, 100% { left: 110%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lp-wire-pulse { animation: none; opacity: 0.4; left: 40%; }
-}
-/* ── The three panels ─────────────────────────────────────────────────── */
-.hp {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-}
-@media (min-width: 900px) {
-  .hp {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-.hp-panel {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: clamp(22px, 2.3vw, 30px);
-  background: var(--bg);
-  text-decoration: none;
-  color: inherit;
-  transition: background 0.22s ease;
-}
-.hp-panel::before {
+.lp-wire::after {
   content: '';
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 2px;
-  background: var(--tone);
-  opacity: 0.55;
-  transition: opacity 0.22s ease;
+  top: 0;
+  bottom: 0;
+  left: -30%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  animation: lp-sweep 7s cubic-bezier(0.45, 0, 0.25, 1) infinite;
 }
-.hp-panel:hover {
-  background: var(--s-1);
+@keyframes lp-sweep {
+  0% { left: -30%; }
+  65%, 100% { left: 100%; }
 }
-.hp-panel:hover::before {
-  opacity: 1;
-}
-.tone-warn { --tone: #fbbf24; }
-.tone-signal { --tone: #22d3ee; }
-.tone-ok { --tone: #34d399; }
-.hp-head {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-.hp-n {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: var(--tone);
-}
-.hp-title {
-  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
-  letter-spacing: -0.025em;
-  font-weight: 600;
-  margin: 0;
-  color: var(--ink);
-  line-height: 1.2;
-}
-.hp-title-2 {
-  color: var(--ink-3);
-  font-weight: 500;
-}
-.hp-desc {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--ink-2);
-}
-/* Live readout: dense, monospace, ruled. */
-.hp-readout {
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 12px 0;
-  margin-top: 2px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-height: 132px;
-}
-.hp-url {
-  font-size: 11px;
-  color: var(--ink-3);
-  padding-bottom: 3px;
-}
-.hp-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--ink-2);
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
-.hp-line.in {
-  opacity: 1;
-  transform: none;
-}
-.hp-id {
-  font-size: 11px;
-  color: var(--ink-3);
-}
-.hp-lab {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-}
-.hp-v {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: var(--r-sm);
-  flex: none;
-}
-.hp-v.held,
-.hp-v.ok {
-  background: var(--ok-soft);
-  color: var(--ok);
-}
-.hp-v.fell,
-.hp-v.flag {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-.hp-total {
-  font-size: 11.5px;
-  color: var(--ink-3);
-  margin-top: auto;
-  padding-top: 6px;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-.hp-total.in {
-  opacity: 1;
-}
-.hp-score {
-  color: var(--ink);
-  font-size: 12.5px;
-}
-.hp-warn {
-  color: var(--warn);
-}
-.hp-seal {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  align-self: flex-start;
-  border: 1px solid rgba(52, 211, 153, 0.3);
-  background: var(--ok-soft);
-  border-radius: var(--r-sm);
-  padding: 6px 10px;
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.hp-seal.in {
-  opacity: 1;
-  transform: none;
-}
-.hp-seal-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ok);
-}
-.hp-seal-txt {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ok);
-}
-.hp-cta {
-  margin-top: auto;
-  padding-top: 4px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--tone);
-}
-/* ── Sections ─────────────────────────────────────────────────────────────
-   Rhythm is deliberately uneven: the argument sections get room, supporting
-   ones get less, the close gets the most. Equal padding everywhere makes a
-   page scroll as identical slabs. */
-.lp-sec {
-  padding-block: var(--lp-sec-y);
-}
-.lp-sec-tight {
-  padding-block: clamp(56px, 6.5vw, 84px);
-}
-.lp-sec-wide {
-  padding-block: clamp(92px, 12vw, 168px);
-}
-.lp-sec-alt {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006));
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-.lp-sec-head {
-  max-width: 660px;
-  margin-bottom: clamp(38px, 4.6vw, 60px);
+@media (prefers-reduced-motion: reduce) {
+  .lp-wire::after { animation: none; opacity: 0.35; left: 35%; }
 }
 
-/* ── Buttons ──────────────────────────────────────────────────────────── */
-.lp-cta {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.lp-cta-center {
-  justify-content: center;
-}
-.lp-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 14.5px;
-  font-weight: 560;
-  padding: 12px 20px;
-  border-radius: var(--r-md);
-  text-decoration: none;
-  border: 1px solid transparent;
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, border-color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-.lp-btn svg {
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.lp-btn:hover svg {
-  transform: translateX(3px);
-}
-.lp-btn-primary {
-  background: var(--signal-bright);
-  color: #04121a;
-  border-color: var(--signal-bright);
-}
-.lp-btn-primary:hover {
-  background: #4fe0f5;
-  box-shadow: 0 10px 30px -12px rgba(34, 211, 238, 0.6);
-  transform: translateY(-1px);
-}
-.lp-btn-ghost {
-  color: var(--ink);
-  border-color: var(--hair-2);
-  background: var(--s-raise);
-}
-.lp-btn-ghost:hover {
-  border-color: var(--signal-strong);
-  transform: translateY(-1px);
-}
-.lp-microcopy {
-  font-size: 12.5px;
-  color: var(--ink-3);
-  margin: 0;
-}
-
-/* ── Problem: copy column + the injected-descriptor artifact ──────────────
-   Deliberately not another three-across grid — repeated compositions make the
-   page scroll as identical slabs with no crescendo. */
-.lp-problem {
+/* ── The three products: a menu, not three boxes ──────────────────────── */
+.lp-menu {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(34px, 4vw, 56px);
-  align-items: start;
+  margin-top: clamp(30px, 4vh, 54px);
 }
-@media (min-width: 940px) {
-  .lp-problem {
-    grid-template-columns: 1fr 1fr;
+@media (min-width: 800px) {
+  .lp-menu {
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(24px, 4vw, 72px);
   }
 }
-.lp-beats {
-  list-style: none;
-  counter-reset: beat;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
+.lp-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 22px 0;
+  border-top: 1px solid transparent;
+  transition: opacity 0.4s ease;
 }
-.lp-beat {
-  counter-increment: beat;
-  position: relative;
-  padding: 0 0 26px 40px;
-  border-left: 1px solid var(--line);
+@media (max-width: 799px) {
+  .lp-item {
+    border-top-color: var(--rule);
+  }
 }
-.lp-beat:last-child {
-  padding-bottom: 0;
-  border-left-color: transparent;
-}
-.lp-beat::before {
-  content: counter(beat, decimal-leading-zero);
-  position: absolute;
-  left: 0;
-  top: -2px;
-  transform: translateX(-50%);
-  background: var(--bg);
-  font-family: var(--mono);
+.lp-item-n {
   font-size: 11px;
+  letter-spacing: 0.18em;
   color: var(--ink-3);
-  padding: 2px 0;
-  line-height: 1.4;
+  transition: color 0.35s ease;
 }
-.lp-beat h3 {
-  font-size: 17px;
-  line-height: 1.35;
-  letter-spacing: -0.015em;
-  margin: 0 0 8px;
-  color: var(--ink);
-  font-weight: 600;
+.lp-item-t {
+  font-size: clamp(1.35rem, 2.1vw, 1.85rem);
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  color: var(--ink-0);
+  margin: 10px 0 8px;
+  line-height: 1.1;
 }
-.lp-beat p {
+.lp-item-d {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
   margin: 0;
-  font-size: 14.5px;
-  line-height: 1.62;
+  max-width: 30ch;
+  font-weight: 300;
+  transition: color 0.35s ease;
+}
+/* Hovering one product quietly recedes the others — focus without a box. */
+.lp-menu:hover .lp-item {
+  opacity: 0.42;
+}
+.lp-menu .lp-item:hover {
+  opacity: 1;
+}
+.lp-item:hover .lp-item-d,
+.lp-item:hover .lp-item-n {
   color: var(--ink-2);
 }
 
-/* The attack, shown rather than described. */
-.lp-inject {
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  background: var(--s-1);
-  overflow: hidden;
-}
-.lp-inject-head {
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+/* ── The attack, set as editorial type rather than a code panel ───────── */
+.lp-quote {
+  font-size: clamp(1.5rem, 3.4vw, 2.9rem);
+  line-height: 1.32;
+  letter-spacing: -0.025em;
+  font-weight: 300;
   color: var(--ink-3);
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--line);
-  background: var(--s-raise);
+  margin: clamp(30px, 5vh, 60px) 0 0;
+  max-width: 26ch;
 }
-.lp-inject-code {
-  margin: 0;
-  padding: 18px 16px;
-  font-family: var(--mono);
-  font-size: 12.5px;
-  line-height: 1.75;
-  color: var(--ink-2);
-  white-space: pre-wrap;
-  word-break: break-word;
+.lp-quote .hit {
+  color: var(--ink-0);
+  font-weight: 400;
 }
-.lp-inject-code .k {
-  color: var(--ink-3);
-}
-.lp-inject-code .s {
-  color: var(--ink-2);
-}
-.lp-inject-code .poison {
-  color: var(--warn);
-  background: rgba(251, 191, 36, 0.12);
-  border-bottom: 1px dashed rgba(251, 191, 36, 0.55);
-  padding: 1px 2px;
-  border-radius: var(--r-sm);
-}
-.lp-inject-verdict {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 13px 16px;
-  border-top: 1px solid var(--line);
-  background: rgba(251, 191, 36, 0.05);
+.lp-verdict {
+  display: block;
+  margin-top: clamp(20px, 3vh, 34px);
   font-size: 12px;
-  line-height: 1.5;
-  color: var(--ink-2);
-}
-.lp-inject-flag {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--warn);
-  background: var(--warn-soft);
-  border-radius: var(--r-full);
-  padding: 3px 9px;
-  flex: none;
+  color: var(--ink-3);
+  font-weight: 400;
 }
 
-/* ── Trust mechanics: a stacked ledger, not a third card grid ─────────── */
-.lp-props {
+/* ── Split: statement left, supporting right ──────────────────────────── */
+.lp-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .lp-split {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: end;
+  }
+}
+
+/* ── Numbered statements ──────────────────────────────────────────────── */
+.lp-rows {
+  margin-top: clamp(34px, 6vh, 72px);
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--line);
 }
-.lp-prop {
+.lp-row {
   display: grid;
-  grid-template-columns: 40px 1fr;
-  gap: 18px;
-  align-items: start;
-  padding: clamp(22px, 2.6vw, 30px) 0;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: clamp(24px, 3.4vh, 40px) 0;
+  border-top: 1px solid var(--rule);
 }
 @media (min-width: 860px) {
-  .lp-prop {
-    grid-template-columns: 40px 0.9fr 1.3fr;
-    gap: 28px;
-    align-items: center;
-  }
-  .lp-prop h3 {
-    margin: 0;
+  .lp-row {
+    grid-template-columns: 6ch 1fr 1.15fr;
+    gap: clamp(20px, 3vw, 56px);
+    align-items: baseline;
   }
 }
-.lp-prop-ico {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-md);
-  display: grid;
-  place-items: center;
-  background: var(--s-raise);
-  border: 1px solid var(--line);
-  color: var(--ink-2);
+.lp-row:last-child {
+  border-bottom: 1px solid var(--rule);
 }
-.lp-prop h3 {
-  font-size: 17px;
-  line-height: 1.35;
-  letter-spacing: -0.018em;
-  margin: 0 0 8px;
-  font-weight: 600;
-  color: var(--ink);
+.lp-row-n {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
 }
-.lp-prop p {
+.lp-row-t {
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+  letter-spacing: -0.025em;
+  font-weight: 500;
+  color: var(--ink-0);
   margin: 0;
+  line-height: 1.2;
+}
+.lp-row-d {
   font-size: 14.5px;
-  line-height: 1.64;
-  color: var(--ink-2);
+  line-height: 1.6;
+  color: var(--ink-3);
+  margin: 0;
+  font-weight: 300;
 }
-/* ── Proof ────────────────────────────────────────────────────────────── */
-.lp-inline-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 18px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--signal-bright);
-  text-decoration: none;
-}
-.lp-inline-link svg {
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.lp-inline-link:hover svg {
-  transform: translateX(4px);
-}
-.lp-stats {
+
+/* ── Figures ──────────────────────────────────────────────────────────── */
+.lp-figs {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  overflow: hidden;
+  gap: clamp(28px, 4vw, 60px) clamp(20px, 3vw, 40px);
+  margin-top: clamp(38px, 6vh, 76px);
 }
-@media (min-width: 760px) {
-  .lp-stats {
+@media (min-width: 820px) {
+  .lp-figs {
     grid-template-columns: repeat(4, 1fr);
   }
 }
-.lp-stat {
-  background: var(--s-2);
-  padding: 24px 20px;
-}
-.lp-stat-n {
+.lp-fig-n {
   display: block;
-  font-family: var(--mono);
-  font-size: clamp(1.6rem, 2.6vw, 2rem);
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  color: var(--ink-0);
+  line-height: 1;
 }
-.lp-stat-l {
+.lp-fig-l {
   display: block;
-  font-size: 12.5px;
+  margin-top: 12px;
+  font-size: 12px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
   color: var(--ink-3);
-  margin-top: 5px;
 }
-/* ── Scope ────────────────────────────────────────────────────────────── */
-/* Keeps the same left rail as every other section — a page that shifts its
-   margin section to section reads as unaligned, however good the type is. */
-/* The rule hangs in the gutter via a negative margin so the body text stays on
-   the same left rail as every heading. Indenting the copy instead would make
-   the page's spine wander by ~25px in its most credibility-critical section. */
-.lp-scope {
-  border-left: 2px solid var(--signal-strong);
-  padding-left: clamp(20px, 2.6vw, 30px);
-  margin-left: calc(-1 * clamp(20px, 2.6vw, 30px) - 2px);
-  max-width: 76ch;
+
+/* ── Links: text with a rule, never a filled pill ─────────────────────── */
+.lp-link {
+  display: inline-block;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  color: var(--ink-0);
+  text-decoration: none;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--rule);
+  transition: border-color 0.35s ease;
+  font-weight: 400;
 }
-.lp-scope p {
-  font-size: clamp(0.98rem, 1.25vw, 1.075rem);
-  line-height: 1.72;
-  color: var(--ink-2);
-  margin: 0 0 16px;
+.lp-link:hover {
+  border-bottom-color: var(--ink-0);
 }
-.lp-scope p:last-child {
-  margin-bottom: 0;
-}
-.lp-scope strong {
-  color: var(--ink);
-  font-weight: 600;
-}
-/* ── Close ────────────────────────────────────────────────────────────── */
-.lp-close {
-  text-align: center;
-}
-.lp-close-h {
-  max-width: 20ch;
-  margin-inline: auto;
-  margin-bottom: 28px;
-}
-/* ── Hero artifact: the signed report ────────────────────────────────────
-   No window chrome and no traffic lights. The hero asset is the thing the
-   product actually issues, using real values from the openclawcity.ai audit,
-   so it needs no "illustrative" caption undercutting it. */
-.rep {
-  margin: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  background: linear-gradient(180deg, var(--s-2), var(--s-1));
-  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.95);
-  overflow: hidden;
-}
-.rep-tools li {
+.lp-links {
   display: flex;
-  align-items: center;
+  gap: clamp(24px, 4vw, 48px);
+  flex-wrap: wrap;
+  margin-top: clamp(30px, 4vh, 48px);
+}
+.lp-foot {
+  padding: 30px var(--edge) 40px;
+  border-top: 1px solid var(--rule);
+  display: flex;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-  font-size: 12.5px;
-  color: var(--ink-2);
-  border-bottom: 1px solid rgba(30, 38, 51, 0.6);
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ink-3);
 }
-.rep-tools li.in {
-  opacity: 1;
-  transform: none;
+.lp-foot a {
+  color: var(--ink-3);
+  text-decoration: none;
 }
-.rep-tools li:last-child {
-  border-bottom: 0;
-}
-/* ── Small screens ────────────────────────────────────────────────────────
-   Every grid above is single-column by default, so the layout already
-   collapses; this only tightens the dense bits (panel chrome, stat pairs,
-   full-width CTAs) so nothing crowds or spills at 360–430px. */
-@media (max-width: 540px) {
-  .lp-hero {
-    padding-top: 48px;
-  }
-  .lp-hero::before {
-    width: 560px;
-    height: 460px;
-    top: -18%;
-  }
-  .lp-cta {
-    gap: 10px;
-  }
-  .lp-btn {
-    flex: 1 1 auto;
-    justify-content: center;
-  }
-  .lp-stats {
-    grid-template-columns: 1fr 1fr;
-  }
-  .lp-stat {
-    padding: 16px 14px;
-  }
-  .sp-bar {
-    flex-wrap: wrap;
-    row-gap: 4px;
-  }
-  .sp-state {
-    margin-left: 0;
-    flex-basis: 100%;
-  }
-  .sp-foot {
-    row-gap: 4px;
-  }
-  .sp-fp {
-    flex-basis: 100%;
-  }
+.lp-foot a:hover {
+  color: var(--ink-1);
 }
