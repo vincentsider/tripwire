@@ -15,11 +15,24 @@ export function Home() {
 
   return (
     <div className="lp">
-      {/* ── HERO ─────────────────────────────────────────────────────── */}
+      {/* ── HERO: the laser vault ────────────────────────────────────── */}
       <section className="hero">
-        <div className="wrap" data-reveal>
+        {/* the scene */}
+        <div className="vault-floor" aria-hidden="true" />
+        <div className="beam beam-1" aria-hidden="true" />
+        <div className="beam beam-2" aria-hidden="true" />
+        <div className="beam beam-3" aria-hidden="true" />
+        <div className="beam beam-4" aria-hidden="true" />
+        <div className="trip" aria-hidden="true" />
+        <span className="mote" style={{ left: '22%', bottom: '30%', animationDelay: '-3s' }} aria-hidden="true" />
+        <span className="mote" style={{ left: '38%', bottom: '20%', animationDelay: '-8s' }} aria-hidden="true" />
+        <span className="mote" style={{ left: '57%', bottom: '36%', animationDelay: '-1s' }} aria-hidden="true" />
+        <span className="mote" style={{ left: '71%', bottom: '14%', animationDelay: '-11s' }} aria-hidden="true" />
+        <span className="mote" style={{ left: '83%', bottom: '28%', animationDelay: '-6s' }} aria-hidden="true" />
+
+        <div className="wrap" data-reveal style={{ position: 'relative', zIndex: 3 }}>
           <p className="kick">Trust for the agent web</p>
-          <h1 className="h-xl">
+          <h1 className="h-hero">
             Is your agent safe?
             <br />
             Is your site?
@@ -37,9 +50,11 @@ export function Home() {
             </Link>
           </div>
         </div>
+      </section>
 
-        {/* All three products, visible without scrolling. */}
-        <div className="wrap three" data-reveal>
+      {/* ── THE THREE PRODUCTS ───────────────────────────────────────── */}
+      <section className="sec" style={{ paddingTop: 'clamp(56px, 8vh, 88px)' }}>
+        <div className="wrap three" data-reveal style={{ marginTop: 0 }}>
           <Link to="/range" className="p-card">
             <span className="p-n">01</span>
             <h2 className="p-q">Is your agent safe?</h2>

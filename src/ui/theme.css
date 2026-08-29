@@ -628,40 +628,35 @@ h2.sec {
 }
 
 
-/* ── Nav: light variant for the landing (Apple-style) ────────────────────
-   Near-white and translucent with a blur and one hairline. Small, quiet links;
-   no boxed button. The mark's crossing dot carries the blue. */
+/* ── Nav over the landing hero: translucent deep blue, white links ─────── */
 .nav-light {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid #e3e3e6;
+  background: rgba(7, 14, 38, 0.9);
+  backdrop-filter: saturate(160%) blur(18px);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border-bottom: 1px solid rgba(140, 180, 255, 0.12);
 }
 .nav-light .nav-inner {
-  padding-block: 12px;
+  padding-block: 13px;
 }
 .nav-light .brand {
-  color: #1d1d1f;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 650;
   font-size: 17px;
   letter-spacing: -0.02em;
   gap: 9px;
-  --logo-hit: #0071e3;
+  --logo-hit: #0a84ff;
 }
 .nav-light .nav-link {
   font-size: 13px;
   font-weight: 450;
   letter-spacing: 0;
   text-transform: none;
-  color: #1d1d1f;
-  opacity: 0.82;
+  color: rgba(233, 240, 255, 0.85);
 }
 .nav-light .nav-link:hover,
 .nav-light .nav-link.active {
-  color: #0071e3;
-  opacity: 1;
+  color: #ffffff;
 }
-/* The old bordered mark box is unused on the landing. */
 .nav-light .brand-mark {
   display: none;
 }

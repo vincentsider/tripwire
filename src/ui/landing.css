@@ -181,18 +181,184 @@
   margin: 0 auto;
 }
 
-/* ── Hero ─────────────────────────────────────────────────────────────── */
+/* ── HERO: the laser vault ────────────────────────────────────────────────
+   A cinematic scene, not a layout: electric-blue tripwire beams stretched
+   through a deep-blue vault, one of them tripped — a hot flash at the crossing
+   point. Giant white type over it. Deep BLUE, never black. */
 .hero {
   position: relative;
-  padding: clamp(64px, 11vh, 132px) var(--edge) clamp(56px, 8vh, 96px);
+  min-height: min(92vh, 980px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   text-align: center;
+  padding: clamp(96px, 15vh, 170px) var(--edge) clamp(220px, 30vh, 320px);
   overflow: hidden;
   background:
-    radial-gradient(90% 60% at 50% 0%, #f2f8ff 0%, rgba(255, 255, 255, 0) 62%),
-    var(--white);
+    radial-gradient(120% 90% at 50% 108%, #103a8f 0%, rgba(16, 58, 143, 0) 55%),
+    radial-gradient(90% 70% at 50% -10%, #12245e 0%, rgba(18, 36, 94, 0) 60%),
+    linear-gradient(180deg, #060d24 0%, #081132 52%, #0a1740 100%);
+  color: #fff;
+}
+/* Atmospheric haze + vignette. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(55% 38% at 50% 72%, rgba(56, 132, 255, 0.16), transparent 70%),
+    radial-gradient(120% 100% at 50% 50%, transparent 60%, rgba(3, 7, 20, 0.55) 100%);
+  pointer-events: none;
+}
+.hero .kick {
+  color: #6fb3ff;
+  font-family: var(--data);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.hero .h-hero {
+  font-size: clamp(2.9rem, 7.4vw, 6.6rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.038em;
+  margin: 0;
+  color: #fff;
+  text-wrap: balance;
+  text-shadow: 0 0 70px rgba(56, 132, 255, 0.35);
+  position: relative;
+  z-index: 3;
 }
 .hero .sub {
+  color: #b9cdf2;
   margin-inline: auto;
+  position: relative;
+  z-index: 3;
+}
+.hero .btns {
+  position: relative;
+  z-index: 3;
+}
+.hero .btn-fill {
+  background: var(--blue-hi);
+  box-shadow: 0 0 24px rgba(10, 132, 255, 0.55), 0 8px 30px rgba(0, 40, 120, 0.5);
+}
+.hero .btn-fill:hover {
+  background: #3ea0ff;
+  box-shadow: 0 0 38px rgba(10, 132, 255, 0.75), 0 8px 30px rgba(0, 40, 120, 0.5);
+}
+.hero .btn-line {
+  color: #eaf3ff;
+  border-color: rgba(190, 218, 255, 0.5);
+}
+.hero .btn-line:hover {
+  background: rgba(120, 175, 255, 0.12);
+  border-color: #9cc5ff;
+}
+
+/* The floor: a perspective grid catching the beam light. */
+.vault-floor {
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  width: 200%;
+  height: 52%;
+  transform: translateX(-50%) perspective(700px) rotateX(64deg);
+  transform-origin: 50% 100%;
+  background-image:
+    linear-gradient(rgba(90, 150, 255, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 150, 255, 0.13) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(65% 90% at 50% 100%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(65% 90% at 50% 100%, #000 30%, transparent 75%);
+  pointer-events: none;
+}
+
+/* Beams: white-hot core + stacked electric-blue glow. */
+.beam {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #dcecff 12%, #f4f9ff 50%, #dcecff 88%, transparent);
+  box-shadow:
+    0 0 6px 1px rgba(140, 190, 255, 0.9),
+    0 0 18px 3px rgba(64, 140, 255, 0.75),
+    0 0 46px 10px rgba(38, 108, 255, 0.45),
+    0 0 110px 30px rgba(28, 84, 220, 0.25);
+  pointer-events: none;
+  animation: beam-breathe 6s ease-in-out infinite;
+}
+.beam-1 { bottom: 34%; opacity: 0.5; transform: scaleY(0.8); animation-delay: -2s; }
+.beam-2 { bottom: 26%; opacity: 0.75; animation-delay: -4s; }
+.beam-3 { bottom: 17%; opacity: 1; height: 2.5px; }
+.beam-4 { bottom: 8%;  opacity: 0.6; transform: scaleY(0.8); animation-delay: -1s; }
+@keyframes beam-breathe {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.28); }
+}
+
+/* The trip: a hot flash where something crossed the wire. */
+.trip {
+  position: absolute;
+  bottom: 17%;
+  left: 63%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.trip::before {
+  content: '';
+  position: absolute;
+  left: -160px;
+  top: -160px;
+  width: 320px;
+  height: 320px;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(190, 220, 255, 0.55) 7%,
+      rgba(90, 150, 255, 0.32) 20%, rgba(50, 110, 255, 0.12) 42%, transparent 68%);
+  animation: trip-pulse 4.2s ease-in-out infinite;
+}
+/* Vertical light spike through the flash. */
+.trip::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: -120px;
+  width: 2px;
+  height: 240px;
+  background: linear-gradient(180deg, transparent, rgba(220, 238, 255, 0.9) 45%, rgba(220, 238, 255, 0.9) 55%, transparent);
+  filter: blur(0.5px);
+  animation: trip-pulse 4.2s ease-in-out infinite;
+}
+@keyframes trip-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.92); }
+  12% { opacity: 1; transform: scale(1.06); }
+  24% { opacity: 0.75; transform: scale(0.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .beam, .trip::before, .trip::after { animation: none; }
+}
+
+/* Drifting dust motes in the beam light. */
+.mote {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(180, 210, 255, 0.75);
+  filter: blur(1px);
+  pointer-events: none;
+  animation: mote-drift 14s linear infinite;
+}
+@keyframes mote-drift {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: 0.7; }
+  88% { opacity: 0.5; }
+  100% { transform: translate(46px, -70px); opacity: 0; }
 }
 
 /* ── The three products, stated in the hero ───────────────────────────── */
