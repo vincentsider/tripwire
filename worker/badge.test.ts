@@ -2,6 +2,17 @@ import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
 import worker from './index.ts';
 import type { Env, ExecutionContext } from './types.ts';
 import { canonicalSurfaceReport, type SurfaceReport } from '../src/range/surfaceReport.ts';
+import { hasFailFinding } from './badge.ts';
+
+describe('hasFailFinding', () => {
+  it('is true only when a stored finding has verdict FAIL', () => {
+    expect(hasFailFinding([{ verdict: 'PASS' }, { verdict: 'FAIL' }])).toBe(true);
+    expect(hasFailFinding([{ verdict: 'PASS' }, { verdict: 'PARTIAL' }])).toBe(false);
+    expect(hasFailFinding([])).toBe(false);
+    expect(hasFailFinding(null)).toBe(false);
+    expect(hasFailFinding('not-an-array')).toBe(false);
+  });
+});
 
 const ctx: ExecutionContext = { waitUntil: () => {}, passThroughOnException: () => {} };
 

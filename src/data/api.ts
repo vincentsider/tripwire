@@ -222,6 +222,7 @@ export interface BadgeState {
   fingerprint?: string;
   assuranceScore?: number | null;
   assuranceRung?: number;
+  flagged?: boolean; // active audit recorded a confirmed FAIL
   signedAt?: string;
 }
 

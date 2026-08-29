@@ -6,6 +6,8 @@
 // honesty rules are unit-tested, not buried in DOM code:
 //
 //   - never a green "verified" that survives a fingerprint mismatch;
+//   - never a green "verified" over an audit that recorded a confirmed FAIL —
+//     the tools may be genuine, but green must not reassure past a red flag;
 //   - a mismatch reads "tools changed — this seal does not apply";
 //   - with no host to check, show the SIGNED state ("audited as of ⟨date⟩"),
 //     not a scary error and not a false live-verified.
@@ -19,6 +21,8 @@ export type BadgeStateJson =
       state: 'active';
       fingerprint: string;
       assuranceScore: number | null;
+      /** The signed audit recorded a confirmed FAIL. Absent on older responses. */
+      flagged?: boolean;
       signedAt: string;
     };
 
@@ -46,14 +50,22 @@ export function decideBadge(state: BadgeStateJson, liveFingerprint: string | nul
       return { label: 'expired', tone: 'warn', sub: 're-audit required' };
     case 'active': {
       const score = state.assuranceScore === null ? '' : ` · ${Math.round(state.assuranceScore * 100)}% clean`;
+      // Integrity first: if we can read the live tools and they no longer match
+      // the audited set, the seal does not apply at all.
+      if (liveFingerprint !== null && liveFingerprint !== state.fingerprint) {
+        return { label: 'tools changed', tone: 'warn', sub: 'the audited tools have changed; this seal does not apply' };
+      }
+      // Integrity holds (matched, or no host to check) — but a green "verified"
+      // must never sit over an audit that found a confirmed red flag. Honesty
+      // over reassurance: the tools ARE the audited ones, and one of them failed.
+      if (state.flagged) {
+        return { label: 'tools flagged', tone: 'warn', sub: `a tool raised a red flag in audit — see report${score}` };
+      }
       if (liveFingerprint === null) {
         // No host to read on-page tools: show the signed state, do not claim a live check.
         return { label: 'tools audited', tone: 'ok', sub: `as of ${day(state.signedAt)}${score}` };
       }
-      if (liveFingerprint === state.fingerprint) {
-        return { label: 'tools verified', tone: 'ok', sub: `live tools match the audit${score}` };
-      }
-      return { label: 'tools changed', tone: 'warn', sub: 'the audited tools have changed; this seal does not apply' };
+      return { label: 'tools verified', tone: 'ok', sub: `live tools match the audit${score}` };
     }
   }
 }

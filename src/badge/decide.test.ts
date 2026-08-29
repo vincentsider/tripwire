@@ -25,6 +25,31 @@ describe('decideBadge (honesty rules)', () => {
     expect(d.sub).not.toContain('match'); // does not claim a live check happened
   });
 
+  it('active + FLAGGED (confirmed FAIL) + matching live -> tools flagged (warn, never green)', () => {
+    const d = decideBadge({ ...active('abc'), flagged: true }, 'abc');
+    expect(d.tone).toBe('warn');
+    expect(d.label).toBe('tools flagged');
+    expect(d.sub).toContain('red flag');
+  });
+
+  it('active + FLAGGED + no host -> tools flagged (warn), not a reassuring "audited"', () => {
+    const d = decideBadge({ ...active('abc'), flagged: true }, null);
+    expect(d.tone).toBe('warn');
+    expect(d.label).toBe('tools flagged');
+  });
+
+  it('active + FLAGGED + MISMATCH -> integrity wins: tools changed', () => {
+    const d = decideBadge({ ...active('abc'), flagged: true }, 'xyz');
+    expect(d.label).toBe('tools changed');
+    expect(d.tone).toBe('warn');
+  });
+
+  it('active + flagged:false is unchanged (still green verified)', () => {
+    const d = decideBadge({ ...active('abc'), flagged: false }, 'abc');
+    expect(d.tone).toBe('ok');
+    expect(d.label).toBe('tools verified');
+  });
+
   it('revoked -> bad', () => {
     expect(decideBadge({ state: 'revoked' }, 'abc').tone).toBe('bad');
   });

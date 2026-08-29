@@ -93,11 +93,22 @@ export type BadgeState =
       fingerprint: string;
       assuranceScore: number | null;
       assuranceRung: number;
+      /** True when the signed audit recorded a confirmed FAIL — the badge must
+       *  not then show a reassuring green even though the fingerprint matches. */
+      flagged: boolean;
       signedAt: string;
       reportSha256: string;
       signature: string;
       keyId: string;
     };
+
+/** True if a stored findings blob contains at least one confirmed FAIL. */
+export function hasFailFinding(findings: unknown): boolean {
+  return (
+    Array.isArray(findings) &&
+    findings.some((f) => (f as { verdict?: unknown })?.verdict === 'FAIL')
+  );
+}
 
 /** The current badge state for an origin — what the embed and the hub consult. */
 export async function computeBadgeState(env: Env, origin: string): Promise<BadgeState> {
@@ -119,6 +130,7 @@ export async function computeBadgeState(env: Env, origin: string): Promise<Badge
     fingerprint: a.fingerprint,
     assuranceScore: a.assurance_score,
     assuranceRung: rung,
+    flagged: hasFailFinding(a.findings),
     signedAt: a.signed_at,
     reportSha256: a.report_sha256,
     signature: a.signature,
