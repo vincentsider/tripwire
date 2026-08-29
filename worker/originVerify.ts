@@ -7,6 +7,7 @@
 // control the origin.
 
 import { bytesToBase64 } from './crypto.ts';
+import { isBlockedHostname, hostIsPublic } from './netguard.ts';
 
 const FETCH_TIMEOUT_MS = 8000;
 
@@ -24,6 +25,9 @@ export function normalizeOrigin(input: unknown): string | null {
   try {
     const u = new URL(input);
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+    // SSRF: never accept an internal/loopback origin for an ownership proof —
+    // the Worker fetches this origin's /.well-known server-side.
+    if (isBlockedHostname(u.hostname)) return null;
     return u.origin; // scheme://host[:port], no path/query/hash
   } catch {
     return null;
@@ -43,6 +47,16 @@ export type ProofStatus = 'present' | 'absent' | 'unreachable';
 
 /** Check the well-known file for the token (tri-state). */
 export async function probeWellKnown(origin: string, token: string): Promise<ProofStatus> {
+  // SSRF layer 2: a name that resolves private (internal host / rebinding) never
+  // gets a server-side fetch. Literal internal IPs are already refused upstream
+  // by normalizeOrigin, so a proof can only be requested for a public origin.
+  let host: string;
+  try {
+    host = new URL(origin).hostname;
+  } catch {
+    return 'unreachable';
+  }
+  if (!(await hostIsPublic(host))) return 'unreachable';
   const { signal, done } = withTimeout(FETCH_TIMEOUT_MS);
   try {
     const resp = await fetch(`${origin}/.well-known/tripwire-challenge.txt`, { redirect: 'manual', signal });

@@ -35,7 +35,7 @@ export function FindingsList({ findings }: { findings: ScanFinding[] }) {
             <div className="finding" key={`${f.toolName}-${f.check}-${i}`}>
               {verdictPill(f.verdict)}
               <span>
-                <span className="fname">{f.toolName}</span>{' '}
+                <span className="fname">{f.toolName ?? 'surface'}</span>{' '}
                 <span className="fev">— {CHECK_LABEL[f.check] ?? f.check}
                 {f.evidence ? `: ${f.evidence}` : ''}</span>
               </span>

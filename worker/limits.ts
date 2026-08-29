@@ -48,7 +48,10 @@ export async function underDailyCap(env: Env, name: string, cap: number): Promis
   }
 }
 
-/** Best-effort client IP for rate-limit keying. */
+/** Client IP for rate-limit keying. Only the Cloudflare-set CF-Connecting-IP is
+ *  trusted; the client-controlled X-Forwarded-For is NOT used (it would let a
+ *  caller rotate the rate-limit key at will). Off Cloudflare (local dev) there
+ *  is no limiter bound, so the 'unknown' bucket is never actually rate-limited. */
 export function clientIp(req: Request): string {
-  return req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'unknown';
+  return req.headers.get('CF-Connecting-IP') || 'unknown';
 }

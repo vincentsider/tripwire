@@ -40,12 +40,17 @@ export function RangePage() {
 
   useEffect(() => session.subscribe(setState), [session]);
 
+  // Tear the session down on unmount: dispose any level still armed on the global
+  // WebMCP host and clear the telemetry bus, so navigating away mid agent-run
+  // leaves nothing registered and nothing holding the old bus/buffer alive.
+  useEffect(() => () => session.reset(), [session]);
+
   useEffect(() => {
     const runKey = session.generatedAt();
     if (!shouldSaveRun(state.status, runKey, lastSavedKeyRef.current, savingRef.current)) return;
-    // Demo runs never touch the leaderboard: only agent-driven runs or runs the
-    // visitor deliberately labelled are worth ranking.
-    if ((session.getState().agentLabel || 'Simulated agent') === 'Simulated agent') return;
+    // Only agent-driven runs are ranked. The scripted demo (either button, on any
+    // host, whatever its label) never touches the public leaderboard.
+    if (session.getRunKind() !== 'agent') return;
     savingRef.current = true;
     lastSavedKeyRef.current = runKey;
     const label = session.getState().agentLabel || 'agent';

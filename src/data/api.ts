@@ -176,7 +176,7 @@ export function confirmVerification(origin: string) {
 }
 
 export interface ScanFinding {
-  toolName: string;
+  toolName: string | null; // null for surface-level findings (e.g. T3 tool-set change)
   check: string;
   verdict: 'PASS' | 'PARTIAL' | 'FAIL';
   layer: string;

@@ -9,13 +9,18 @@ import { Link } from 'react-router-dom';
 import { scanUrl, type ScanResult } from '../../data/api.ts';
 import { FindingsList } from '../FindingsList.tsx';
 
+// Keys MUST match the exact error strings the Worker returns (worker/scan.ts,
+// worker/browserScan.ts). An unmapped key falls through to the raw string.
 const ERR: Record<string, string> = {
   scan_unavailable: 'Scanning is not switched on for this deployment yet.',
   scan_failed: "The browser couldn't finish reading that page. Try again.",
+  scan_timeout: 'That page took too long to read. Try again in a moment.',
   nav_failed: "That page couldn't be opened (it may be down or blocking robots).",
   scan_bad_surface: 'That page exposes agent tools, but they were malformed.',
+  blocked_host: 'That address is a private or internal host, which cannot be scanned.',
+  scan_daily_cap: "Today's scan limit has been reached. Please try again tomorrow.",
   rate_limited: 'Too many scans just now — give it a minute.',
-  invalid: 'That does not look like a valid web address (include https://).',
+  'invalid url': 'That does not look like a valid web address (include https://).',
 };
 
 export function ScanPage() {

@@ -3,7 +3,7 @@
 // The result panel: the Agent Resistance Score, the shareable one-liner, and a
 // per-level breakdown with the verdict and (for a fail) what to fix.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Scorecard as ScorecardData } from '../range/scoring.ts';
 import { summarize } from '../range/scoring.ts';
 import { levelById } from '../range/levels.ts';
@@ -34,14 +34,22 @@ export function Scorecard({
   onDownloadReport?: (() => void) | undefined;
 }) {
   const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const label = agentLabel || 'this agent';
   const line = summarize(scorecard, label);
+
+  // Clear the "Copied" reset timer on unmount so it never fires setState on a
+  // gone component (matches CodeBlock).
+  useEffect(() => () => {
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+  }, []);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(line + ' — tested with Tripwire');
       setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 1600);
     } catch {
       /* clipboard may be unavailable; ignore */
     }

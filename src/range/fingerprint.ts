@@ -63,14 +63,74 @@ function normalizeWhitespace(s: string): string {
   return s.replace(/\s+/g, ' ').trim();
 }
 
-/** Map RegisteredTools to the canonical fingerprint shape (nulls for absent fields). */
-export function toFingerprintTools(tools: ReadonlyArray<RegisteredTool>): FingerprintTool[] {
-  return tools.map((t) => ({
-    name: t.name,
-    description: normalizeWhitespace(t.description ?? ''),
-    inputSchema: t.inputSchema ?? null,
-    annotations: t.annotations ?? null,
-  }));
+// --- Canonicalisation caps (parity contract) ------------------------------
+//
+// These MUST match worker/../scan enumerate.ts's normaliser. The fingerprint is
+// computed on TWO independently-read views of the same surface: the mint reads
+// the tools through Cloudflare Browser Rendering (which caps them via
+// normalizeSurface for storage/analysis), while the live badge reads the RAW
+// host.getTools() in the visitor's browser. If those two views hashed
+// differently, an honest site's badge would sit permanently on "tools changed"
+// (found in the field: the scan path capped annotation/schema content the live
+// path left raw). So fingerprintSurface applies the SAME caps itself, to
+// whatever it is handed — raw or pre-normalised — and the two always converge.
+export const FP_MAX_NAME = 128;
+export const FP_MAX_DESC = 8000;
+export const FP_MAX_SCHEMA_CHARS = 8000;
+export const FP_MAX_ANNOTATION_KEY = 64;
+export const FP_MAX_ANNOTATION_STR = 256;
+
+function plainObject(v: unknown): Record<string, unknown> | undefined {
+  return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : undefined;
+}
+
+/** Keep only primitive annotation values (drops nested/host junk); cap keys+strings. */
+function safeAnnotations(v: unknown): Record<string, unknown> | null {
+  const o = plainObject(v);
+  if (!o) return null;
+  const out: Record<string, unknown> = {};
+  for (const [k, val] of Object.entries(o)) {
+    if (k.length > FP_MAX_ANNOTATION_KEY) continue;
+    if (typeof val === 'boolean' || typeof val === 'number') out[k] = val;
+    else if (typeof val === 'string') out[k] = val.slice(0, FP_MAX_ANNOTATION_STR);
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/**
+ * Canonicalise ONE tool (raw or already-normalised) to the exact shape that
+ * enters the hash, or null to drop it (not an object / no usable name).
+ * DELIBERATELY reads only the SITE-DECLARED fields — never a host-stamped
+ * origin/title/window — and applies the parity caps above.
+ */
+export function canonicalizeTool(raw: unknown): FingerprintTool | null {
+  const o = plainObject(raw);
+  if (!o) return null;
+  const name = typeof o.name === 'string' ? o.name.slice(0, FP_MAX_NAME) : '';
+  if (!name) return null;
+  const description = normalizeWhitespace(typeof o.description === 'string' ? o.description.slice(0, FP_MAX_DESC) : '');
+  let inputSchema: unknown = null;
+  const schema = plainObject(o.inputSchema);
+  if (schema) {
+    try {
+      // JSON.stringify also rejects a cyclic schema (throws) — dropped on both
+      // sides identically, so a host-stamped cycle can never split the hash.
+      if (JSON.stringify(schema).length <= FP_MAX_SCHEMA_CHARS) inputSchema = schema;
+    } catch {
+      /* unserialisable / cyclic — drop it */
+    }
+  }
+  return { name, description, inputSchema, annotations: safeAnnotations(o.annotations) };
+}
+
+/** Map tools to the canonical fingerprint shape, dropping unusable entries. */
+export function toFingerprintTools(tools: ReadonlyArray<unknown>): FingerprintTool[] {
+  const out: FingerprintTool[] = [];
+  for (const t of tools) {
+    const c = canonicalizeTool(t);
+    if (c) out.push(c);
+  }
+  return out;
 }
 
 /**
@@ -78,7 +138,7 @@ export function toFingerprintTools(tools: ReadonlyArray<RegisteredTool>): Finger
  * canonical form as a tiebreak, so even a malformed duplicate-name surface is
  * deterministic), each with stably-ordered nested keys.
  */
-export function canonicalSurface(tools: ReadonlyArray<RegisteredTool>): string {
+export function canonicalSurface(tools: ReadonlyArray<unknown>): string {
   const norm = toFingerprintTools(tools).map((t) => ({ t, s: stableStringify(t) }));
   norm.sort((a, b) => {
     if (a.t.name !== b.t.name) return a.t.name < b.t.name ? -1 : 1;
@@ -99,7 +159,7 @@ function toHex(buffer: ArrayBuffer): string {
  * Throws if Web Crypto is unavailable rather than returning a fake digest — a
  * fingerprint that cannot be trusted must never masquerade as one.
  */
-export async function fingerprintSurface(tools: ReadonlyArray<RegisteredTool>): Promise<string> {
+export async function fingerprintSurface(tools: ReadonlyArray<unknown>): Promise<string> {
   const subtle = globalThis.crypto?.subtle;
   if (!subtle) throw new Error('Web Crypto (crypto.subtle) is required to compute a surface fingerprint');
   const canonical = canonicalSurface(tools);

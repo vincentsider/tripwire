@@ -40,6 +40,7 @@ export interface Env {
   ALLOWED_ORIGINS?: string; // comma-separated; empty = same-origin only
   DEEPFAKE_ROUTER_URL?: string;
   DETECTOR_DAILY_CAP?: string; // integer as string
+  SCAN_DAILY_CAP?: string; // global daily ceiling on /api/scan browser launches, default 500
   // Mode 2 (badge). Public/non-secret.
   TRIPWIRE_PUBKEY?: string; // Ed25519 public key (spki, base64) — safe to publish
   TRIPWIRE_KEY_ID?: string; // which key signed (default "k1")

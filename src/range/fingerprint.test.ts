@@ -6,6 +6,7 @@ import {
   FINGERPRINT_GOLDEN_SURFACE,
   FINGERPRINT_GOLDEN_HASH,
 } from './fingerprint.ts';
+import { normalizeSurface } from '../scan/enumerate.ts';
 import type { RegisteredTool } from '../webmcp/types.ts';
 
 const surface: RegisteredTool[] = [
@@ -161,6 +162,49 @@ describe('surface fingerprint — shared references hash like duplicated equals'
       { name: 'b_tool', description: 'B', inputSchema: { type: 'object', properties: { q: { type: 'string' } } } },
     ];
     expect(await fingerprintSurface(withSharing)).toBe(await fingerprintSurface(withCopies));
+  });
+});
+
+// --- Mint↔live parity: the scan path caps tools, the live badge reads them raw
+//
+// The mint fingerprints the surface AFTER normalizeSurface (Browser Rendering,
+// for storage/analysis); the live badge fingerprints host.getTools() RAW. If
+// fingerprintSurface did not itself canonicalise, any tool the normaliser
+// touches (a non-primitive annotation, a >256-char annotation string, a >8000-
+// char schema, a >128-char name, a nameless entry) would hash differently on
+// the two sides and strand an honest site on "tools changed" forever. This
+// asserts the two views always converge — the exact class that hit customer zero.
+describe('surface fingerprint — mint (normalized) equals live (raw)', () => {
+  async function mintEqualsLive(raw: unknown[]) {
+    const live = await fingerprintSurface(raw);
+    const minted = await fingerprintSurface(normalizeSurface({ host: 'native', tools: raw }).tools);
+    expect(minted).toBe(live);
+    return live;
+  }
+
+  it('converges for a NON-PRIMITIVE annotation value', async () => {
+    await mintEqualsLive([
+      { name: 'a', description: 'x', annotations: { readOnlyHint: true, meta: { nested: 'obj' }, tags: [1, 2] } },
+    ]);
+  });
+
+  it('converges for an OVERSIZED annotation string (>256)', async () => {
+    await mintEqualsLive([{ name: 'a', description: 'x', annotations: { note: 'z'.repeat(500) } }]);
+  });
+
+  it('converges for an OVERSIZED inputSchema (>8000 chars)', async () => {
+    const big = { type: 'object', properties: Object.fromEntries(Array.from({ length: 400 }, (_, i) => [`p${i}`, { type: 'string', description: 'd'.repeat(30) }])) };
+    await mintEqualsLive([{ name: 'a', description: 'x', inputSchema: big }]);
+  });
+
+  it('converges for a >128-char name and an annotation key >64 chars', async () => {
+    await mintEqualsLive([{ name: 'n'.repeat(300), description: 'x', annotations: { ['k'.repeat(100)]: true, ok: 1 } }]);
+  });
+
+  it('drops a nameless / non-object entry on both sides', async () => {
+    const withJunk: unknown[] = [{ name: 'real', description: 'x' }, { description: 'no name' }, null, 42];
+    const clean = [{ name: 'real', description: 'x' }];
+    expect(await fingerprintSurface(withJunk)).toBe(await fingerprintSurface(clean));
   });
 });
 

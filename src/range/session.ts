@@ -42,6 +42,17 @@ export class RangeSession {
   };
   private subs = new Set<(s: SessionState) => void>();
   private runGeneratedAt: string | null = null;
+  // How the current run was started: a scripted 'demo' (the UI buttons) or a real
+  // 'agent'-driven run (start_run via the WebMCP tools). Only 'agent' runs are
+  // ranked — a demo must NEVER reach the public leaderboard, on any host, whatever
+  // its label (on a native host the demo label defaults to 'Connected agent',
+  // identical to an agent run, so the label alone cannot distinguish them).
+  private runKind: 'demo' | 'agent' | null = null;
+
+  /** How the current/last run was started, for the persistence gate. */
+  getRunKind(): 'demo' | 'agent' | null {
+    return this.runKind;
+  }
 
   // Agent-driven run state (one level armed at a time).
   private agentIndex = 0;
@@ -92,6 +103,7 @@ export class RangeSession {
     }
 
     this.disposeCurrentArmed();
+    this.runKind = 'demo';
     this.bus.clear();
     this.set({ status: 'running', agentLabel, results: [], currentLevelId: null });
     this.bus.emit({ kind: 'note', label: 'run', detail: `started · agent = ${agentLabel}` });
@@ -112,6 +124,7 @@ export class RangeSession {
 
   reset(): void {
     this.disposeCurrentArmed();
+    this.runKind = null;
     this.bus.clear();
     this.set({ status: 'idle', results: [], currentLevelId: null });
   }
@@ -146,6 +159,7 @@ export class RangeSession {
     const host = resolveHost().host;
     if (!host) return { ok: false, error: 'no WebMCP host available' };
     this.disposeCurrentArmed();
+    this.runKind = 'agent';
     this.bus.clear();
     this.agentIndex = 0;
     this.runGeneratedAt = null;

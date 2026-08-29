@@ -22,11 +22,12 @@
 
 import type { Env } from './types.ts';
 import { jsonPublic } from './http.ts';
-import { checkRate, clientIp } from './limits.ts';
+import { checkRate, underDailyCap, clientIp } from './limits.ts';
 import { validateTools } from './badge.ts';
 import { getOrigin, insertAudit } from './audits.ts';
 import { signEd25519, keyId, isSigningConfigured } from './crypto.ts';
 import { scanWithBrowser } from './browserScan.ts';
+import { isBlockedHostname } from './netguard.ts';
 import { analyzeSurface } from '../src/range/mode2.ts';
 import { fingerprintSurface } from '../src/range/fingerprint.ts';
 import { buildSurfaceReport, sealSurfaceReport } from '../src/range/surfaceReport.ts';
@@ -46,6 +47,10 @@ function validateTarget(input: unknown): { url: string; origin: string } | null 
   try {
     const u = new URL(input);
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+    // SSRF: refuse literal internal/loopback/link-local targets at the door.
+    // Redirects and DNS names are re-checked in browserScan (hostIsPublic +
+    // per-request abort), since input-only validation is bypassable by a 30x.
+    if (isBlockedHostname(u.hostname)) return null;
     return { url: u.toString(), origin: u.origin };
   } catch {
     return null;
@@ -67,6 +72,19 @@ export async function handleScan(req: Request, env: Env): Promise<Response> {
   const target = validateTarget((body as { url?: unknown })?.url);
   if (!target) return jsonPublic({ error: 'invalid url' }, { status: 400, req });
 
+  // Global daily ceiling on the ONE unauthenticated browser entrypoint. Each
+  // scan launches a paid Browser Rendering session; a per-IP limit alone lets a
+  // distributed abuser (or a viral moment) run up an unbounded bill. Enforced
+  // only when the KV counter is bound (it is, in prod) — best-effort so a
+  // KV-less deploy still scans; the per-IP limit and SSRF guard always apply.
+  // The ownership-gated mint paths are not capped — they are self-limiting.
+  if (env.DAILY) {
+    const cap = Number(env.SCAN_DAILY_CAP ?? '500');
+    if (!(await underDailyCap(env, 'scan', Number.isFinite(cap) ? cap : 500))) {
+      return jsonPublic({ error: 'scan_daily_cap' }, { status: 503, req });
+    }
+  }
+
   const scan = await scanWithBrowser(env, target.url);
   if (scan.host === 'error') {
     return jsonPublic({ error: scan.error ?? 'scan_failed' }, { status: 502, req });
@@ -75,6 +93,15 @@ export async function handleScan(req: Request, env: Env): Promise<Response> {
   if (scan.host === 'none') {
     return jsonPublic(
       { url: target.url, origin: target.origin, host: 'none', tools: 0, findings: [], signed: false, scannedAt, note: 'No WebMCP host was found at this URL.' },
+      { req },
+    );
+  }
+
+  // A host that is present but registers zero tools is a valid, honest result —
+  // not a malformed surface. Report it as tools:0 (like host:'none'), not a 502.
+  if (scan.tools.length === 0) {
+    return jsonPublic(
+      { url: target.url, origin: target.origin, host: scan.host, tools: 0, findings: [], signed: false, scannedAt, note: 'This page exposes a WebMCP host but registered no agent tools.' },
       { req },
     );
   }
