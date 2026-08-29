@@ -35,7 +35,7 @@ export function Logo({ size = 22 }: { size?: number }) {
       {/* the wire */}
       <path d="M4.5 12h15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
       {/* the crossing */}
-      <circle cx="12" cy="12" r="3.4" fill="var(--logo-hit, #0071e3)" />
+      <circle cx="12" cy="12" r="3.4" fill="var(--logo-hit, #22d3ee)" />
     </svg>
   );
 }

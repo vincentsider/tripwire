@@ -614,7 +614,7 @@ h2.sec {
   background: rgba(2, 15, 32, 0.92);
   backdrop-filter: saturate(160%) blur(18px);
   -webkit-backdrop-filter: saturate(160%) blur(18px);
-  border-bottom: 1px solid rgba(0, 180, 255, 0.14);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.14);
 }
 .nav-light .nav-inner {
   padding-block: 13px;
@@ -625,7 +625,7 @@ h2.sec {
   font-size: 17px;
   letter-spacing: -0.02em;
   gap: 9px;
-  --logo-hit: #0a84ff;
+  --logo-hit: #22d3ee;
 }
 .nav-light .nav-link {
   font-size: 13px;

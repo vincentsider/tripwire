@@ -280,8 +280,33 @@ export function Home() {
         </div>
       </section>
 
+      <div className="divider" aria-hidden="true" />
+
+      {/* ── ABOUT: engineered by DeepBlocker ─────────────────────────── */}
+      <section className="sec">
+        <div className="wrap-n" data-reveal>
+          <p className="kick">Who&apos;s behind Tripwire</p>
+          <h2 className="h-l">Engineered by DeepBlocker.</h2>
+          <p className="sub" style={{ marginInline: 'auto' }}>
+            DeepBlocker red-teams organisations with deepfake voice attacks and blocks them live on real calls —
+            offence finds the gap, defence closes it. Tripwire brings that same offence-informed engineering to the
+            agent web.
+          </p>
+          <div className="btns">
+            <a className="btn btn-line" href="https://deepblocker.ai" target="_blank" rel="noopener noreferrer">
+              Learn about DeepBlocker →
+            </a>
+          </div>
+        </div>
+      </section>
+
       <div className="lp-foot">
-        <span>Open source · Apache-2.0 · a DeepBlocker project</span>
+        <span>
+          Open source · Apache-2.0 · engineered by{' '}
+          <a href="https://deepblocker.ai" target="_blank" rel="noopener noreferrer">
+            DeepBlocker
+          </a>
+        </span>
         <a href="https://github.com/vincentsider/tripwire" target="_blank" rel="noopener noreferrer">
           github.com/vincentsider/tripwire
         </a>
