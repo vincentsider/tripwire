@@ -9,6 +9,12 @@
  */
 
 @font-face {
+  font-family: 'GeistVar';
+  src: url('/fonts/GeistVF.woff') format('woff');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
   font-family: 'InterVar';
   src: url('/fonts/inter.woff2') format('woff2');
   font-weight: 100 900;
@@ -22,7 +28,7 @@
   --txt: #f4f8ff;
   --txt-2: #b9cdf2;
   --txt-3: #8fa8d8;
-  --body: 'InterVar', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --body: 'GeistVar', 'InterVar', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --data: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --edge: clamp(20px, 5vw, 64px);
 
@@ -86,10 +92,10 @@
 
 /* ── Type ─────────────────────────────────────────────────────────────── */
 .h-hero {
-  font-size: clamp(2.9rem, 7.4vw, 6.6rem);
-  font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: -0.038em;
+  font-size: clamp(3rem, 7vw, 6.75rem);
+  font-weight: 700;
+  line-height: 1.03;
+  letter-spacing: -0.03em;
   margin: 0;
   color: #fff;
   text-wrap: balance;
@@ -106,7 +112,7 @@
   text-shadow: 0 0 46px rgba(56, 132, 255, 0.3);
 }
 .sub {
-  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  font-size: clamp(1.1rem, 1.6vw, 1.45rem);
   font-weight: 400;
   line-height: 1.5;
   color: var(--txt-2);
@@ -206,13 +212,13 @@
 /* ── HERO ─────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
-  min-height: min(92vh, 980px);
+  min-height: min(94vh, 1020px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   text-align: center;
-  padding: clamp(96px, 15vh, 170px) var(--edge) clamp(220px, 30vh, 320px);
+  padding: clamp(64px, 9vh, 110px) var(--edge) clamp(230px, 32vh, 340px);
   overflow: hidden;
   background:
     radial-gradient(120% 90% at 50% 108%, #103a8f 0%, rgba(16, 58, 143, 0) 55%),
@@ -231,6 +237,9 @@
 }
 .hero .kick {
   margin-bottom: 16px;
+}
+.hero .wrap {
+  width: 100%;
 }
 .hero .sub {
   margin-inline: auto;

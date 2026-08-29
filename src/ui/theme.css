@@ -355,25 +355,6 @@ h2.sec {
 }
 
 /* ── Hero ────────────────────────────────────────────────────────────────── */
-.hero {
-  padding: 40px 0 8px;
-}
-.hero h1 {
-  font-size: clamp(30px, 5vw, 46px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  margin: 0 0 18px;
-  max-width: 16ch;
-}
-.hero .lead {
-  font-size: 17px;
-  color: var(--ink-2);
-  line-height: 1.6;
-  max-width: 60ch;
-}
-.hero-accent {
-  color: var(--signal-bright);
-}
 
 /* ── Choice cards ────────────────────────────────────────────────────────── */
 .choices {

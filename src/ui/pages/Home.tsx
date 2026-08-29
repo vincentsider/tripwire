@@ -37,8 +37,8 @@ export function Home() {
             Is your site?
           </h1>
           <p className="sub">
-            AI agents now act on websites — booking, paying, posting. Tripwire tests agents against real attacks, scans
-            any site&apos;s agent tools, and issues a signed badge that proves yours are honest.
+            Test agents against real attacks. Scan any site&apos;s tools. Prove yours are honest — with a signed,
+            revocable badge.
           </p>
           <div className="btns">
             <Link to="/scan" className="btn btn-fill">
@@ -263,9 +263,10 @@ export function Home() {
           <p className="kick">The honest part</p>
           <h2 className="h-l">What the badge does not say.</h2>
           <p className="sub" style={{ marginInline: 'auto' }}>
-            We audit what a site&apos;s tools declare, against the exact set present at page load. We do not certify
-            server-side behaviour — it cannot be seen from the client. And we will never call a site “safe” or
-            “certified”. A badge that overclaims is worth less than no badge at all.
+            The badge certifies a site&apos;s tool surface, checked against the exact tools present at page load.
+            Server-side behaviour climbs a separate assurance ladder — signed behaviour manifests, then live leak
+            probes — and the badge states exactly the level reached. It never just says “safe”: a badge that
+            overclaims is worth less than no badge at all.
           </p>
           <div className="btns">
             <Link to="/scan" className="btn btn-fill">
