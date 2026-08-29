@@ -529,3 +529,292 @@ a.lp-row:hover .lp-row-go {
 .lp-foot a:hover {
   color: var(--ink);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TILE ARCHITECTURE
+   Full-bleed panels, edge to edge, each its own world with centred type and a
+   large visual — the showroom grid, not a document with margins. Adjacent
+   tiles carry different grounds so the contrast does the work.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.t {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding: clamp(56px, 8vh, 104px) clamp(20px, 4vw, 56px) clamp(56px, 8vh, 96px);
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+}
+/* Two-up grid, Apple's pattern: a 1px gutter of page showing between tiles. */
+.t-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  background: transparent;
+}
+@media (min-width: 900px) {
+  .t-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.t-stack {
+  display: grid;
+  gap: 12px;
+}
+
+/* Grounds. */
+.t-ink {
+  --paper: #0f1b24;
+  --card: #17303d;
+  --ink: #ffffff;
+  --ink-2: #b9c6ce;
+  --ink-3: #8ea0aa;
+  --hair: rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(120% 80% at 50% 0%, #1b3140 0%, #0f1b24 62%);
+  color: var(--ink);
+}
+.t-red {
+  --paper: #c0392b;
+  --card: #d1493b;
+  --ink: #ffffff;
+  --ink-2: #f8d9d4;
+  --ink-3: #eec0b9;
+  --hair: rgba(255, 255, 255, 0.24);
+  background: radial-gradient(120% 80% at 50% 0%, #d1493b 0%, #a72e22 68%);
+  color: var(--ink);
+}
+.t-paper {
+  --paper: #f4f5f2;
+  background: var(--paper);
+}
+.t-white {
+  --paper: #ffffff;
+  background: var(--paper);
+}
+
+/* Tile type — centred, big, tight. */
+.t-kicker {
+  font-family: var(--data);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 16px;
+}
+.t-h {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2.1rem, 4vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  margin: 0;
+  color: var(--ink);
+  text-wrap: balance;
+  max-width: 18ch;
+}
+.t-hero-h {
+  font-size: clamp(2.6rem, 6.2vw, 5.4rem);
+  max-width: 17ch;
+}
+.t-sub {
+  font-size: clamp(1rem, 1.35vw, 1.2rem);
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 18px 0 0;
+  max-width: 46ch;
+  text-wrap: balance;
+}
+.t-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 28px;
+}
+/* Pill buttons, Apple-style: one filled, one outline. */
+.t-btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 11px 22px;
+  border-radius: 980px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.t-btn-fill {
+  background: var(--ink);
+  color: var(--paper);
+}
+.t-btn-fill:hover {
+  opacity: 0.86;
+}
+.t-btn-line {
+  color: var(--ink);
+  border-color: currentColor;
+}
+.t-btn-line:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.t-link {
+  display: inline-block;
+  margin-top: 22px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: 4px;
+}
+.t-link:hover {
+  border-bottom-color: currentColor;
+}
+
+/* The visual well inside a tile — where the "product shot" sits. */
+.t-vis {
+  width: 100%;
+  max-width: 760px;
+  margin-top: clamp(34px, 5vh, 60px);
+}
+.t-vis-sm {
+  max-width: 460px;
+  margin-top: clamp(28px, 4vh, 44px);
+}
+
+/* Readouts rendered as objects, with the tinted lift. */
+.v-card {
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(4, 12, 18, 0.16), 0 12px 28px rgba(4, 12, 18, 0.2),
+    0 40px 80px rgba(4, 12, 18, 0.26), 0 0 0 1px var(--hair);
+  overflow: hidden;
+  text-align: left;
+}
+.v-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--hair);
+  font-family: var(--data);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.v-row:last-child {
+  border-bottom: 0;
+}
+.v-tag {
+  font-family: var(--data);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.v-ok {
+  background: rgba(8, 145, 178, 0.16);
+  color: #7fdcef;
+}
+.v-bad {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffd7d1;
+}
+.v-head {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--hair);
+  font-family: var(--data);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Big seal object for the badge tile. */
+.v-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--hair);
+  border-radius: 980px;
+  padding: 14px 24px;
+  font-family: var(--data);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  box-shadow: 0 20px 50px rgba(4, 12, 18, 0.28);
+}
+.v-seal-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.v-fp {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin: 18px 0 0;
+  word-break: break-all;
+  max-width: 46ch;
+}
+
+/* A real box (not display:contents) so the reveal transition can apply. */
+.t-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* The inspection card on the dark hero ground. */
+.t-ink .ip {
+  background: #142835;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.34),
+    0 50px 100px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+.t-ink .ip-bar,
+.t-ink .ip-foot {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #8ea0aa;
+}
+.t-ink .ip-layer {
+  color: #c3d0d8;
+}
+.t-ink .ip-layer .k {
+  color: #7f929d;
+}
+.t-ink .ip-state {
+  color: #ff8f7f;
+}
+.t-ink .ip-scan {
+  background: #ff8f7f;
+  opacity: 0.7;
+}
+.t-ink .ip-flag {
+  background: rgba(255, 143, 127, 0.16);
+  color: #ffb3a6;
+}
+/* The highlight stays a light "marker" swipe — high contrast on the dark card. */
+.t-ink .ip-hostile .hit {
+  color: #7d1f14;
+  background: #ffd9d2;
+  box-shadow: 0 1px 0 rgba(255, 217, 210, 0.6);
+}
+.t-ink .ip-cap {
+  color: #8ea0aa;
+}

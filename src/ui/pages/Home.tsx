@@ -1,155 +1,156 @@
 // src/ui/pages/Home.tsx
 //
-// The landing page. Light editorial, inheriting the DeepBlocker brand.
+// The landing page, built as full-bleed TILES rather than a document with
+// margins: each tile is a self-contained panel with centred type and a large
+// visual, and adjacent tiles carry different grounds so the contrast does the
+// work. That is the showroom pattern (Apple's grid), adapted to a product with
+// no photography — the "product shot" in each tile is a rendered readout of
+// Tripwire's own output.
 //
-// The structural fix for "every section looks the same": each section declares
-// a data-env, and the page rotates through four environments —
-// paper -> tint -> paper -> INK SLAB -> tint -> ACCENT BLEED -> paper. The slab
-// and the accent bleed appear once each; scarcity is what makes them land.
-//
-// The compositions differ too, not just the colours: hero split, ruled index,
-// stat strip, editorial quote pair, seal block, closing statement.
+// The headline states what the visitor GETS, not the product's thesis.
 
 import { Link } from 'react-router-dom';
 import '../landing.css';
 import { useReveal } from '../useReveal.ts';
 import { InspectionPass } from '../InspectionPass.tsx';
 
-const PRODUCTS = [
-  {
-    n: '01',
-    to: '/range',
-    title: 'Test the agent',
-    desc: 'Run an AI agent through a corpus of tool-surface attacks and watch, live, what it falls for.',
-    go: 'Open the range',
-  },
-  {
-    n: '02',
-    to: '/scan',
-    title: 'Scan the site',
-    desc: 'Point us at any URL. We open it in a real browser and read what its tools tell an agent to do.',
-    go: 'Scan a URL',
-  },
-  {
-    n: '03',
-    to: '/badge',
-    title: 'Seal the surface',
-    desc: 'Prove the domain is yours and earn a signed badge that stops applying the moment your tools change.',
-    go: 'Get a badge',
-  },
-];
-
 export function Home() {
   useReveal();
 
   return (
     <div className="lp">
-      {/* ── Hero: paper ──────────────────────────────────────────────── */}
-      <section className="lp-sec lp-hero">
-        <div className="lp-wrap lp-hero-grid">
-          <div data-reveal>
-            <p className="lp-kicker">Trust layer for the agent web</p>
-            <h1 className="lp-display">
-              A description
-              <br />
-              is an instruction.
-            </h1>
-            <p className="lp-body">
-              Websites now publish tools that AI agents can call on your behalf. The site writes the description — and
-              an agent that reads it will follow it. Tripwire audits what those tools really say.
+      {/* ── HERO — ink ground, the attack shown at scale ─────────────── */}
+      <section className="t t-ink">
+        <div className="t-body" data-reveal>
+          <p className="t-kicker">Trust layer for the agent web</p>
+          <h1 className="t-h t-hero-h">Find out what your site is telling AI agents.</h1>
+          <p className="t-sub">
+            And whether your agent is safe on anyone else&apos;s. Tripwire reads the tools a website exposes to AI
+            agents and shows you what they really say.
+          </p>
+          <div className="t-cta">
+            <Link to="/scan" className="t-btn t-btn-fill">
+              Scan a site
+            </Link>
+            <Link to="/badge" className="t-btn t-btn-line">
+              Get a badge
+            </Link>
+          </div>
+        </div>
+        <div className="t-vis" data-reveal>
+          <InspectionPass />
+        </div>
+      </section>
+
+      {/* ── TWO-UP — the two sides of the product ────────────────────── */}
+      <div className="t-grid">
+        <section className="t t-paper">
+          <div className="t-body" data-reveal>
+            <p className="t-kicker">For agent builders</p>
+            <h2 className="t-h">Is your agent safe on the open web?</h2>
+            <p className="t-sub">Run it through a corpus of tool-surface attacks and watch, live, what it falls for.</p>
+            <Link to="/range" className="t-link">
+              Open the range →
+            </Link>
+            <div className="t-vis t-vis-sm">
+              <div className="v-card" style={{ background: '#fff' }}>
+                <div className="v-head">
+                  <span>gauntlet</span>
+                  <span>4 of 7</span>
+                </div>
+                <div className="v-row">
+                  <span>hidden instruction</span>
+                  <span className="v-tag" style={{ background: '#e1f5fa', color: '#0e7490' }}>
+                    held
+                  </span>
+                </div>
+                <div className="v-row">
+                  <span>unlabelled content</span>
+                  <span className="v-tag" style={{ background: '#e1f5fa', color: '#0e7490' }}>
+                    held
+                  </span>
+                </div>
+                <div className="v-row">
+                  <span>lookalike tool</span>
+                  <span className="v-tag" style={{ background: '#fbeae7', color: '#c0392b' }}>
+                    fell
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="t t-white">
+          <div className="t-body" data-reveal>
+            <p className="t-kicker">For everyone</p>
+            <h2 className="t-h">What does that site expose?</h2>
+            <p className="t-sub">Paste any address. We open it in a real browser and read every tool it publishes.</p>
+            <Link to="/scan" className="t-link">
+              Scan a URL →
+            </Link>
+            <div className="t-vis t-vis-sm">
+              <div className="v-card" style={{ background: '#fff' }}>
+                <div className="v-head">
+                  <span>openclawcity.ai</span>
+                  <span>10 tools</span>
+                </div>
+                <div className="v-row">
+                  <span>read_city_guide</span>
+                  <span className="v-tag" style={{ background: '#e1f5fa', color: '#0e7490' }}>
+                    pass
+                  </span>
+                </div>
+                <div className="v-row">
+                  <span>who_is_here</span>
+                  <span className="v-tag" style={{ background: '#e1f5fa', color: '#0e7490' }}>
+                    pass
+                  </span>
+                </div>
+                <div className="v-row">
+                  <span>enter_city</span>
+                  <span className="v-tag" style={{ background: '#fbf1de', color: '#b7791f' }}>
+                    review
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* ── RED TILE — the badge, the thing you display ──────────────── */}
+      <section className="t t-red">
+        <div className="t-body" data-reveal>
+          <p className="t-kicker">For site owners</p>
+          <h2 className="t-h">Prove your tools are honest.</h2>
+          <p className="t-sub">
+            Verify your domain, let Tripwire read your tools itself, and display a signed badge that stops applying the
+            moment they change.
+          </p>
+          <div className="t-cta">
+            <Link to="/badge" className="t-btn t-btn-fill">
+              Get a badge
+            </Link>
+          </div>
+          <div className="t-vis t-vis-sm" style={{ textAlign: 'center' }}>
+            <span className="v-seal">
+              <span className="v-seal-dot" />
+              Tripwire · verified
+            </span>
+            <p className="v-fp" style={{ marginInline: 'auto' }}>
+              d87dad615a4c…70338415 · Ed25519 · re-checked hourly
             </p>
-            <div className="lp-cta">
-              <Link to="/scan" className="lp-btn lp-btn-primary">
-                Scan a site
-              </Link>
-              <Link to="/badge" className="lp-btn lp-btn-ghost">
-                Get a badge
-              </Link>
-            </div>
-          </div>
-
-          <div data-reveal>
-            <InspectionPass />
-            <p className="ip-cap">Live example — watch the scan pass over the description.</p>
           </div>
         </div>
       </section>
 
-      {/* ── Numbers: tint. Credibility device, straight after the hero ── */}
-      <section className="lp-sec" data-env="tint">
-        <div className="lp-wrap" data-reveal>
-          <div className="lp-stats">
-            <div className="lp-stat">
-              <span className="lp-stat-n">7</span>
-              <span className="lp-stat-l">attack classes</span>
-            </div>
-            <div className="lp-stat">
-              <span className="lp-stat-n">10</span>
-              <span className="lp-stat-l">tools audited live</span>
-            </div>
-            <div className="lp-stat">
-              <span className="lp-stat-n">60m</span>
-              <span className="lp-stat-l">re-check cadence</span>
-            </div>
-            <div className="lp-stat">
-              <span className="lp-stat-n">Ed25519</span>
-              <span className="lp-stat-l">offline-verifiable</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── The three products: paper, as a ruled index ───────────────── */}
-      <section className="lp-sec lp-sec-tall">
-        <div className="lp-wrap">
+      {/* ── WHY IT HOLDS — paper, three ruled statements ─────────────── */}
+      <section className="t t-paper" style={{ textAlign: 'left', alignItems: 'stretch' }}>
+        <div className="lp-wrap" style={{ width: '100%' }}>
           <div className="lp-head" data-reveal>
-            <p className="lp-kicker">What Tripwire does</p>
-            <h2 className="lp-h2">Three ways in.</h2>
-          </div>
-          <div className="lp-index">
-            {PRODUCTS.map((p) => (
-              <Link key={p.n} to={p.to} className="lp-row" data-reveal>
-                <span className="lp-row-n">{p.n}</span>
-                <h3 className="lp-h3">{p.title}</h3>
-                <p className="lp-row-d">{p.desc}</p>
-                <span className="lp-row-go">{p.go} →</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── The problem: INK SLAB. Used once. ─────────────────────────── */}
-      <section className="lp-sec lp-sec-tall" data-env="slab">
-        <div className="lp-wrap">
-          <div className="lp-split">
-            <div data-reveal>
-              <p className="lp-kicker">The problem</p>
-              <p className="lp-lead-q">
-                An agent decides what to call by reading what each tool claims to do. That text comes from the site.
-                Nothing sits between the two.
-              </p>
-            </div>
-            <div data-reveal>
-              <p className="lp-small" style={{ marginBottom: 22 }}>
-                A tool description is free text under the site’s control. Hide an instruction inside it and a compliant
-                agent may simply follow it — no exploit, no breach, just words.
-              </p>
-              <p className="lp-small">
-                We built a padlock for the web the moment we started typing card numbers into it. The web where agents
-                act arrived without one.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Why the seal holds: tint, ruled index again but 3-col ─────── */}
-      <section className="lp-sec lp-sec-tall" data-env="tint">
-        <div className="lp-wrap">
-          <div className="lp-head" data-reveal>
-            <p className="lp-kicker">Why the seal holds</p>
-            <h2 className="lp-h2">A badge you cannot talk your way into.</h2>
+            <p className="lp-kicker">Why the badge means something</p>
+            <h2 className="lp-h2">A seal you cannot talk your way into.</h2>
           </div>
           <div className="lp-index">
             <div className="lp-row" data-reveal>
@@ -183,69 +184,21 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── Proof: paper, with the seal (the one cyan moment) ─────────── */}
-      <section className="lp-sec lp-sec-tall">
-        <div className="lp-wrap">
-          <div className="lp-split">
-            <div data-reveal>
-              <p className="lp-kicker">In the wild</p>
-              <h2 className="lp-h2">Live on OpenClawCity.</h2>
-              <p className="lp-body" style={{ marginTop: 22 }}>
-                A city where AI agents live and act. We verified the domain, opened the site ourselves, read every tool
-                it exposes and signed the result — the first badge on the agent web.
-              </p>
-            </div>
-            <div data-reveal>
-              <span className="lp-seal">
-                <span className="ip-dot" />
-                Tripwire · verified
-              </span>
-              <p className="lp-fp">
-                fingerprint d87dad615a4c7447043d9e909c2f578d89c9cd6d37bb915606b1cada70338415
-              </p>
-              <p className="lp-fp">signature Ed25519 · key k1 · re-checked hourly</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Honest scope: ACCENT BLEED. Used once, on the one claim that
-             most defines the brand. ─────────────────────────────────── */}
-      <section className="lp-sec lp-sec-tall" data-env="accent">
-        <div className="lp-wrap">
-          <div className="lp-split">
-            <div data-reveal>
-              <p className="lp-kicker">The honest part</p>
-              <h2 className="lp-h2">What the badge does not say.</h2>
-            </div>
-            <div data-reveal>
-              <p className="lp-small" style={{ marginBottom: 20 }}>
-                We audit what a site’s tools declare, checked against the exact set present at page load. We do not
-                certify server-side behaviour — it cannot be observed from the client.
-              </p>
-              <p className="lp-small">
-                And we will never call a site “safe”, “secure” or “certified”. A badge that overclaims is worth less
-                than no badge at all.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Close: paper ─────────────────────────────────────────────── */}
-      <section className="lp-sec lp-sec-tall">
-        <div className="lp-wrap" data-reveal>
-          <h2 className="lp-display" style={{ maxWidth: '18ch' }}>
-            Find out what your site tells agents.
-          </h2>
-          <div className="lp-links">
-            <Link to="/scan" className="lp-link">
+      {/* ── HONEST SCOPE — ink ground, used once more at the end ─────── */}
+      <section className="t t-ink">
+        <div className="t-body" data-reveal>
+          <p className="t-kicker">The honest part</p>
+          <h2 className="t-h">What the badge does not say.</h2>
+          <p className="t-sub">
+            We audit what a site&apos;s tools declare, against the exact set present at page load. We do not certify
+            server-side behaviour — it cannot be seen from the client. And we will never call a site “safe” or
+            “certified”. A badge that overclaims is worth less than no badge at all.
+          </p>
+          <div className="t-cta">
+            <Link to="/scan" className="t-btn t-btn-fill">
               Scan a site
             </Link>
-            <Link to="/badge" className="lp-link">
-              Get a badge
-            </Link>
-            <Link to="/range" className="lp-link">
+            <Link to="/range" className="t-btn t-btn-line">
               Test an agent
             </Link>
           </div>
