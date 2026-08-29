@@ -1,10 +1,10 @@
 // src/ui/pages/Home.tsx
 //
-// The landing page. White, electric blue, heavy sans — Apple's system.
-//
-// The hero states all THREE products explicitly, because a visitor must be able
-// to see what is on offer without scrolling: is my agent safe, is that site
-// safe, and can I prove mine is.
+// One cinematic world, top to bottom. The hero's laser vault continues down the
+// entire page; every panel below is liquid glass floating in the same
+// atmosphere. The OpenClawCity section shows the actual city — a live capture
+// in a glass viewport (their frame-ancestors CSP forbids a live iframe embed,
+// so the capture links out to the running city).
 
 import { Link } from 'react-router-dom';
 import '../landing.css';
@@ -17,7 +17,6 @@ export function Home() {
     <div className="lp">
       {/* ── HERO: the laser vault ────────────────────────────────────── */}
       <section className="hero">
-        {/* the scene */}
         <div className="vault-floor" aria-hidden="true" />
         <div className="beam beam-1" aria-hidden="true" />
         <div className="beam beam-2" aria-hidden="true" />
@@ -52,10 +51,10 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── THE THREE PRODUCTS ───────────────────────────────────────── */}
-      <section className="sec" style={{ paddingTop: 'clamp(56px, 8vh, 88px)' }}>
-        <div className="wrap three" data-reveal style={{ marginTop: 0 }}>
-          <Link to="/range" className="p-card">
+      {/* ── THE THREE PRODUCTS: glass in the vault ───────────────────── */}
+      <section className="sec" style={{ paddingTop: 'clamp(48px, 7vh, 80px)' }}>
+        <div className="wrap three" data-reveal>
+          <Link to="/range" className="p-card glass">
             <span className="p-n">01</span>
             <h2 className="p-q">Is your agent safe?</h2>
             <p className="p-d">Run it through real tool-surface attacks and watch what it falls for.</p>
@@ -76,7 +75,7 @@ export function Home() {
             <span className="p-go">Test your agent →</span>
           </Link>
 
-          <Link to="/scan" className="p-card">
+          <Link to="/scan" className="p-card glass">
             <span className="p-n">02</span>
             <h2 className="p-q">Is that site safe?</h2>
             <p className="p-d">Paste any address. We open it in a real browser and read every tool it publishes.</p>
@@ -97,7 +96,7 @@ export function Home() {
             <span className="p-go">Scan any site →</span>
           </Link>
 
-          <Link to="/badge" className="p-card">
+          <Link to="/badge" className="p-card glass">
             <span className="p-n">03</span>
             <h2 className="p-q">Prove your site is safe.</h2>
             <p className="p-d">Verify your domain and earn a signed badge that dies the moment your tools change.</p>
@@ -120,8 +119,10 @@ export function Home() {
         </div>
       </section>
 
+      <div className="divider" aria-hidden="true" />
+
       {/* ── THE ATTACK, SHOWN ────────────────────────────────────────── */}
-      <section className="sec sec-grey">
+      <section className="sec">
         <div className="wrap-n" data-reveal>
           <p className="kick">The problem</p>
           <h2 className="h-l">A website writes its own tool descriptions.</h2>
@@ -132,7 +133,7 @@ export function Home() {
         </div>
 
         <div className="insp-wrap" data-reveal>
-          <figure className="insp" aria-label="A tool description hiding an instruction, revealed by a scan">
+          <figure className="insp glass" aria-label="A tool description hiding an instruction, revealed by a scan">
             <figcaption className="insp-bar">
               <span>tool surface · shop.example</span>
               <span className="insp-live">
@@ -161,13 +162,15 @@ export function Home() {
         </div>
       </section>
 
+      <div className="divider" aria-hidden="true" />
+
       {/* ── WHY THE BADGE HOLDS ──────────────────────────────────────── */}
       <section className="sec">
         <div className="wrap" data-reveal>
           <p className="kick">Why it means something</p>
           <h2 className="h-l">A badge you cannot talk your way into.</h2>
           <div className="rows">
-            <div className="row-c">
+            <div className="row-c glass">
               <span className="row-n">01</span>
               <h3 className="row-t">Checked by us</h3>
               <p className="row-d">
@@ -175,14 +178,14 @@ export function Home() {
                 nothing.
               </p>
             </div>
-            <div className="row-c">
+            <div className="row-c glass">
               <span className="row-n">02</span>
               <h3 className="row-t">Signed, verifiable without us</h3>
               <p className="row-d">
                 Ed25519 over a canonical hash. Anyone can check a report offline against our public key.
               </p>
             </div>
-            <div className="row-c">
+            <div className="row-c glass">
               <span className="row-n">03</span>
               <h3 className="row-t">Alive, and revocable</h3>
               <p className="row-d">
@@ -193,44 +196,68 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── PROOF ────────────────────────────────────────────────────── */}
-      <section className="sec sec-grey">
-        <div className="wrap" data-reveal>
+      <div className="divider" aria-hidden="true" />
+
+      {/* ── THE CITY ─────────────────────────────────────────────────── */}
+      <section className="sec">
+        <div className="wrap-n" data-reveal>
           <p className="kick">In the wild</p>
           <h2 className="h-l">Live on OpenClawCity.</h2>
           <p className="sub" style={{ marginInline: 'auto' }}>
-            A city where AI agents live and act. We verified the domain, read every tool it exposes, and signed the
-            result — the first badge on the agent web.
+            A city where AI agents live and act, around the clock. We verified the domain, read every tool it exposes,
+            and signed the result — the first badge on the agent web.
           </p>
-          <div style={{ marginTop: 34 }}>
-            <span className="seal">
-              <span className="seal-dot" />
-              Tripwire · verified
+        </div>
+
+        <div className="city-wrap" data-reveal>
+          <a
+            className="city glass"
+            href="https://openclawcity.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit OpenClawCity, audited live by Tripwire"
+            style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+          >
+            <div className="city-bar">
+              <span>openclawcity.ai · audited surface</span>
+              <span className="city-live">
+                <span className="insp-dot" />
+                live now
+              </span>
+            </div>
+            <span className="city-shot">
+              <img src="/openclawcity.jpg" alt="The OpenClawCity 3D world, where AI agents live and act" loading="lazy" />
+              <span className="city-seal">
+                <span className="insp-dot" />
+                Tripwire · verified
+              </span>
             </span>
-            <p className="fp">d87dad615a4c7447043d9e909c2f578d89c9cd6d37bb915606b1cada70338415</p>
+          </a>
+        </div>
+
+        <div className="wrap stats" data-reveal>
+          <div className="stat glass">
+            <span className="stat-n">10</span>
+            <span className="stat-l">tools audited</span>
           </div>
-          <div className="stats">
-            <div>
-              <span className="stat-n">10</span>
-              <span className="stat-l">tools audited</span>
-            </div>
-            <div>
-              <span className="stat-n">0.98</span>
-              <span className="stat-l">assurance score</span>
-            </div>
-            <div>
-              <span className="stat-n">60m</span>
-              <span className="stat-l">re-check cadence</span>
-            </div>
-            <div>
-              <span className="stat-n">7</span>
-              <span className="stat-l">attack classes</span>
-            </div>
+          <div className="stat glass">
+            <span className="stat-n">0.98</span>
+            <span className="stat-l">assurance score</span>
+          </div>
+          <div className="stat glass">
+            <span className="stat-n">60m</span>
+            <span className="stat-l">re-check cadence</span>
+          </div>
+          <div className="stat glass">
+            <span className="stat-n">7</span>
+            <span className="stat-l">attack classes</span>
           </div>
         </div>
       </section>
 
-      {/* ── HONEST SCOPE ─────────────────────────────────────────────── */}
+      <div className="divider" aria-hidden="true" />
+
+      {/* ── HONEST SCOPE + CLOSE ─────────────────────────────────────── */}
       <section className="sec">
         <div className="wrap-n" data-reveal>
           <p className="kick">The honest part</p>

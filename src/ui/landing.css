@@ -1,9 +1,11 @@
 /* src/ui/landing.css
- * Tripwire landing — white, electric blue, big bold sans. Apple's system:
- *   ground #ffffff, secondary ground #f5f5f7, ink #1d1d1f, blue #0071e3
- *   heavy sans at large sizes with very tight tracking (never a serif)
- *   pill buttons, generously rounded tiles, soft blue-tinted shadows
- *   no black anywhere
+ * Tripwire landing — ONE cinematic world, top to bottom.
+ *
+ * The hero's laser vault does not end at the fold: the deep electric-blue
+ * atmosphere continues the whole way down, and every panel below is LIQUID
+ * GLASS — translucent, backdrop-blurred, with a specular top edge — floating
+ * in the same space as the beams. No flat white sections; the quality bar the
+ * hero sets is held everywhere.
  */
 
 @font-face {
@@ -14,29 +16,23 @@
 }
 
 .lp {
-  --white: #ffffff;
-  --grey: #f5f5f7;
-  --grey-2: #ececed;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
   --blue: #0071e3;
   --blue-hi: #0a84ff;
-  --blue-deep: #0058b8;
-  --blue-wash: #eaf3ff;
-  --hair: #e3e3e6;
-  --amber: #b7791f;
-  --red: #d7373f;
-
+  --ice: #9ccaff;
+  --txt: #f4f8ff;
+  --txt-2: #b9cdf2;
+  --txt-3: #8fa8d8;
   --body: 'InterVar', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --data: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-
   --edge: clamp(20px, 5vw, 64px);
-  --lift: 0 2px 6px rgba(0, 60, 130, 0.05), 0 12px 28px rgba(0, 60, 130, 0.07),
-    0 40px 80px rgba(0, 60, 130, 0.09), 0 0 0 1px rgba(0, 40, 90, 0.05);
 
-  background: var(--white);
-  color: var(--ink);
+  /* The vault, continued: one long atmosphere. */
+  background:
+    radial-gradient(70% 34% at 50% 24%, rgba(28, 78, 190, 0.16), transparent 70%),
+    radial-gradient(80% 30% at 18% 56%, rgba(24, 92, 220, 0.12), transparent 70%),
+    radial-gradient(80% 30% at 84% 80%, rgba(30, 90, 210, 0.12), transparent 70%),
+    linear-gradient(180deg, #0a1740 0%, #081132 34%, #060d24 62%, #071030 86%, #0a1740 100%);
+  color: var(--txt);
   font-family: var(--body);
   margin-inline: calc(50% - 50vw);
   width: 100vw;
@@ -62,60 +58,73 @@
   }
 }
 
-/* ── Type: heavy sans, very tight, never a serif ──────────────────────── */
-.h-xl {
-  font-size: clamp(2.6rem, 6.6vw, 5.4rem);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
+/* ── LIQUID GLASS ─────────────────────────────────────────────────────────
+   Translucent panel with real depth: blur+saturate of the scene behind it, a
+   specular 1px top edge, an inner sheen, and a deep soft drop. */
+.glass {
+  position: relative;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05) 42%, rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(26px) saturate(170%);
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 24px 70px rgba(2, 8, 30, 0.55);
+}
+/* Specular streak across the top. */
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 46%;
+  border-radius: inherit;
+  background: radial-gradient(120% 100% at 50% -30%, rgba(255, 255, 255, 0.14), transparent 60%);
+  pointer-events: none;
+}
+
+/* ── Type ─────────────────────────────────────────────────────────────── */
+.h-hero {
+  font-size: clamp(2.9rem, 7.4vw, 6.6rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.038em;
   margin: 0;
-  color: var(--ink);
+  color: #fff;
   text-wrap: balance;
+  text-shadow: 0 0 70px rgba(56, 132, 255, 0.35);
 }
 .h-l {
-  font-size: clamp(2rem, 4.4vw, 3.5rem);
-  font-weight: 700;
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  font-weight: 750;
   line-height: 1.07;
   letter-spacing: -0.032em;
   margin: 0;
-  color: var(--ink);
+  color: #fff;
   text-wrap: balance;
-}
-.h-m {
-  font-size: clamp(1.35rem, 2vw, 1.75rem);
-  font-weight: 650;
-  line-height: 1.2;
-  letter-spacing: -0.024em;
-  margin: 0;
-  color: var(--ink);
+  text-shadow: 0 0 46px rgba(56, 132, 255, 0.3);
 }
 .sub {
-  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
   font-weight: 400;
-  line-height: 1.45;
-  color: var(--ink-2);
+  line-height: 1.5;
+  color: var(--txt-2);
   margin: 20px 0 0;
-  max-width: 44ch;
+  max-width: 46ch;
   text-wrap: balance;
 }
-.sub-s {
-  font-size: 1rem;
-  line-height: 1.5;
-  color: var(--ink-2);
-  margin: 12px 0 0;
-}
 .kick {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--blue);
-  margin: 0 0 14px;
-}
-.mono {
   font-family: var(--data);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6fb3ff;
+  margin: 0 0 16px;
 }
 
-/* ── Buttons: Apple pills ─────────────────────────────────────────────── */
+/* ── Buttons ──────────────────────────────────────────────────────────── */
 .btns {
   display: flex;
   gap: 14px;
@@ -132,59 +141,69 @@
   border-radius: 980px;
   text-decoration: none;
   border: 1px solid transparent;
-  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease,
+    transform 0.22s ease;
 }
 .btn-fill {
-  background: var(--blue);
+  background: var(--blue-hi);
   color: #fff;
+  box-shadow: 0 0 24px rgba(10, 132, 255, 0.55), 0 8px 30px rgba(0, 40, 120, 0.5);
 }
 .btn-fill:hover {
-  background: var(--blue-hi);
+  background: #3ea0ff;
+  box-shadow: 0 0 38px rgba(10, 132, 255, 0.75), 0 8px 30px rgba(0, 40, 120, 0.5);
   transform: translateY(-1px);
 }
 .btn-line {
-  color: var(--blue);
-  border-color: rgba(0, 113, 227, 0.4);
+  color: #eaf3ff;
+  border-color: rgba(190, 218, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .btn-line:hover {
-  background: var(--blue-wash);
-  border-color: var(--blue);
+  background: rgba(120, 175, 255, 0.14);
+  border-color: #9cc5ff;
 }
 .tlink {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 500;
-  color: var(--blue);
+  color: var(--ice);
   text-decoration: none;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 .tlink:hover {
-  text-decoration: underline;
+  color: #fff;
 }
 
-/* ── Sections ─────────────────────────────────────────────────────────── */
+/* ── Sections in the world ────────────────────────────────────────────── */
 .sec {
-  padding: clamp(72px, 10vh, 128px) var(--edge);
+  position: relative;
+  padding: clamp(76px, 11vh, 140px) var(--edge);
   text-align: center;
 }
-.sec-grey {
-  background: var(--grey);
-}
 .wrap {
-  max-width: 1120px;
+  max-width: 1160px;
   margin: 0 auto;
 }
 .wrap-n {
-  max-width: 840px;
+  max-width: 860px;
   margin: 0 auto;
 }
+/* A faint static wire as a section divider — the vault's thread continuing. */
+.divider {
+  position: relative;
+  height: 1px;
+  max-width: 1160px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, transparent, rgba(140, 190, 255, 0.35) 30%, rgba(190, 225, 255, 0.55) 50%, rgba(140, 190, 255, 0.35) 70%, transparent);
+  box-shadow: 0 0 12px rgba(64, 140, 255, 0.35);
+}
 
-/* ── HERO: the laser vault ────────────────────────────────────────────────
-   A cinematic scene, not a layout: electric-blue tripwire beams stretched
-   through a deep-blue vault, one of them tripped — a hot flash at the crossing
-   point. Giant white type over it. Deep BLUE, never black. */
+/* ── HERO ─────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
   min-height: min(92vh, 980px);
@@ -201,7 +220,6 @@
     linear-gradient(180deg, #060d24 0%, #081132 52%, #0a1740 100%);
   color: #fff;
 }
-/* Atmospheric haze + vignette. */
 .hero::before {
   content: '';
   position: absolute;
@@ -212,53 +230,19 @@
   pointer-events: none;
 }
 .hero .kick {
-  color: #6fb3ff;
-  font-family: var(--data);
-  font-size: 12px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-weight: 500;
-}
-.hero .h-hero {
-  font-size: clamp(2.9rem, 7.4vw, 6.6rem);
-  font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: -0.038em;
-  margin: 0;
-  color: #fff;
-  text-wrap: balance;
-  text-shadow: 0 0 70px rgba(56, 132, 255, 0.35);
-  position: relative;
-  z-index: 3;
+  margin-bottom: 16px;
 }
 .hero .sub {
-  color: #b9cdf2;
   margin-inline: auto;
   position: relative;
   z-index: 3;
 }
-.hero .btns {
+.hero .btns,
+.hero .h-hero {
   position: relative;
   z-index: 3;
 }
-.hero .btn-fill {
-  background: var(--blue-hi);
-  box-shadow: 0 0 24px rgba(10, 132, 255, 0.55), 0 8px 30px rgba(0, 40, 120, 0.5);
-}
-.hero .btn-fill:hover {
-  background: #3ea0ff;
-  box-shadow: 0 0 38px rgba(10, 132, 255, 0.75), 0 8px 30px rgba(0, 40, 120, 0.5);
-}
-.hero .btn-line {
-  color: #eaf3ff;
-  border-color: rgba(190, 218, 255, 0.5);
-}
-.hero .btn-line:hover {
-  background: rgba(120, 175, 255, 0.12);
-  border-color: #9cc5ff;
-}
 
-/* The floor: a perspective grid catching the beam light. */
 .vault-floor {
   position: absolute;
   left: 50%;
@@ -275,8 +259,6 @@
   mask-image: radial-gradient(65% 90% at 50% 100%, #000 30%, transparent 75%);
   pointer-events: none;
 }
-
-/* Beams: white-hot core + stacked electric-blue glow. */
 .beam {
   position: absolute;
   left: -2%;
@@ -300,8 +282,6 @@
   0%, 100% { filter: brightness(1); }
   50% { filter: brightness(1.28); }
 }
-
-/* The trip: a hot flash where something crossed the wire. */
 .trip {
   position: absolute;
   bottom: 17%;
@@ -322,7 +302,6 @@
       rgba(90, 150, 255, 0.32) 20%, rgba(50, 110, 255, 0.12) 42%, transparent 68%);
   animation: trip-pulse 4.2s ease-in-out infinite;
 }
-/* Vertical light spike through the flash. */
 .trip::after {
   content: '';
   position: absolute;
@@ -339,11 +318,6 @@
   12% { opacity: 1; transform: scale(1.06); }
   24% { opacity: 0.75; transform: scale(0.98); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .beam, .trip::before, .trip::after { animation: none; }
-}
-
-/* Drifting dust motes in the beam light. */
 .mote {
   position: absolute;
   width: 3px;
@@ -360,16 +334,18 @@
   88% { opacity: 0.5; }
   100% { transform: translate(46px, -70px); opacity: 0; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .beam, .trip::before, .trip::after, .mote { animation: none; }
+}
 
-/* ── The three products, stated in the hero ───────────────────────────── */
+/* ── Product glass cards ──────────────────────────────────────────────── */
 .three {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-top: clamp(40px, 6vh, 68px);
+  gap: 20px;
   text-align: left;
 }
-@media (min-width: 880px) {
+@media (min-width: 900px) {
   .three {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -377,77 +353,80 @@
 .p-card {
   display: flex;
   flex-direction: column;
-  background: var(--grey);
-  border-radius: 20px;
-  padding: 28px 26px 24px;
+  padding: 30px 28px 26px;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 }
 .p-card:hover {
-  transform: translateY(-4px);
-  background: #fff;
-  box-shadow: var(--lift);
+  transform: translateY(-6px);
+  border-color: rgba(140, 195, 255, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 0 40px rgba(30, 110, 255, 0.25),
+    0 30px 80px rgba(2, 8, 30, 0.6);
 }
 .p-n {
   font-family: var(--data);
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  color: var(--blue);
+  letter-spacing: 0.16em;
+  color: #6fb3ff;
 }
 .p-q {
-  font-size: clamp(1.2rem, 1.7vw, 1.5rem);
-  font-weight: 650;
+  font-size: clamp(1.25rem, 1.8vw, 1.55rem);
+  font-weight: 700;
   letter-spacing: -0.026em;
-  line-height: 1.18;
+  line-height: 1.16;
   margin: 12px 0 0;
-  color: var(--ink);
+  color: #fff;
 }
 .p-d {
   font-size: 15px;
   line-height: 1.5;
-  color: var(--ink-2);
+  color: var(--txt-2);
   margin: 10px 0 0;
 }
 .p-go {
   font-size: 15px;
-  font-weight: 500;
-  color: var(--blue);
-  margin-top: 18px;
+  font-weight: 550;
+  color: var(--ice);
+  margin-top: 20px;
 }
+.p-card:hover .p-go {
+  color: #fff;
+}
+
+/* Readouts inside glass: darker inner glass. */
 .p-vis {
   margin-top: 22px;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid var(--hair);
+  border-radius: 14px;
+  background: rgba(5, 12, 34, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
-}
-.p-card:hover .p-vis {
-  border-color: #dcdce0;
 }
 .v-h {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 13px;
-  border-bottom: 1px solid var(--hair);
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
   font-family: var(--data);
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--txt-3);
 }
 .v-r {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  padding: 9px 13px;
-  border-bottom: 1px solid var(--hair);
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   font-family: var(--data);
   font-size: 11.5px;
-  color: var(--ink-2);
+  color: var(--txt-2);
 }
 .v-r:last-child {
   border-bottom: 0;
@@ -458,74 +437,72 @@
   letter-spacing: 0.09em;
   text-transform: uppercase;
   padding: 3px 8px;
-  border-radius: 5px;
+  border-radius: 6px;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 .tag-ok {
-  background: var(--blue-wash);
-  color: var(--blue-deep);
+  background: rgba(60, 150, 255, 0.18);
+  color: #9ccaff;
+  border-color: rgba(110, 175, 255, 0.25);
 }
 .tag-bad {
-  background: #fdeaea;
-  color: var(--red);
+  background: rgba(255, 90, 100, 0.18);
+  color: #ffb3ba;
+  border-color: rgba(255, 130, 140, 0.28);
 }
 .tag-warn {
-  background: #fdf3e2;
-  color: var(--amber);
+  background: rgba(255, 190, 90, 0.16);
+  color: #ffd9a0;
+  border-color: rgba(255, 205, 130, 0.25);
 }
 
-/* ── Inspection visual (the hero object) ──────────────────────────────── */
+/* ── The inspection panel (glass) ─────────────────────────────────────── */
 .insp-wrap {
   position: relative;
   max-width: 900px;
-  margin: clamp(44px, 7vh, 76px) auto 0;
+  margin: clamp(44px, 7vh, 72px) auto 0;
 }
-/* Blue glow under the object — the Apple "product floating on white" cue. */
 .insp-wrap::before {
   content: '';
   position: absolute;
-  inset: 12% -6% -14% -6%;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 113, 227, 0.22), rgba(0, 113, 227, 0) 70%);
-  filter: blur(30px);
-  z-index: 0;
+  inset: 14% -8% -16% -8%;
+  background: radial-gradient(50% 50% at 50% 55%, rgba(20, 90, 255, 0.35), rgba(0, 60, 200, 0) 70%);
+  filter: blur(34px);
 }
 .insp {
-  position: relative;
-  z-index: 1;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: var(--lift);
-  overflow: hidden;
   text-align: left;
+  overflow: hidden;
 }
 .insp-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--hair);
+  padding: 15px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
   font-family: var(--data);
   font-size: 10.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--txt-3);
 }
 .insp-live {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: var(--blue);
+  color: #6fb3ff;
 }
 .insp-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: currentColor;
+  box-shadow: 0 0 10px rgba(111, 179, 255, 0.9);
 }
 .insp-stack {
   position: relative;
-  padding: clamp(24px, 3vw, 38px) clamp(20px, 2.6vw, 34px);
+  padding: clamp(26px, 3vw, 40px) clamp(22px, 2.8vw, 36px);
 }
 .insp-l {
   margin: 0;
@@ -534,14 +511,14 @@
   line-height: 2;
   white-space: pre-wrap;
   word-break: break-word;
-  color: var(--ink-2);
+  color: var(--txt-2);
 }
 .insp-l .k {
-  color: var(--ink-3);
+  color: var(--txt-3);
 }
 .insp-hostile {
   position: absolute;
-  inset: clamp(24px, 3vw, 38px) clamp(20px, 2.6vw, 34px);
+  inset: clamp(26px, 3vw, 40px) clamp(22px, 2.8vw, 36px);
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 14%, transparent 19%);
   mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 14%, transparent 19%);
   -webkit-mask-size: 560% 100%;
@@ -553,9 +530,10 @@
 .insp-hostile .hit {
   color: #fff;
   font-weight: 500;
-  background: var(--red);
-  border-radius: 3px;
-  padding: 2px 4px;
+  background: rgba(255, 70, 84, 0.85);
+  border-radius: 4px;
+  padding: 2px 5px;
+  box-shadow: 0 0 18px rgba(255, 80, 90, 0.5);
 }
 @keyframes sweep {
   0% { -webkit-mask-position: 118% 0; mask-position: 118% 0; }
@@ -566,8 +544,8 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, rgba(0, 113, 227, 0), var(--blue-hi) 18%, var(--blue-hi) 82%, rgba(0, 113, 227, 0));
-  box-shadow: 0 0 14px rgba(10, 132, 255, 0.8);
+  background: linear-gradient(180deg, rgba(0, 113, 227, 0), #7fc0ff 18%, #7fc0ff 82%, rgba(0, 113, 227, 0));
+  box-shadow: 0 0 16px rgba(120, 190, 255, 0.9);
   animation: scanline 8s linear infinite;
 }
 @keyframes scanline {
@@ -587,133 +565,195 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 14px 20px;
-  border-top: 1px solid var(--hair);
+  padding: 14px 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.11);
   font-family: var(--data);
   font-size: 10.5px;
   letter-spacing: 0.1em;
-  color: var(--ink-3);
+  color: var(--txt-3);
 }
 .flagpill {
-  background: #fdeaea;
-  color: var(--red);
-  border-radius: 5px;
-  padding: 4px 9px;
+  background: rgba(255, 70, 84, 0.2);
+  color: #ffb3ba;
+  border: 1px solid rgba(255, 120, 130, 0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 
-/* ── Feature rows ─────────────────────────────────────────────────────── */
+/* ── Why rows (glass) ─────────────────────────────────────────────────── */
 .rows {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-top: clamp(36px, 5vh, 56px);
+  gap: 20px;
+  margin-top: clamp(38px, 5vh, 56px);
   text-align: left;
 }
-@media (min-width: 880px) {
+@media (min-width: 900px) {
   .rows {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 .row-c {
-  background: var(--white);
-  border-radius: 20px;
   padding: 30px 28px;
-}
-.sec-grey .row-c {
-  background: #fff;
 }
 .row-n {
   font-family: var(--data);
   font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--blue);
+  letter-spacing: 0.16em;
+  color: #6fb3ff;
 }
 .row-t {
   font-size: 1.2rem;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.022em;
   margin: 12px 0 0;
+  color: #fff;
 }
 .row-d {
   font-size: 15px;
   line-height: 1.55;
-  color: var(--ink-2);
+  color: var(--txt-2);
   margin: 10px 0 0;
+}
+
+/* ── The city (glass viewport) ────────────────────────────────────────── */
+.city-wrap {
+  position: relative;
+  max-width: 1060px;
+  margin: clamp(44px, 6vh, 68px) auto 0;
+}
+.city-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 16% -8% -16% -8%;
+  background: radial-gradient(50% 55% at 50% 60%, rgba(20, 100, 255, 0.4), rgba(0, 60, 200, 0) 72%);
+  filter: blur(40px);
+}
+.city {
+  overflow: hidden;
+  text-align: left;
+}
+.city-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  font-family: var(--data);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--txt-3);
+}
+.city-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #7ff0b2;
+}
+.city-live .insp-dot {
+  box-shadow: 0 0 10px rgba(127, 240, 178, 0.9);
+}
+.city-shot {
+  position: relative;
+  display: block;
+}
+.city-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* Blue vault glaze so the image sits in the world instead of on it. */
+.city-shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 18, 50, 0.18), transparent 30%, transparent 72%, rgba(6, 13, 36, 0.5));
+  pointer-events: none;
+}
+.city-seal {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #eaf6ff;
+  background: rgba(6, 14, 38, 0.62);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(140, 195, 255, 0.35);
+  border-radius: 980px;
+  padding: 9px 16px;
+  box-shadow: 0 0 24px rgba(30, 110, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.city-seal .insp-dot {
+  color: #7fc0ff;
+  background: #7fc0ff;
+  box-shadow: 0 0 10px rgba(127, 192, 255, 0.9);
 }
 
 /* ── Stats ────────────────────────────────────────────────────────────── */
 .stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 28px 20px;
-  margin-top: clamp(36px, 5vh, 56px);
+  gap: 20px;
+  margin-top: clamp(36px, 5vh, 52px);
 }
-@media (min-width: 760px) {
+@media (min-width: 820px) {
   .stats {
     grid-template-columns: repeat(4, 1fr);
   }
 }
+.stat {
+  padding: 26px 18px 22px;
+}
 .stat-n {
   display: block;
-  font-size: clamp(2.2rem, 3.6vw, 3.2rem);
-  font-weight: 700;
+  font-size: clamp(2.1rem, 3.4vw, 3rem);
+  font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--blue);
+  color: #fff;
+  text-shadow: 0 0 30px rgba(80, 155, 255, 0.55);
 }
 .stat-l {
   display: block;
   margin-top: 10px;
-  font-size: 14px;
-  color: var(--ink-2);
-}
-
-/* ── Seal ─────────────────────────────────────────────────────────────── */
-.seal {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  border: 1px solid rgba(0, 113, 227, 0.28);
-  border-radius: 980px;
-  padding: 12px 22px;
-  font-size: 15px;
-  font-weight: 550;
-  color: var(--blue-deep);
-  box-shadow: 0 8px 26px rgba(0, 90, 190, 0.14);
-}
-.seal-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--blue);
-}
-.fp {
   font-family: var(--data);
-  font-size: 12px;
-  color: var(--ink-3);
-  margin: 16px 0 0;
-  word-break: break-all;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--txt-3);
 }
 
 /* ── Footer ───────────────────────────────────────────────────────────── */
 .lp-foot {
-  padding: 30px var(--edge) 44px;
-  border-top: 1px solid var(--hair);
+  margin-top: clamp(30px, 5vh, 60px);
+  padding: 26px var(--edge) 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  font-size: 13px;
-  color: var(--ink-3);
-  background: var(--grey);
+  font-family: var(--data);
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  color: var(--txt-3);
+  background: rgba(4, 9, 26, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 .lp-foot a {
-  color: var(--blue);
+  color: var(--ice);
   text-decoration: none;
 }
 .lp-foot a:hover {
-  text-decoration: underline;
+  color: #fff;
 }
