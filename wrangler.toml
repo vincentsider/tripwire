@@ -23,7 +23,12 @@ compatibility_flags = ["nodejs_compat"]
 # origin-trial token (public/_headers) is registered for deepblocker.ai with
 # isSubdomain, so it covers the new subdomain with no new token. Requires the
 # deepblocker.ai zone on this account.
-workers_dev = true
+# Disabled so the *.workers.dev URL (which carries the old internal worker name)
+# is not publicly reachable — only the trustwright.deepblocker.ai custom domain
+# serves. The worker OBJECT is still named 'tripwire' in the Cloudflare account
+# (renaming it means creating a new worker + re-adding secrets — see issue #1);
+# with workers_dev off, that name is no longer exposed anywhere public.
+workers_dev = false
 routes = [
   { pattern = "trustwright.deepblocker.ai", custom_domain = true },
   { pattern = "tripwire.deepblocker.ai", custom_domain = true },
