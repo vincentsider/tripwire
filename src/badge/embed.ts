@@ -2,7 +2,7 @@
 //
 // The live, self-verifying Trustwright badge. A site embeds:
 //
-//   <script src="https://tripwire.../badge.js" data-origin="https://site.com"></script>
+//   <script src="https://trustwright.deepblocker.ai/badge.js" data-origin="https://site.com"></script>
 //
 // It runs ON the site's page (same-origin execution, so it can read the page's
 // actual WebMCP tools), fetches the signed badge state, recomputes the surface
@@ -179,7 +179,7 @@ async function run(): Promise<void> {
 // the golden surface. Guarded this tightly, it adds nothing to a customer page
 // and never fetches or renders. Real embeds fall through to run().
 if (scriptEl?.dataset.selftest === '1') {
-  (window as unknown as { __tripwireFingerprint?: typeof fingerprintSurface }).__tripwireFingerprint =
+  (window as unknown as { __trustwrightFingerprint?: typeof fingerprintSurface }).__trustwrightFingerprint =
     fingerprintSurface;
 } else {
   void run();

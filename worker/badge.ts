@@ -159,8 +159,8 @@ export async function handleVerifyOrigin(req: Request, env: Env): Promise<Respon
       origin,
       token,
       instructions: {
-        wellKnown: { path: '/.well-known/tripwire-challenge.txt', content: token },
-        dns: { record: `_tripwire.${new URL(origin).host}`, type: 'TXT', value: token },
+        wellKnown: { path: '/.well-known/trustwright-challenge.txt', content: token },
+        dns: { record: `_trustwright.${new URL(origin).host}`, type: 'TXT', value: token },
         confirm: 'POST /api/verify-origin/confirm { origin } once one is in place',
       },
     },
@@ -326,7 +326,7 @@ export async function handleGetManifest(req: Request, env: Env): Promise<Respons
 /** GET /api/pubkey -> the Ed25519 public key, for offline verification. */
 export function handlePubkey(req: Request, env: Env): Response {
   return jsonPublic(
-    { keyId: keyId(env), alg: 'Ed25519', format: 'spki', publicKey: env.TRIPWIRE_PUBKEY ?? null },
+    { keyId: keyId(env), alg: 'Ed25519', format: 'spki', publicKey: env.TRUSTWRIGHT_PUBKEY ?? null },
     { req },
   );
 }

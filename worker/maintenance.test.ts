@@ -67,7 +67,7 @@ function stub(opts: { rows: Row[]; proof: Proof | Record<string, Proof> }) {
         });
         return new Response(null, { status: 204 });
       }
-      if (url.includes('/.well-known/tripwire-challenge.txt')) {
+      if (url.includes('/.well-known/trustwright-challenge.txt')) {
         const origin = new URL(url).origin;
         const state = proofFor(origin);
         if (state === 'present') {
@@ -79,8 +79,8 @@ function stub(opts: { rows: Row[]; proof: Proof | Record<string, Proof> }) {
       }
       if (url.includes('cloudflare-dns.com')) {
         const host = new URL(url).searchParams.get('name') ?? '';
-        // host is _tripwire.<host>; map back to an origin we know.
-        const bare = host.replace(/^_tripwire\./, '');
+        // host is _trustwright.<host>; map back to an origin we know.
+        const bare = host.replace(/^_trustwright\./, '');
         const origin = opts.rows.find((r) => new URL(r.origin).host.split(':')[0] === bare)?.origin ?? '';
         const state = proofFor(origin);
         if (state === 'unreachable') return new Response('boom', { status: 500 });

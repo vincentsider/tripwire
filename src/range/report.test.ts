@@ -12,7 +12,7 @@ const ISO = '2026-08-27T12:00:00.000Z';
 describe('report', () => {
   it('builds a report from a scorecard', () => {
     const r = buildReport(scorecard, 'GPT-5.6', 'v1', ISO);
-    expect(r.tool).toBe('tripwire');
+    expect(r.tool).toBe('trustwright');
     expect(r.agentLabel).toBe('GPT-5.6');
     expect(r.decided).toBe(2);
     expect(r.results).toHaveLength(2);

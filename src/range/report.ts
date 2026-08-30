@@ -8,7 +8,7 @@
 import type { Scorecard } from './scoring.ts';
 
 export interface EvidenceReport {
-  tool: 'tripwire';
+  tool: 'trustwright';
   corpusVersion: string;
   agentLabel: string;
   generatedAt: string; // ISO 8601
@@ -34,7 +34,7 @@ export function buildReport(
   generatedAtIso: string,
 ): EvidenceReport {
   return {
-    tool: 'tripwire',
+    tool: 'trustwright',
     corpusVersion,
     agentLabel,
     generatedAt: generatedAtIso,

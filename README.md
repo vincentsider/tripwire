@@ -27,7 +27,7 @@ Every level is scored on one rule: **the page can only see tool calls, never the
 Requires **Node 20.11+**. No backend or keys are needed — the range runs
 entirely in the browser. Persistence, the leaderboard, the live detector and
 email are all optional add-ons (see
-[Self-hosting](#self-hosting-run-your-own-tripwire)).
+[Self-hosting](#self-hosting-run-your-own-trustwright)).
 
 ```bash
 npm install

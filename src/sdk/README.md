@@ -9,7 +9,7 @@ import { requestVerification, confirmVerification, audit, selfAuditPreview } fro
 
 // 1. Prove you control the origin (one-time).
 const { token, instructions } = await requestVerification();
-// place `token` at /.well-known/tripwire-challenge.txt (or DNS TXT _tripwire.<host>)
+// place `token` at /.well-known/trustwright-challenge.txt (or DNS TXT _trustwright.<host>)
 await confirmVerification();
 
 // 2. Preview locally (no submit), then submit for a signed badge.
@@ -27,5 +27,5 @@ accept that your tools will be called.
 The Worker independently re-derives the fingerprint and findings before signing —
 your self-report is never the trust anchor.
 
-> Publishing to npm under the `@tripwire` scope is a release step; the module is
+> Publishing to npm under the `@trustwright` scope is a release step; the module is
 > usable from source today.

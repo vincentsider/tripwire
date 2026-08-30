@@ -16,7 +16,7 @@ export function newChallengeToken(): string {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
   const b64url = bytesToBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  return `tripwire-verify-${b64url}`;
+  return `trustwright-verify-${b64url}`;
 }
 
 /** Normalize to a scheme+host(+port) origin, or null if not a valid http(s) origin. */
@@ -59,7 +59,7 @@ export async function probeWellKnown(origin: string, token: string): Promise<Pro
   if (!(await hostIsPublic(host))) return 'unreachable';
   const { signal, done } = withTimeout(FETCH_TIMEOUT_MS);
   try {
-    const resp = await fetch(`${origin}/.well-known/tripwire-challenge.txt`, { redirect: 'manual', signal });
+    const resp = await fetch(`${origin}/.well-known/trustwright-challenge.txt`, { redirect: 'manual', signal });
     if (!resp.ok) return resp.status === 404 ? 'absent' : 'unreachable';
     const text = (await resp.text()).slice(0, 4096);
     return text.split(/\s+/).includes(token) ? 'present' : 'absent';
@@ -70,12 +70,12 @@ export async function probeWellKnown(origin: string, token: string): Promise<Pro
   }
 }
 
-/** Check a DNS TXT record `_tripwire.<host>` for the token (tri-state). */
+/** Check a DNS TXT record `_trustwright.<host>` for the token (tri-state). */
 export async function probeDnsTxt(origin: string, token: string): Promise<ProofStatus> {
   const { signal, done } = withTimeout(FETCH_TIMEOUT_MS);
   try {
     const host = new URL(origin).host.split(':')[0];
-    const resp = await fetch(`https://cloudflare-dns.com/dns-query?name=_tripwire.${host}&type=TXT`, {
+    const resp = await fetch(`https://cloudflare-dns.com/dns-query?name=_trustwright.${host}&type=TXT`, {
       headers: { accept: 'application/dns-json' },
       signal,
     });

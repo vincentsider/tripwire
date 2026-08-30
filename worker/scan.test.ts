@@ -26,8 +26,8 @@ function env(overrides: Partial<Env> = {}): Env {
     SUPABASE_SERVICE_ROLE_KEY: 'service-role',
     RATE_LIMITER: { limit: async () => ({ success: true }) },
     ED25519_PRIVATE_KEY: privB64,
-    TRIPWIRE_PUBKEY: pubB64,
-    TRIPWIRE_KEY_ID: 'k1',
+    TRUSTWRIGHT_PUBKEY: pubB64,
+    TRUSTWRIGHT_KEY_ID: 'k1',
     ADMIN_TOKEN: 'admin-secret',
     BROWSER: {} as never,
     ...overrides,
@@ -69,7 +69,7 @@ function scanResult(r: BrowserScanResult): void {
 }
 
 function post(path: string, body: unknown, headers: Record<string, string> = {}): Request {
-  return new Request(`https://tripwire.example${path}`, {
+  return new Request(`https://trustwright.example${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify(body),

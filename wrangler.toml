@@ -17,11 +17,17 @@ compatibility_date = "2026-08-01"
 # @cloudflare/puppeteer (Browser Rendering) imports node:buffer etc.
 compatibility_flags = ["nodejs_compat"]
 
-# Canonical custom domain. Keep the workers.dev URL serving too (workers_dev =
-# true) so existing badge embeds pointed at it do not break during the move.
-# Requires the deepblocker.ai zone on this account.
+# Canonical custom domain is now trustwright.deepblocker.ai. The old
+# tripwire.deepblocker.ai route is kept ONLY until openclawcity's badge embed +
+# ownership proof are moved to the new domain, then it will be removed. The
+# origin-trial token (public/_headers) is registered for deepblocker.ai with
+# isSubdomain, so it covers the new subdomain with no new token. Requires the
+# deepblocker.ai zone on this account.
 workers_dev = true
-routes = [{ pattern = "tripwire.deepblocker.ai", custom_domain = true }]
+routes = [
+  { pattern = "trustwright.deepblocker.ai", custom_domain = true },
+  { pattern = "tripwire.deepblocker.ai", custom_domain = true },
+]
 
 # Static SPA. The Worker handles /api/*; everything else falls through to assets,
 # and unknown routes serve index.html for client-side routing.
@@ -37,8 +43,8 @@ not_found_handling = "single-page-application"
 # names the internal backend.
 SUPABASE_URL = "https://cdmbaujqfnknilruuhht.supabase.co"
 DETECTOR_DAILY_CAP = "500"
-TRIPWIRE_PUBKEY = "MCowBQYDK2VwAyEARzh2V+SNig7xtfush0GWYhDapfIQff+ADC8EMzRTRlo="
-TRIPWIRE_KEY_ID = "k1"
+TRUSTWRIGHT_PUBKEY = "MCowBQYDK2VwAyEARzh2V+SNig7xtfush0GWYhDapfIQff+ADC8EMzRTRlo="
+TRUSTWRIGHT_KEY_ID = "k1"
 BADGE_TTL_DAYS = "90"
 # Comma-separated extra origins allowed to call the API (e.g. a quarantine
 # subdomain). Empty = same-origin only, which needs no CORS.

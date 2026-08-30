@@ -34,8 +34,8 @@ function env(overrides: Partial<Env> = {}): Env {
     SUPABASE_SERVICE_ROLE_KEY: 'service-role',
     RATE_LIMITER: { limit: async () => ({ success: true }) },
     ED25519_PRIVATE_KEY: privB64,
-    TRIPWIRE_PUBKEY: pubB64,
-    TRIPWIRE_KEY_ID: 'k1',
+    TRUSTWRIGHT_PUBKEY: pubB64,
+    TRUSTWRIGHT_KEY_ID: 'k1',
     ADMIN_TOKEN: 'admin-secret',
     ...overrides,
   };
@@ -212,7 +212,7 @@ describe('Mode 2 — verify-origin + revoke + pubkey', () => {
     const res = await worker.fetch(post('/api/verify-origin', { origin: AUDITED }), env(), ctx);
     expect(res.status).toBe(200);
     const out = (await res.json()) as { token: string; instructions: { wellKnown: { content: string } } };
-    expect(out.token).toMatch(/^tripwire-verify-/);
+    expect(out.token).toMatch(/^trustwright-verify-/);
     expect(out.instructions.wellKnown.content).toBe(out.token);
   });
 

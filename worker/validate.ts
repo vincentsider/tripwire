@@ -104,7 +104,7 @@ export function validateLead(body: unknown): Validated<LeadInsert> {
   }
   if (body.consent !== true) return { ok: false, error: 'consent must be true' };
 
-  const value: LeadInsert = { email: body.email, consent: true, source: 'tripwire' };
+  const value: LeadInsert = { email: body.email, consent: true, source: 'trustwright' };
   if (str(body.agent_label, 1, 80)) value.agent_label = body.agent_label;
   if (typeof body.scorecard_id === 'string' && UUID_RE.test(body.scorecard_id)) {
     value.scorecard_id = body.scorecard_id;

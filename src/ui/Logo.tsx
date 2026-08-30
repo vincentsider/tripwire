@@ -1,8 +1,8 @@
 // src/ui/Logo.tsx
 //
 // The mark: a wire crossing a boundary, with the crossing point lit. It draws
-// the product's name and its function in one geometric figure — a tripwire,
-// and the moment something trips it.
+// the product's function in one geometric figure — the line an agent must not
+// cross, and the moment something trips it.
 //
 // Two strokes and a dot, on a 24px grid, in currentColor so it inherits the
 // header's palette rather than carrying its own.

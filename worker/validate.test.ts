@@ -81,7 +81,7 @@ describe('validateLead', () => {
   it('accepts a valid consented email', () => {
     const r = validateLead({ email: 'a@b.co', consent: true });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.source).toBe('tripwire');
+    if (r.ok) expect(r.value.source).toBe('trustwright');
   });
 
   it('rejects without explicit consent', () => {

@@ -107,7 +107,7 @@ export function Home() {
                 <span>signed</span>
               </div>
               <div className="v-r">
-                <span>tripwire · verified</span>
+                <span>trustwright · verified</span>
                 <span className="tag tag-ok">live</span>
               </div>
               <div className="v-r">

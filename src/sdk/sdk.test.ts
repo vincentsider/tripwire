@@ -55,9 +55,9 @@ describe('SDK submit + verification', () => {
   });
 
   it('requestVerification() returns a token', async () => {
-    stubBrowser(async () => new Response(JSON.stringify({ token: 'tripwire-verify-x', instructions: {} }), { status: 200 }));
+    stubBrowser(async () => new Response(JSON.stringify({ token: 'trustwright-verify-x', instructions: {} }), { status: 200 }));
     const r = await requestVerification({ origin: 'https://site.example' });
-    expect(r).toMatchObject({ ok: true, token: 'tripwire-verify-x' });
+    expect(r).toMatchObject({ ok: true, token: 'trustwright-verify-x' });
   });
 
   it('confirmVerification() reports verified true/false', async () => {

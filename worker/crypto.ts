@@ -48,5 +48,5 @@ export async function signEd25519(env: Env, message: string): Promise<string> {
 
 /** Identifier of the signing key (so verifiers know which public key to use). */
 export function keyId(env: Env): string {
-  return env.TRIPWIRE_KEY_ID || 'k1';
+  return env.TRUSTWRIGHT_KEY_ID || 'k1';
 }
