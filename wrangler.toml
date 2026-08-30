@@ -11,7 +11,7 @@
 #
 # Secrets are NEVER placed in this file.
 
-name = "tripwire"
+name = "trustwright"
 main = "worker/index.ts"
 compatibility_date = "2026-08-01"
 # @cloudflare/puppeteer (Browser Rendering) imports node:buffer etc.
