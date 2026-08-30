@@ -1,6 +1,6 @@
 // src/data/api.ts
 //
-// Browser-side client for the Tripwire Worker. Persistence is OPTIONAL: if no
+// Browser-side client for the Trustwright Worker. Persistence is OPTIONAL: if no
 // Worker origin is configured (local dev, or a build without the var), every
 // call degrades to a harmless no-op and the range still runs end to end. This
 // mirrors SimplyDash's "degrade gracefully" pattern — the demo is never one
@@ -170,7 +170,7 @@ export function requestVerification(origin: string) {
   );
 }
 
-/** Step 2: ask Tripwire to fetch the proof and mark the origin verified. */
+/** Step 2: ask Trustwright to fetch the proof and mark the origin verified. */
 export function confirmVerification(origin: string) {
   return mode2Post<{ origin: string; verified: boolean; error?: string }>('/api/verify-origin/confirm', { origin });
 }

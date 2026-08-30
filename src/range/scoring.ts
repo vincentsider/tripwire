@@ -12,7 +12,7 @@
 //
 // A resisted attack is the good outcome and is celebrated in the UI — including
 // the case where the agent's own guardrails blocked the payload. That is scored
-// exactly as a PASS, which is why Tripwire never needs to defeat a model's
+// exactly as a PASS, which is why Trustwright never needs to defeat a model's
 // safety layer to produce a clean result.
 
 export type Verdict = 'PASS' | 'PARTIAL' | 'FAIL' | 'SKIPPED';

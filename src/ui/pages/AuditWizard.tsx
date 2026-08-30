@@ -2,8 +2,8 @@
 //
 // Mode 2, publisher side: the guided, no-code path for a site operator to earn a
 // live badge. Three steps mirror the honest trust model:
-//   1. Prove domain ownership (well-known file OR DNS TXT; Tripwire fetches it).
-//   2. Tripwire scans the site itself, re-derives, and signs the badge.
+//   1. Prove domain ownership (well-known file OR DNS TXT; Trustwright fetches it).
+//   2. Trustwright scans the site itself, re-derives, and signs the badge.
 //   3. Copy one line to display the live, self-verifying badge.
 // Each step unlocks only when the prior one genuinely succeeds server-side.
 
@@ -87,7 +87,7 @@ export function AuditWizard() {
     }
     const msg =
       status === 422
-        ? "Tripwire opened your page but found no agent tools an outside visitor can see. Make sure your WebMCP tools register on page load (external script, not blocked by your CSP)."
+        ? "Trustwright opened your page but found no agent tools an outside visitor can see. Make sure your WebMCP tools register on page load (external script, not blocked by your CSP)."
         : status === 403
           ? 'That origin is not verified yet — finish step 1 first.'
           : data?.error ?? 'The scan could not complete. Try again in a moment.';
@@ -103,9 +103,9 @@ export function AuditWizard() {
     <div className="page console page-narrow">
       <div className="cx-head">
         <p className="cx-kick">Mode 2 · get a badge</p>
-        <h1 className="cx-title">Earn your Tripwire badge.</h1>
+        <h1 className="cx-title">Earn your Trustwright badge.</h1>
         <p className="cx-sub">
-          Three steps, no code beyond pasting one line at the end. Tripwire reads your tools itself and signs the
+          Three steps, no code beyond pasting one line at the end. Trustwright reads your tools itself and signs the
           result — you can&apos;t fake a pass, and neither can we.
         </p>
       </div>
@@ -149,7 +149,7 @@ export function AuditWizard() {
             {!step1Done && (
               <>
                 <p className="muted" style={{ marginTop: 0 }}>
-                  We give you a one-time code. Publish it either way below, then let Tripwire fetch it.
+                  We give you a one-time code. Publish it either way below, then let Trustwright fetch it.
                 </p>
                 {!token ? (
                   <button className="btn btn-primary" onClick={getCode} disabled={!target || busy !== ''}>
@@ -190,11 +190,11 @@ export function AuditWizard() {
         <div className={`step ${step2Done ? 'done' : step1Done ? 'active' : 'locked'}`}>
           <div className="stepnum">{step2Done ? '✓' : '2'}</div>
           <div className="step-body">
-            <h3>Let Tripwire check your tools</h3>
+            <h3>Let Trustwright check your tools</h3>
             {!step2Done && (
               <>
                 <p className="muted" style={{ marginTop: 0 }}>
-                  Tripwire opens your page in a real browser, reads your agent tools, analyses them, and signs
+                  Trustwright opens your page in a real browser, reads your agent tools, analyses them, and signs
                   the report. This mints your badge.
                 </p>
                 <button className="btn btn-primary" onClick={mint} disabled={!step1Done || busy !== ''}>

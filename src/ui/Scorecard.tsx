@@ -46,7 +46,7 @@ export function Scorecard({
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(line + ' — tested with Tripwire');
+      await navigator.clipboard.writeText(line + ' — tested with Trustwright');
       setCopied(true);
       if (copyTimer.current) clearTimeout(copyTimer.current);
       copyTimer.current = setTimeout(() => setCopied(false), 1600);

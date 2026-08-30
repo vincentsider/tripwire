@@ -1,7 +1,7 @@
 # @tripwire/audit
 
 Self-audit SDK for WebMCP sites. Enumerate your own tool surface, preview the
-Tripwire static checklist locally, prove origin ownership, and submit for a
+Trustwright static checklist locally, prove origin ownership, and submit for a
 signed, fingerprint-bound Assurance Report + live badge.
 
 ```ts

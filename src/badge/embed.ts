@@ -1,6 +1,6 @@
 // src/badge/embed.ts
 //
-// The live, self-verifying Tripwire badge. A site embeds:
+// The live, self-verifying Trustwright badge. A site embeds:
 //
 //   <script src="https://tripwire.../badge.js" data-origin="https://site.com"></script>
 //
@@ -129,7 +129,7 @@ function render(
   dot.className = 'dot';
   const lab = document.createElement('span');
   lab.className = 'lab';
-  lab.textContent = 'Tripwire: ' + label;
+  lab.textContent = 'Trustwright: ' + label;
   a.append(dot, lab);
   if (!opts.compact && sub) {
     const sb = document.createElement('span');

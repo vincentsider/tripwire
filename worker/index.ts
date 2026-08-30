@@ -1,6 +1,6 @@
 // worker/index.ts
 //
-// The Tripwire Worker: one deploy that serves the static SPA and the /api/*
+// The Trustwright Worker: one deploy that serves the static SPA and the /api/*
 // surface. It holds every secret (Supabase service-role, detector key); the
 // browser holds none. Each endpoint validates input, rate-limits by IP, and
 // never leaks internal error detail.

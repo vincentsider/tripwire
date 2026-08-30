@@ -84,7 +84,7 @@ function stubDb(opts: { verified?: boolean; audit?: Record<string, unknown> | nu
 }
 
 const post = (path: string, body: unknown, headers: Record<string, string> = {}) =>
-  new Request(`https://api.tripwire.test${path}`, {
+  new Request(`https://api.trustwright.test${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify(body),
@@ -161,12 +161,12 @@ describe('Mode 2 — manifest elevates the rung', () => {
   };
   it('badge reports rung 1 when a manifest matches the audited fingerprint', async () => {
     stubDb({ verified: true, audit: auditRow, manifest: { fingerprint: fp, manifest: {}, manifest_sha256: 'c'.repeat(64), signature: 's', key_id: 'k1', signed_at: '2026-08-28T00:00:00Z' } });
-    const res = await worker.fetch(new Request(`https://api.tripwire.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
+    const res = await worker.fetch(new Request(`https://api.trustwright.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
     expect(await res.json()).toMatchObject({ state: 'active', assuranceRung: 1 });
   });
   it('a manifest bound to a DIFFERENT fingerprint does not elevate the rung', async () => {
     stubDb({ verified: true, audit: auditRow, manifest: { fingerprint: 'f'.repeat(64), manifest: {}, manifest_sha256: 'c'.repeat(64), signature: 's', key_id: 'k1', signed_at: '2026-08-28T00:00:00Z' } });
-    const res = await worker.fetch(new Request(`https://api.tripwire.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
+    const res = await worker.fetch(new Request(`https://api.trustwright.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
     expect(await res.json()).toMatchObject({ state: 'active', assuranceRung: 0 });
   });
 });
@@ -181,14 +181,14 @@ describe('Mode 2 — badge state', () => {
         signed_at: '2026-08-28T00:00:00Z', expires_at: '2099-01-01T00:00:00Z', revoked_at: null,
       },
     });
-    const res = await worker.fetch(new Request(`https://api.tripwire.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
+    const res = await worker.fetch(new Request(`https://api.trustwright.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ state: 'active', fingerprint: 'a'.repeat(64) });
   });
 
   it('reports unverified for an origin that has not proven control', async () => {
     stubDb({ verified: false });
-    const res = await worker.fetch(new Request(`https://api.tripwire.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
+    const res = await worker.fetch(new Request(`https://api.trustwright.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
     expect(await res.json()).toMatchObject({ state: 'unverified' });
   });
 
@@ -201,7 +201,7 @@ describe('Mode 2 — badge state', () => {
         signed_at: '2026-08-28T00:00:00Z', expires_at: null, revoked_at: '2026-08-28T01:00:00Z',
       },
     });
-    const res = await worker.fetch(new Request(`https://api.tripwire.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
+    const res = await worker.fetch(new Request(`https://api.trustwright.test/api/badge?origin=${encodeURIComponent(AUDITED)}`), env(), ctx);
     expect(await res.json()).toMatchObject({ state: 'revoked' });
   });
 });
@@ -250,14 +250,14 @@ describe('Mode 2 — verify-origin + revoke + pubkey', () => {
   });
 
   it('serves the public key', async () => {
-    const res = await worker.fetch(new Request('https://api.tripwire.test/api/pubkey'), env(), ctx);
+    const res = await worker.fetch(new Request('https://api.trustwright.test/api/pubkey'), env(), ctx);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ alg: 'Ed25519', keyId: 'k1', publicKey: pubB64 });
   });
 
   it('preflights a Mode-2 endpoint with reflected CORS', async () => {
     const res = await worker.fetch(
-      new Request('https://api.tripwire.test/api/audit', { method: 'OPTIONS', headers: { Origin: 'https://any.example' } }),
+      new Request('https://api.trustwright.test/api/audit', { method: 'OPTIONS', headers: { Origin: 'https://any.example' } }),
       env(),
       ctx,
     );

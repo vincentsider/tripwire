@@ -290,7 +290,7 @@ export async function handleManifest(req: Request, env: Env): Promise<Response> 
     return jsonPublic({ error: 'manifest too large' }, { status: 413, req });
   }
 
-  // Sign the canonical {origin, fingerprint, manifest}. Tripwire attests the site
+  // Sign the canonical {origin, fingerprint, manifest}. Trustwright attests the site
   // MADE these claims and binds them to the surface — it does not prove them true.
   const canonical = stableStringify({ origin, fingerprint, manifest: b.manifest });
   const manifestSha256 = await sha256hex(canonical);

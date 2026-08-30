@@ -45,15 +45,15 @@ function Preview({ theme, variant }: { theme: Theme; variant: Variant }) {
       }}
     >
       <span style={{ width: 8, height: 8, borderRadius: '50%', background: OK, flex: 'none' }} />
-      <span style={{ color: OK, fontWeight: 600 }}>Tripwire: verified</span>
+      <span style={{ color: OK, fontWeight: 600 }}>Trustwright: verified</span>
       {variant === 'default' && <span style={{ color: pal.sub }}>tools match audit</span>}
     </span>
   );
 }
 
 const CONTAINER: Partial<Record<Placement, string>> = {
-  header: '<!-- put this in your header, immediately BEFORE the logo -->\n<div id="tripwire-badge" style="display:inline-flex;align-items:center;margin-right:14px"></div>',
-  corner: '<!-- add once in your app shell so it survives navigation -->\n<div id="tripwire-badge" style="position:fixed;bottom:12px;right:12px;z-index:9999"></div>',
+  header: '<!-- put this in your header, immediately BEFORE the logo -->\n<div id="trustwright-badge" style="display:inline-flex;align-items:center;margin-right:14px"></div>',
+  corner: '<!-- add once in your app shell so it survives navigation -->\n<div id="trustwright-badge" style="position:fixed;bottom:12px;right:12px;z-index:9999"></div>',
 };
 
 export function BadgePage() {
@@ -64,7 +64,7 @@ export function BadgePage() {
   const [placement, setPlacement] = useState<Placement>('inline');
   const [customMount, setCustomMount] = useState('');
 
-  const mount = placement === 'custom' ? customMount.trim() : placement === 'inline' ? '' : '#tripwire-badge';
+  const mount = placement === 'custom' ? customMount.trim() : placement === 'inline' ? '' : '#trustwright-badge';
   const containerSnippet = CONTAINER[placement];
 
   const attrs = [
@@ -84,7 +84,7 @@ export function BadgePage() {
           ? `Add this fixed-position container once in the app shell so it persists across navigation:\n${containerSnippet}\nThen add the <script> above once, in the root layout / index.html.`
           : `The badge renders into the element matching "${mount || '#your-selector'}". Make sure that element exists where you want the badge, then add the <script> above once, in the root layout / index.html.`;
 
-  const agentBrief = `Add the Tripwire trust badge to this website.
+  const agentBrief = `Add the Trustwright trust badge to this website.
 
 1. Add this badge script exactly once. For a React/Next/Vue/SvelteKit app, put it in the root layout or index.html (NOT inside a single component), so it loads on every page:
 
@@ -96,7 +96,7 @@ ${placeStep}
 Rules:
 - Do NOT change data-origin ("${origin || 'https://your-site.com'}") — it identifies the audited site.
 - Do NOT hide the badge or restyle it to force a colour. It renders in a shadow DOM and shows the live, signed verdict; it must be left able to show the true state.
-- It links to the public Tripwire report — leave that link working.
+- It links to the public Trustwright report — leave that link working.
 - If the mount container is rendered by the app, make sure it exists within a few seconds of load (the badge waits up to 6s for it).`;
 
   return (
@@ -183,7 +183,7 @@ Rules:
           <input
             className="field"
             style={{ marginTop: 8 }}
-            placeholder="#tripwire-badge"
+            placeholder="#trustwright-badge"
             value={customMount}
             onChange={(e) => setCustomMount(e.target.value)}
             spellCheck={false}

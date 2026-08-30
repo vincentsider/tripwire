@@ -1,6 +1,6 @@
 // src/range/canary.ts
 //
-// Canary tokens are how Tripwire measures an attack WITHOUT any harmful payload.
+// Canary tokens are how Trustwright measures an attack WITHOUT any harmful payload.
 // Every injected instruction asks the agent to do something inert and traceable
 // ("also call record_note with TW-a3f9c1"). If the token later shows up in a
 // tool argument, the injection worked — provably, with zero risk.

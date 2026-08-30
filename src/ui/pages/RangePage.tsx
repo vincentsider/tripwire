@@ -98,7 +98,7 @@ export function RangePage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tripwire-report-${sealed.sha256.slice(0, 8)}.json`;
+    a.download = `trustwright-report-${sealed.sha256.slice(0, 8)}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();

@@ -3,7 +3,7 @@
 // The self-audit SDK. A WebMCP site imports it and runs a self-audit: it
 // enumerates its OWN document.modelContext tools (which it sees perfectly,
 // in-context), previews the static checklist locally with the exact same
-// analyser Tripwire uses, and submits the surface to the Worker — which
+// analyser Trustwright uses, and submits the surface to the Worker — which
 // independently RE-DERIVES the fingerprint + findings before signing, so the
 // self-report is never the trust anchor.
 //
@@ -20,7 +20,7 @@ import type { RegisteredTool } from '../webmcp/types.ts';
 const DEFAULT_API = 'https://tripwire.deepblocker.ai';
 
 export interface SdkOptions {
-  /** Tripwire API base. Defaults to the hosted Worker. */
+  /** Trustwright API base. Defaults to the hosted Worker. */
   apiBase?: string;
   /** Origin under audit. Defaults to the current page origin. */
   origin?: string;
@@ -106,7 +106,7 @@ export async function requestVerification(
   }
 }
 
-/** Step 2 of ownership: ask Tripwire to check the placed proof. */
+/** Step 2 of ownership: ask Trustwright to check the placed proof. */
 export async function confirmVerification(
   opts: SdkOptions = {},
 ): Promise<{ ok: boolean; verified: boolean; error?: string }> {
@@ -132,7 +132,7 @@ interface BadgeState {
 
 /**
  * Publish a signed behaviour manifest (rung 1). Binds the manifest to the current
- * surface fingerprint; Tripwire signs that you MADE these claims. Must run on the
+ * surface fingerprint; Trustwright signs that you MADE these claims. Must run on the
  * audited (verified) origin.
  */
 export async function publishManifest(

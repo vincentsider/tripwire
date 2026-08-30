@@ -1,4 +1,4 @@
-# wrangler.toml — Tripwire Worker (serves the SPA + /api/*).
+# wrangler.toml — Trustwright Worker (serves the SPA + /api/*).
 #
 # Deploy is human-gated (needs `wrangler login`). Before first deploy:
 #   1. wrangler kv namespace create DAILY        # paste the id below

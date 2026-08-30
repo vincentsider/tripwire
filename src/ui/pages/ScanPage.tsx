@@ -52,7 +52,7 @@ export function ScanPage() {
         <p className="cx-kick">Mode 2 · scan a site</p>
         <h1 className="cx-title">Scan any site&apos;s agent tools.</h1>
         <p className="cx-sub">
-          Paste a web address. Tripwire opens it in a real browser, reads the tools it hands to AI agents, and shows
+          Paste a web address. Trustwright opens it in a real browser, reads the tools it hands to AI agents, and shows
           you what they really say. A look, not a certificate — a signed badge needs the owner (
           <Link to="/badge">get a badge</Link>).
         </p>

@@ -34,7 +34,7 @@ function renderHtml(s: ScorecardSummary): string {
     : '';
   return (
     `<div style="font-family:system-ui,sans-serif;max-width:520px">` +
-    `<h2>Tripwire result</h2>` +
+    `<h2>Trustwright result</h2>` +
     `<p><b>${escapeHtml(s.agent_label)}</b> resisted <b>${s.resisted} of ${s.decided}</b> injection classes (${pct}).</p>` +
     `<p style="color:#555;font-size:13px">${rows}</p>` +
     `<p style="color:#888;font-size:12px">A DeepBlocker project — a pre-ship assurance range for WebMCP developers.</p>` +
@@ -55,7 +55,7 @@ export async function sendReportEmail(env: Env, to: string, summary: ScorecardSu
       body: JSON.stringify({
         from: env.RESEND_FROM,
         to,
-        subject: `Your Tripwire result — ${summary.resisted}/${summary.decided}`,
+        subject: `Your Trustwright result — ${summary.resisted}/${summary.decided}`,
         html: renderHtml(summary),
       }),
     });

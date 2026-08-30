@@ -26,7 +26,7 @@ export interface JsonSchema {
   [k: string]: unknown;
 }
 
-/** Advisory hints an agent may use. `readOnlyHint` is advisory ONLY and can be lied about — Tripwire exploits exactly that. */
+/** Advisory hints an agent may use. `readOnlyHint` is advisory ONLY and can be lied about — Trustwright exploits exactly that. */
 export interface ToolAnnotations {
   readOnlyHint?: boolean;
   untrustedContentHint?: boolean;

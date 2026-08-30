@@ -56,7 +56,7 @@ function stubSupabase() {
 afterEach(() => vi.unstubAllGlobals());
 
 const jsonReq = (path: string, body: unknown, method = 'POST') =>
-  new Request(`https://api.tripwire.test${path}`, {
+  new Request(`https://api.trustwright.test${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -87,7 +87,7 @@ describe('worker router', () => {
   it('serves the leaderboard', async () => {
     stubSupabase();
     const res = await worker.fetch(
-      new Request('https://api.tripwire.test/api/leaderboard?limit=5'),
+      new Request('https://api.trustwright.test/api/leaderboard?limit=5'),
       baseEnv(),
       ctx,
     );
@@ -140,7 +140,7 @@ describe('worker router', () => {
         throw new Error(`unexpected fetch: ${url}`);
       }),
     );
-    const env = baseEnv({ RESEND_API_KEY: 'rk', RESEND_FROM: 'Tripwire <r@deepblocker.ai>' });
+    const env = baseEnv({ RESEND_API_KEY: 'rk', RESEND_FROM: 'Trustwright <r@deepblocker.ai>' });
     const res = await worker.fetch(
       jsonReq('/api/lead', { email: 'a@b.co', consent: true, scorecard_id: scId }),
       env,
@@ -153,7 +153,7 @@ describe('worker router', () => {
 
   it('404s an unknown api route', async () => {
     const res = await worker.fetch(
-      new Request('https://api.tripwire.test/api/nope'),
+      new Request('https://api.trustwright.test/api/nope'),
       baseEnv(),
       ctx,
     );
@@ -162,7 +162,7 @@ describe('worker router', () => {
 
   it('answers a CORS preflight for an allowed origin', async () => {
     const res = await worker.fetch(
-      new Request('https://api.tripwire.test/api/scorecard', {
+      new Request('https://api.trustwright.test/api/scorecard', {
         method: 'OPTIONS',
         headers: { Origin: 'https://app.example' },
       }),
@@ -175,7 +175,7 @@ describe('worker router', () => {
 
   it('does not reflect a non-allowlisted origin', async () => {
     const res = await worker.fetch(
-      new Request('https://api.tripwire.test/api/scorecard', {
+      new Request('https://api.trustwright.test/api/scorecard', {
         method: 'OPTIONS',
         headers: { Origin: 'https://evil.example' },
       }),
@@ -186,7 +186,7 @@ describe('worker router', () => {
   });
 
   it('rejects an oversized upload early via Content-Length (413)', async () => {
-    const req = new Request('https://api.tripwire.test/api/verify-audio', {
+    const req = new Request('https://api.trustwright.test/api/verify-audio', {
       method: 'POST',
       headers: { 'Content-Length': String(2 * 1024 * 1024) }, // 2 MB
       body: 'x',
@@ -200,7 +200,7 @@ describe('worker router', () => {
     const form = new FormData();
     form.append('audio', new Blob([new Uint8Array(1024)], { type: 'audio/webm' }), 'a.webm');
     const res = await worker.fetch(
-      new Request('https://api.tripwire.test/api/verify-audio', { method: 'POST', body: form }),
+      new Request('https://api.trustwright.test/api/verify-audio', { method: 'POST', body: form }),
       baseEnv({ DEEPFAKE_API_KEY: 'k' }), // key present, but no DAILY binding
       ctx,
     );

@@ -1,5 +1,5 @@
 -- Rung 1 (accountability): a site's signed behaviour manifest, bound to a surface
--- fingerprint. Tripwire signs that the site MADE these claims (dated), turning a
+-- fingerprint. Trustwright signs that the site MADE these claims (dated), turning a
 -- later violation into a provable breach. RLS deny-all; Worker service-role only.
 create table if not exists public.manifests (
   id uuid primary key default gen_random_uuid(),

@@ -1,6 +1,6 @@
-# Tripwire
+# Trustwright
 
-**A pre-ship assurance range for WebMCP developers.** Open it in ChatGPT's browser or Chrome, tell your agent to run the gauntlet, and Tripwire walks your agent through a versioned corpus of tool-surface attacks, records exactly what it did, and hands you a scorecard. It tells you whether the tools your site exposes to AI agents are safe to ship.
+**A pre-ship assurance range for WebMCP developers.** Open it in ChatGPT's browser or Chrome, tell your agent to run the gauntlet, and Trustwright walks your agent through a versioned corpus of tool-surface attacks, records exactly what it did, and hands you a scorecard. It tells you whether the tools your site exposes to AI agents are safe to ship.
 
 Built for the [WebMCP Challenge](https://webmcp.devpost.com/). Apache-2.0.
 
@@ -16,11 +16,11 @@ That gap is documented, not hypothetical:
 - The WebMCP spec concedes there is no verification that a tool's behaviour matches its description, and explicitly asks the community for a shared attack evaluation dataset. That dataset does not exist yet.
 - Independent research (arXiv 2606.06387) manipulated current agents with success rates reaching 100% for some techniques.
 
-Tripwire is that missing dataset, made runnable. Its audience is every developer about to expose tools to agents, including everyone building for this challenge.
+Trustwright is that missing dataset, made runnable. Its audience is every developer about to expose tools to agents, including everyone building for this challenge.
 
 ## The thesis: verify, don't trust
 
-Every level is scored on one rule: **the page can only see tool calls, never the agent's words.** So a level never checks "did the agent say the magic word." It checks whether the agent *called* something it should not have, measured by an inert marker (a canary). A resisted attack is the good outcome and renders as a green PASS, including when the agent's own guardrails block the payload, so Tripwire never has to defeat a model's safety layer to produce a clean result.
+Every level is scored on one rule: **the page can only see tool calls, never the agent's words.** So a level never checks "did the agent say the magic word." It checks whether the agent *called* something it should not have, measured by an inert marker (a canary). A resisted attack is the good outcome and renders as a green PASS, including when the agent's own guardrails block the payload, so Trustwright never has to defeat a model's safety layer to produce a clean result.
 
 ## Run it locally
 
@@ -70,7 +70,7 @@ With a native WebMCP host (ChatGPT's browser, or flagged Chrome), tell your agen
 The agent drives the real level tools one at a time and gets scored on its own
 behaviour. The buttons run a simulated agent for a repeatable, no-model demo.
 
-To drive it with a real agent, open the deployed URL in **ChatGPT's in-app browser**, or in **Chrome** with `chrome://flags/#enable-webmcp-testing` enabled, then ask your agent to "run the Tripwire gauntlet." Where no native WebMCP host is present, a built-in polyfill (`src/webmcp/polyfill.ts`) keeps the app runnable for development.
+To drive it with a real agent, open the deployed URL in **ChatGPT's in-app browser**, or in **Chrome** with `chrome://flags/#enable-webmcp-testing` enabled, then ask your agent to "run the Trustwright gauntlet." Where no native WebMCP host is present, a built-in polyfill (`src/webmcp/polyfill.ts`) keeps the app runnable for development.
 
 ## Mode 2: audit a site's tools + issue a live badge
 
@@ -93,9 +93,9 @@ signed, revocable, fingerprint-bound **badge** — "SSL Labs grade" for the agen
 - **Rung 1** (`/api/manifest`): a signed behaviour manifest (accountability).
   **Rung 2** (leak probe in the SDK): watch a canary escape cross-origin.
 - **Scheduled ownership re-check** (hourly cron): if a verified site pulls its
-  ownership proof, Tripwire un-verifies it and revokes its badges — after a grace
+  ownership proof, Trustwright un-verifies it and revokes its badges — after a grace
   window so a transient outage never causes a false revocation.
-- **URL scan** (`/api/scan`): point Tripwire at any URL and it opens the page in a
+- **URL scan** (`/api/scan`): point Trustwright at any URL and it opens the page in a
   managed headless browser (Cloudflare Browser Rendering, in-process — see
   `worker/browserScan.ts`), enumerates the live WebMCP surface, and returns an
   **unsigned** preview. A scan never mints a badge — signing still requires proven
@@ -127,9 +127,9 @@ Cloudflare Worker, which holds the Supabase service-role key and the detector
 key as Worker secrets. Every table has Row-Level Security enabled with no anon
 policies, so a leaked key can do nothing.
 
-## Self-hosting: run your own Tripwire
+## Self-hosting: run your own Trustwright
 
-Tripwire is one Cloudflare Worker that serves the SPA and the `/api/*` surface.
+Trustwright is one Cloudflare Worker that serves the SPA and the `/api/*` surface.
 Everything except the range itself is optional — add each piece to unlock the
 feature next to it.
 
@@ -180,7 +180,7 @@ actually email the report:
 
 ```bash
 wrangler secret put RESEND_API_KEY
-wrangler secret put RESEND_FROM             # e.g. "Tripwire <reports@yourdomain>"
+wrangler secret put RESEND_FROM             # e.g. "Trustwright <reports@yourdomain>"
 ```
 
 ### 5. Optional — the URL scan (Mode 2 `/api/scan`)

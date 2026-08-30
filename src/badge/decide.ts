@@ -43,7 +43,7 @@ export function decideBadge(state: BadgeStateJson, liveFingerprint: string | nul
     case 'unverified':
       return { label: 'not verified', tone: 'neutral', sub: 'origin ownership not proven' };
     case 'none':
-      return { label: 'not audited', tone: 'neutral', sub: 'no Tripwire audit on record' };
+      return { label: 'not audited', tone: 'neutral', sub: 'no Trustwright audit on record' };
     case 'revoked':
       return { label: 'revoked', tone: 'bad', sub: 'this badge was withdrawn' };
     case 'expired':

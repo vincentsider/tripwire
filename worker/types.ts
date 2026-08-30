@@ -54,7 +54,7 @@ export interface Env {
   // Email delivery (optional). Both must be set to actually send a report email;
   // without them, a lead is captured and emailed:false is returned.
   RESEND_API_KEY?: string;
-  RESEND_FROM?: string; // e.g. "Tripwire <reports@deepblocker.ai>"
+  RESEND_FROM?: string; // e.g. "Trustwright <reports@deepblocker.ai>"
   // Mode 2 signing + admin (secrets).
   ED25519_PRIVATE_KEY?: string; // PKCS8, base64 — signs badges/reports
   ADMIN_TOKEN?: string; // gates POST /api/audit/revoke and /api/audit/from-scan

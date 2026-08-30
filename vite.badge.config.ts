@@ -13,7 +13,7 @@ export default defineConfig({
     lib: {
       entry: fileURLToPath(new URL('./src/badge/embed.ts', import.meta.url)),
       formats: ['iife'],
-      name: 'TripwireBadge',
+      name: 'TrustwrightBadge',
       fileName: () => 'badge.js',
     },
   },

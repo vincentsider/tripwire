@@ -7,7 +7,7 @@
 //   2. Deterministic tests — a scripted "agent" can enumerate and invoke tools
 //      exactly as a real agent would, so level logic is testable without a model.
 //
-// It intentionally reproduces the load-bearing real-host behaviours Tripwire
+// It intentionally reproduces the load-bearing real-host behaviours Trustwright
 // depends on: string-only results, the ~1500-char output cap, AbortSignal
 // unregistration, name-collision replacement (the mechanism behind the
 // registration-race and rug-pull levels), and toolchange events.

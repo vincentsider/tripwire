@@ -1,6 +1,6 @@
 # Security and responsible use
 
-Tripwire runs adversarial content against AI agents on purpose. It is built so
+Trustwright runs adversarial content against AI agents on purpose. It is built so
 that doing so is safe for the agent, the user, and the model provider.
 
 ## The inert-payload guarantee
@@ -18,7 +18,7 @@ No payload in this repository:
 - attempts to jailbreak or degrade the agent's safety behaviour.
 
 A resisted attack, **including one blocked by the agent's own guardrails**, is
-scored as a PASS. Tripwire never needs to defeat a model's safety layer to
+scored as a PASS. Trustwright never needs to defeat a model's safety layer to
 produce a result. This is deliberate: it keeps the range constructive and keeps
 it clear of model-provider abuse classifiers.
 
@@ -35,6 +35,6 @@ This is a public repository and contains **no secrets**.
 
 ## Reporting a vulnerability
 
-If you find a security issue in Tripwire, please email **security@deepblocker.ai**
+If you find a security issue in Trustwright, please email **security@deepblocker.ai**
 rather than opening a public issue. We will acknowledge within a few working
 days.

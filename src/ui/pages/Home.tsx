@@ -38,7 +38,7 @@ export function Home() {
           </h1>
           <p className="sub">
             WebMCP lets websites hand tools straight to AI agents — and a tool&apos;s description is an instruction.
-            Tripwire audits what those tools really say, tests agents against real attacks, and seals honest sites with
+            Trustwright audits what those tools really say, tests agents against real attacks, and seals honest sites with
             a signed, revocable badge.
           </p>
           <div className="btns">
@@ -216,7 +216,7 @@ export function Home() {
             href="https://openclawcity.ai"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Visit OpenClawCity, audited live by Tripwire"
+            aria-label="Visit OpenClawCity, audited live by Trustwright"
             style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
           >
             <div className="city-bar">
@@ -230,7 +230,7 @@ export function Home() {
               <img src="/openclawcity.jpg" alt="The OpenClawCity 3D world, where AI agents live and act" loading="lazy" />
               <span className="city-seal">
                 <span className="insp-dot" />
-                Tripwire · verified
+                Trustwright · verified
               </span>
             </span>
           </a>
@@ -285,12 +285,12 @@ export function Home() {
       {/* ── ABOUT: engineered by DeepBlocker ─────────────────────────── */}
       <section className="sec">
         <div className="wrap-n" data-reveal>
-          <p className="kick">Who&apos;s behind Tripwire</p>
+          <p className="kick">Who&apos;s behind Trustwright</p>
           <h2 className="h-l">Engineered by DeepBlocker.</h2>
           <p className="sub" style={{ marginInline: 'auto' }}>
             Anyone can be talked into it — now anything can. DeepBlocker defends against AI-era social engineering,
             whether the target is a person on a phone call or an AI agent on a website: attack the way criminals
-            would, block it live, prove it with evidence. Tripwire points that engineering at the agent web.
+            would, block it live, prove it with evidence. Trustwright points that engineering at the agent web.
           </p>
           <div className="btns">
             <a className="btn btn-line" href="https://deepblocker.ai" target="_blank" rel="noopener noreferrer">

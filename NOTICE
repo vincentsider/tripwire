@@ -1,4 +1,4 @@
-Tripwire
+Trustwright
 Copyright 2026 DeepBlocker
 
 This product includes software developed by DeepBlocker (https://deepblocker.ai).
@@ -14,7 +14,7 @@ The project name, the DeepBlocker name, and the "verified" trust-badge design
 are trademarks of DeepBlocker. The Apache-2.0 license covers the SOURCE CODE
 only and grants NO right to use these marks (Apache-2.0 section 6). In
 particular, a fork or self-hosted deployment may use the code but may NOT
-present itself as issuing an official DeepBlocker/Tripwire "verified" badge, nor
+present itself as issuing an official DeepBlocker/Trustwright "verified" badge, nor
 use the name or badge in a way that implies endorsement. See TRADEMARK.md.
 
 ------------------------------------------------------------------------------

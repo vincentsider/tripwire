@@ -15,7 +15,7 @@
 //                             the caller has already PROVEN they own. This is the
 //                             non-technical operator's one-click "create my badge"
 //                             (ownership proof is the gate; rate-limited).
-//   POST /api/audit/from-scan admin-gated variant for Tripwire operators.
+//   POST /api/audit/from-scan admin-gated variant for Trustwright operators.
 //
 // This keeps the founding rule intact: a signature exists only behind proven
 // origin control; everything else is an observation, labelled as such.
@@ -193,7 +193,7 @@ export async function handleAuditSelf(req: Request, env: Env): Promise<Response>
   return mintScannedAudit(req, env, target);
 }
 
-/** POST /api/audit/from-scan { url } -> admin-gated variant for Tripwire operators. */
+/** POST /api/audit/from-scan { url } -> admin-gated variant for Trustwright operators. */
 export async function handleAuditFromScan(req: Request, env: Env): Promise<Response> {
   const provided = req.headers.get('x-admin-token') ?? '';
   if (!env.ADMIN_TOKEN || !timingSafeEqual(provided, env.ADMIN_TOKEN)) {

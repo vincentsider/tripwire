@@ -46,7 +46,7 @@ export function scopeStatement(generatedAt: string, fingerprint: string): string
   const date = generatedAt.slice(0, 10);
   const short = fingerprint.slice(0, 12);
   return (
-    "Tripwire audits this site's agent-tool surface: what these tools declare " +
+    "Trustwright audits this site's agent-tool surface: what these tools declare " +
     '(names, descriptions, input schemas, safety hints, cross-origin exposure) and, ' +
     'where the owner authorised it, what they observably do from the browser. It is ' +
     'verified live against the exact tool set present at page load; if the tools ' +

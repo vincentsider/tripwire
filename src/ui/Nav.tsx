@@ -16,7 +16,7 @@ export function Nav() {
       <div className="nav-inner">
         <NavLink to="/" className="brand">
           <Logo />
-          Tripwire
+          Trustwright
         </NavLink>
         <div className="nav-links">
           <NavLink to="/range" className="nav-link">

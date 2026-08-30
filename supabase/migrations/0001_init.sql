@@ -1,4 +1,4 @@
--- Tripwire database schema.
+-- Trustwright database schema.
 --
 -- Apply to a fresh Supabase project (supabase db push, or paste into the SQL
 -- editor). The Worker writes to these tables with the service-role key; RLS is
