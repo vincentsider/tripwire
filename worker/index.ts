@@ -26,6 +26,7 @@ import {
   handleGetManifest,
 } from './badge.ts';
 import { handleScan, handleAuditFromScan, handleAuditSelf } from './scan.ts';
+import { handleGetCorpus, handleGrantCorpus } from './corpus.ts';
 import {
   fingerprintSurface,
   FINGERPRINT_ALGO,
@@ -151,6 +152,7 @@ export default {
       '/api/badge',
       '/api/pubkey',
       '/api/manifest',
+      '/api/corpus',
     ]);
 
     if (req.method === 'OPTIONS') {
@@ -178,6 +180,8 @@ export default {
           { req, env, status: actual === FINGERPRINT_GOLDEN_HASH ? 200 : 500 },
         );
       }
+      if (url.pathname === '/api/corpus' && req.method === 'GET') return handleGetCorpus(req, env);
+      if (url.pathname === '/api/corpus/grant' && req.method === 'POST') return handleGrantCorpus(req, env);
       if (url.pathname === '/api/scorecard' && req.method === 'POST') return handleScorecard(req, env);
       if (url.pathname === '/api/leaderboard' && req.method === 'GET') return handleLeaderboard(req, env);
       if (url.pathname === '/api/lead' && req.method === 'POST') return handleLead(req, env);

@@ -177,6 +177,33 @@ export async function getLatestManifest(
   return rows[0] ?? null;
 }
 
+// ── Premium corpus entitlements (gates /api/corpus?tier=premium) ─────────────
+
+/** The tier a bearer token grants, or null if unknown/expired. */
+export async function getCorpusTier(env: Env, token: string): Promise<string | null> {
+  const q = `corpus_entitlements?token=eq.${encodeURIComponent(token)}&select=tier,expires_at&limit=1`;
+  const resp = await fetch(sbUrl(env, q), { headers: sbHeaders(env) });
+  if (!resp.ok) return null;
+  const rows = (await resp.json()) as Array<{ tier: string; expires_at: string | null }>;
+  const row = rows[0];
+  if (!row) return null;
+  if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) return null;
+  return row.tier;
+}
+
+/** Issue a corpus entitlement token (admin flow / stubbed billing). */
+export async function insertCorpusEntitlement(
+  env: Env,
+  row: { token: string; tier: string; label?: string | null; expires_at?: string | null },
+): Promise<void> {
+  const resp = await fetch(sbUrl(env, 'corpus_entitlements'), {
+    method: 'POST',
+    headers: sbHeaders(env, { Prefer: 'return=minimal' }),
+    body: JSON.stringify(row),
+  });
+  if (!resp.ok) throw new Error(`corpus_entitlements insert failed: ${resp.status}`);
+}
+
 /** Revoke every audit for an origin (or one id). Returns rows affected count is not tracked. */
 export async function revokeAudits(env: Env, opts: { origin?: string; id?: string }): Promise<void> {
   const filter = opts.id

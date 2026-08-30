@@ -10,7 +10,8 @@ import { RangeSession, type SessionState } from '../../range/session.ts';
 import { registerControlTools } from '../../range/controlTools.ts';
 import { hostSource, isWebMcpAvailable } from '../../webmcp/shim.ts';
 import { buildReport, sealReport } from '../../range/report.ts';
-import { saveScorecard } from '../../data/api.ts';
+import { saveScorecard, fetchPremiumCorpus } from '../../data/api.ts';
+import { buildFullCorpus } from '../../range/corpusLoader.ts';
 import { shouldSaveRun } from '../persist.ts';
 import type { HostSource } from '../../webmcp/types.ts';
 import { Trace } from '../Trace.tsx';
@@ -38,7 +39,29 @@ export function RangePage() {
   const source = hostSource();
   const nativeHost = source === 'document' || source === 'navigator';
 
+  const [premiumCount, setPremiumCount] = useState(0);
+
   useEffect(() => session.subscribe(setState), [session]);
+
+  // Premium corpus: if the visitor carries an entitlement token (?corpus_token=…
+  // or a saved one), fetch the gated premium specs and add them to this session's
+  // corpus. Public specs always run; premium is purely additive. The token is
+  // remembered so a returning entitled visitor keeps the extra levels.
+  useEffect(() => {
+    const url = new URLSearchParams(window.location.search).get('corpus_token');
+    const token = url || window.localStorage.getItem('trustwright_corpus_token') || '';
+    if (!token) return;
+    let cancelled = false;
+    void fetchPremiumCorpus(token).then((specs) => {
+      if (cancelled || specs.length === 0) return;
+      window.localStorage.setItem('trustwright_corpus_token', token);
+      session.setCorpus(buildFullCorpus(specs));
+      setPremiumCount(specs.length);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
 
   // Tear the session down on unmount: dispose any level still armed on the global
   // WebMCP host and clear the telemetry bus, so navigating away mid agent-run
@@ -126,6 +149,15 @@ export function RangePage() {
             <span className="dot" style={{ background: 'currentColor' }} />
             {HOST_LABEL[source]}
           </span>
+          {premiumCount > 0 && (
+            <span
+              className="pill"
+              style={{ marginLeft: 8, background: 'rgba(34,211,238,.14)', color: '#67e8f9', border: '1px solid rgba(34,211,238,.3)' }}
+            >
+              <span className="dot" style={{ background: 'currentColor' }} />
+              +{premiumCount} premium {premiumCount === 1 ? 'level' : 'levels'}
+            </span>
+          )}
         </p>
       </header>
 

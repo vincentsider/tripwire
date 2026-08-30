@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Scorecard as ScorecardData } from '../range/scoring.ts';
 import { summarize } from '../range/scoring.ts';
-import { levelById } from '../range/levels.ts';
+import { levelById } from '../range/corpusLoader.ts';
 
 function pct(score: number | null): string {
   return score === null ? '—' : `${Math.round(score * 100)}%`;

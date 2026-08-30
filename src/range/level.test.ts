@@ -3,7 +3,7 @@ import { installPolyfill, uninstallPolyfill } from '../webmcp/polyfill.ts';
 import { resolveHost } from '../webmcp/shim.ts';
 import { TelemetryBus } from './telemetry.ts';
 import { runLevel } from './level.ts';
-import { CORPUS, levelById } from './levels.ts';
+import { CORPUS, levelById } from './corpusLoader.ts';
 import { buildScorecard } from './scoring.ts';
 import type { ModelContextHost } from '../webmcp/types.ts';
 

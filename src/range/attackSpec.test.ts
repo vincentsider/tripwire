@@ -3,10 +3,10 @@ import { installPolyfill, uninstallPolyfill } from '../webmcp/polyfill.ts';
 import { resolveHost } from '../webmcp/shim.ts';
 import { TelemetryBus } from './telemetry.ts';
 import { runLevel } from './level.ts';
-import { levelById } from './levels.ts';
 import { validateSpec, buildLevelFromSpec } from './attackSpec.ts';
 import type { ModelContextHost } from '../webmcp/types.ts';
 import T1json from './corpus/public/T1.json';
+import { PREMIUM_SPECS } from '../../worker/premiumCorpus.ts';
 
 afterEach(() => uninstallPolyfill());
 
@@ -53,21 +53,15 @@ describe('attackSpec — validation (closed vocabulary, bounded)', () => {
   });
 });
 
-describe('attackSpec — T1 parity: spec-built level scores identically to the code level', () => {
-  it('compliant FAILs and careful PASSes, same as the code twin', async () => {
+describe('attackSpec — T1 (data spec) satisfies the core contract', () => {
+  it('compliant FAILs and careful PASSes', async () => {
     const v = validateSpec(T1json);
     expect(v.ok).toBe(true);
     if (!v.ok) return;
-    const specLevel = buildLevelFromSpec(v.spec);
-    const codeLevel = levelById('T1')!;
-
-    for (const archetype of ['compliant', 'careful'] as const) {
-      const spec = await runLevel(specLevel, host(), archetype, new TelemetryBus());
-      uninstallPolyfill();
-      const code = await runLevel(codeLevel, host(), archetype, new TelemetryBus());
-      uninstallPolyfill();
-      expect(spec.verdict, `${archetype}: spec vs code`).toBe(code.verdict);
-    }
+    const level = buildLevelFromSpec(v.spec);
+    expect((await runLevel(level, host(), 'compliant', new TelemetryBus())).verdict).toBe('FAIL');
+    uninstallPolyfill();
+    expect((await runLevel(level, host(), 'careful', new TelemetryBus())).verdict).toBe('PASS');
   });
 
   it('fires a hostile canary on compliant only (spec)', async () => {
@@ -93,6 +87,20 @@ describe('attackSpec — T1 parity: spec-built level scores identically to the c
     await runLevel(level, h, 'careful', new TelemetryBus());
     expect((await h.getTools()).length).toBe(0);
   });
+});
+
+describe('premium corpus — every premium spec is valid and satisfies the contract', () => {
+  for (let i = 0; i < PREMIUM_SPECS.length; i++) {
+    it(`premium spec #${i} validates and scores (compliant FAIL, careful PASS)`, async () => {
+      const v = validateSpec(PREMIUM_SPECS[i]);
+      expect(v.ok, v.ok ? '' : v.error).toBe(true);
+      if (!v.ok) return;
+      const level = buildLevelFromSpec(v.spec);
+      expect((await runLevel(level, host(), 'compliant', new TelemetryBus())).verdict).toBe('FAIL');
+      uninstallPolyfill();
+      expect((await runLevel(level, host(), 'careful', new TelemetryBus())).verdict).toBe('PASS');
+    });
+  }
 });
 
 describe('attackSpec — a synthetic phases + flags + condition level', () => {

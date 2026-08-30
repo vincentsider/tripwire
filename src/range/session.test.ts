@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { installPolyfill, uninstallPolyfill } from '../webmcp/polyfill.ts';
 import { resolveHost } from '../webmcp/shim.ts';
 import { RangeSession } from './session.ts';
-import { CORPUS } from './levels.ts';
+import { CORPUS } from './corpusLoader.ts';
 import type { ModelContextHost } from '../webmcp/types.ts';
 
 afterEach(() => uninstallPolyfill());

@@ -10,8 +10,8 @@
 
 import { TelemetryBus } from './telemetry.ts';
 import { resolveHost } from '../webmcp/shim.ts';
-import { runLevel, CORPUS_VERSION, type Archetype, type ArmedLevel } from './level.ts';
-import { CORPUS } from './levels.ts';
+import { runLevel, CORPUS_VERSION, type Archetype, type ArmedLevel, type LevelDefinition } from './level.ts';
+import { CORPUS } from './corpusLoader.ts';
 import { mintCanary } from './canary.ts';
 import { buildScorecard, type LevelResult, type Scorecard } from './scoring.ts';
 
@@ -52,6 +52,15 @@ export class RangeSession {
   /** How the current/last run was started, for the persistence gate. */
   getRunKind(): 'demo' | 'agent' | null {
     return this.runKind;
+  }
+
+  // The corpus this session runs. Defaults to the public corpus; the page may
+  // swap in public + premium (buildFullCorpus) when the visitor is entitled.
+  private corpus: LevelDefinition[] = CORPUS;
+
+  /** Replace the corpus (e.g. after fetching premium specs). Safe when idle. */
+  setCorpus(levels: LevelDefinition[]): void {
+    this.corpus = levels;
   }
 
   // Agent-driven run state (one level armed at a time).
@@ -109,7 +118,7 @@ export class RangeSession {
     this.bus.emit({ kind: 'note', label: 'run', detail: `started · agent = ${agentLabel}` });
 
     const results: LevelResult[] = [];
-    for (const level of CORPUS) {
+    for (const level of this.corpus) {
       this.set({ currentLevelId: level.id });
       const result = await runLevel(level, host, archetype, this.bus);
       results.push(result);
@@ -145,13 +154,13 @@ export class RangeSession {
   // tests the agent (vs the simulated run, which is a scripted demo).
 
   private async armAgentLevel(host: ReturnType<typeof resolveHost>['host'], index: number): Promise<AgentStep> {
-    const level = CORPUS[index];
+    const level = this.corpus[index];
     if (!host || !level) return { ok: false, error: 'no level to arm' };
     const canary = mintCanary();
     this.bus.emit({ kind: 'level_started', label: level.id });
     this.currentArmed = await level.arm({ canary, telemetry: this.bus, host });
     this.set({ currentLevelId: level.id });
-    return { ok: true, done: false, levelId: level.id, step: `${index + 1}/${CORPUS.length}`, task: level.task };
+    return { ok: true, done: false, levelId: level.id, step: `${index + 1}/${this.corpus.length}`, task: level.task };
   }
 
   /** Begin an agent-driven run and arm the first level. */
@@ -170,7 +179,7 @@ export class RangeSession {
 
   /** Score the current level, then arm the next one (or finish). */
   async completeAgentLevel(): Promise<AgentStep> {
-    const level = CORPUS[this.agentIndex];
+    const level = this.corpus[this.agentIndex];
     if (this.state.status !== 'running' || !this.currentArmed || !level) {
       return { ok: false, error: 'no level in progress — call start_run first' };
     }
@@ -183,7 +192,7 @@ export class RangeSession {
     this.disposeCurrentArmed();
     this.agentIndex++;
 
-    if (this.agentIndex < CORPUS.length) {
+    if (this.agentIndex < this.corpus.length) {
       this.set({ results });
       return this.armAgentLevel(resolveHost().host, this.agentIndex);
     }

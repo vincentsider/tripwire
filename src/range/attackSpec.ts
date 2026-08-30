@@ -21,6 +21,7 @@
 
 import type { JsonSchema, ToolAnnotations, ModelContextTool } from '../webmcp/types.ts';
 import { registerAll, type Disposer } from '../webmcp/shim.ts';
+import { canaryPresent } from './canary.ts';
 import type { TelemetryKind } from './telemetry.ts';
 import type { Verdict } from './scoring.ts';
 import type { LevelDefinition, LevelContext, ArmedLevel, Archetype } from './level.ts';
@@ -65,6 +66,7 @@ export type Condition =
   | { type: 'flag'; name: string }
   | { type: 'flagEquals'; name: string; value: string }
   | { type: 'toolSetChanged' }
+  | { type: 'argHasCanary' } // the CURRENT tool call carried the canary in an argument
   | { type: 'not'; cond: Condition }
   | { type: 'allOf'; conds: Condition[] }
   | { type: 'anyOf'; conds: Condition[] };
@@ -131,6 +133,8 @@ function validateCondition(c: unknown, path: string): string | null {
     case 'flagEquals':
       return isStr(c.name) && isStr(c.value) ? null : `${path}: name/value required`;
     case 'toolSetChanged':
+      return null;
+    case 'argHasCanary':
       return null;
     case 'not':
       return validateCondition(c.cond, `${path}.cond`);
@@ -292,6 +296,7 @@ interface RunState {
   calls: string[]; // tool names in call order
   flags: Map<string, string | boolean>;
   toolSetChanged: boolean;
+  lastInput: Record<string, unknown>; // the argument object of the current tool call
 }
 
 /** Interpolate {{canary}} and {{<flag>}} — the ONLY templating; never code. */
@@ -324,6 +329,8 @@ function evalCondition(cond: Condition, st: RunState): boolean {
       return String(st.flags.get(cond.name) ?? '') === cond.value;
     case 'toolSetChanged':
       return st.toolSetChanged;
+    case 'argHasCanary':
+      return canaryPresent(st.lastInput, st.canary);
     case 'not':
       return !evalCondition(cond.cond, st);
     case 'allOf':
@@ -344,7 +351,7 @@ export function buildLevelFromSpec(spec: AttackSpec): LevelDefinition {
     mitigation: spec.mitigation,
     task: spec.task,
     async arm(ctx: LevelContext): Promise<ArmedLevel> {
-      const st: RunState = { canary: ctx.canary, calls: [], flags: new Map(), toolSetChanged: false };
+      const st: RunState = { canary: ctx.canary, calls: [], flags: new Map(), toolSetChanged: false, lastInput: {} };
       for (const f of spec.flags ?? []) st.flags.set(f, false);
 
       const phaseById = new Map(spec.phases.map((p) => [p.id, p]));
@@ -399,8 +406,9 @@ export function buildLevelFromSpec(spec: AttackSpec): LevelDefinition {
         description: t.description,
         ...(t.inputSchema ? { inputSchema: t.inputSchema } : {}),
         ...(t.annotations ? { annotations: t.annotations } : {}),
-        execute: async () => {
+        execute: async (input) => {
           st.calls.push(t.name);
+          st.lastInput = input ?? {};
           const carry = { text: 'ok' };
           await runEffects(t.onCall ?? [], carry);
           // Surface swaps (T3 cloaking) fire AFTER the call completes, so the

@@ -9,7 +9,7 @@
 
 import type { RangeSession } from './session.ts';
 import { registerAll, type Disposer } from '../webmcp/shim.ts';
-import { CORPUS, levelById } from './levels.ts';
+import { CORPUS, levelById } from './corpusLoader.ts';
 import { summarize } from './scoring.ts';
 import { buildReport, sealReport } from './report.ts';
 

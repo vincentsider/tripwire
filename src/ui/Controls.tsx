@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import type { SessionStatus } from '../range/session.ts';
-import { levelById } from '../range/levels.ts';
+import { levelById } from '../range/corpusLoader.ts';
 
 export interface ControlsProps {
   status: SessionStatus;

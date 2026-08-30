@@ -127,6 +127,24 @@ export async function verifyBundledClip(
   }
 }
 
+/**
+ * Fetch PREMIUM attack specs for an entitlement token. Returns [] on any failure
+ * (no token, not entitled, offline) so the range always runs on the public
+ * corpus — premium is purely additive. The caller validates every spec with the
+ * bundled validateSpec before running it, so nothing here is trusted blindly.
+ */
+export async function fetchPremiumCorpus(token: string): Promise<unknown[]> {
+  if (!token) return [];
+  try {
+    const resp = await fetch(mode2Url('/api/corpus?tier=premium'), { headers: { 'x-corpus-token': token } });
+    if (!resp.ok) return [];
+    const out = (await resp.json()) as { specs?: unknown[] };
+    return Array.isArray(out.specs) ? out.specs : [];
+  } catch {
+    return [];
+  }
+}
+
 // ── Mode 2: audit a site's tools + badge ─────────────────────────────────────
 //
 // These talk to the same Worker. Unlike persistence, Mode 2 is the product, so
