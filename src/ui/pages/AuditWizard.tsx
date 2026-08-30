@@ -59,13 +59,18 @@ export function AuditWizard() {
     if (!target) return;
     setBusy('confirm');
     setNote(null);
-    const { data } = await confirmVerification(target.origin);
+    const { status, data } = await confirmVerification(target.origin);
     setBusy('');
     if (data?.verified) {
       setVerified(target.origin);
-      setNote({ kind: 'ok', text: `Ownership of ${target.origin} confirmed.` });
+      setNote({ kind: 'ok', text: `Ownership of ${target.origin} confirmed — continue to step 2.` });
+    } else if (status === 0) {
+      setNote({ kind: 'bad', text: 'Could not reach Trustwright. Check your connection and try again.' });
     } else {
-      setNote({ kind: 'warn', text: "We couldn't find the code yet. Publish it, wait a moment (DNS can be slow), then check again." });
+      setNote({
+        kind: 'warn',
+        text: `Not verified yet — we couldn't find the code at ${target.origin}. Publish it exactly (the file at ${instructions?.wellKnown.path ?? '/.well-known/trustwright-challenge.txt'}, OR the ${instructions?.dns.record ?? '_trustwright'} DNS TXT record), give DNS a minute to propagate, then check again.`,
+      });
     }
   };
 
@@ -183,6 +188,13 @@ export function AuditWizard() {
                     </div>
                   )
                 )}
+                {/* Feedback for get-code / check, shown right here at the button
+                    (not far down the page) so the user always sees what happened. */}
+                {note && (
+                  <div className={`notice ${note.kind}`} style={{ marginTop: 14 }}>
+                    {note.text}
+                  </div>
+                )}
               </>
             )}
             {step1Done && (
@@ -238,7 +250,9 @@ export function AuditWizard() {
         </div>
       </div>
 
-      {note && (
+      {/* Once ownership is proven, step 1's inline note is gone; show mint-step
+          feedback here (avoids showing the same note twice). */}
+      {note && step1Done && (
         <div className={`notice ${note.kind}`} style={{ marginTop: 18 }}>
           {note.text}
         </div>
