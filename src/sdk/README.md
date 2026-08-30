@@ -1,11 +1,11 @@
-# @tripwire/audit
+# @trustwright/audit
 
 Self-audit SDK for WebMCP sites. Enumerate your own tool surface, preview the
 Trustwright static checklist locally, prove origin ownership, and submit for a
 signed, fingerprint-bound Assurance Report + live badge.
 
 ```ts
-import { requestVerification, confirmVerification, audit, selfAuditPreview } from '@tripwire/audit';
+import { requestVerification, confirmVerification, audit, selfAuditPreview } from '@trustwright/audit';
 
 // 1. Prove you control the origin (one-time).
 const { token, instructions } = await requestVerification();

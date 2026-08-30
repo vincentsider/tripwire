@@ -1,4 +1,4 @@
-// src/sdk/index.ts  (@tripwire/audit)
+// src/sdk/index.ts  (@trustwright/audit)
 //
 // The self-audit SDK. A WebMCP site imports it and runs a self-audit: it
 // enumerates its OWN document.modelContext tools (which it sees perfectly,
@@ -7,7 +7,7 @@
 // independently RE-DERIVES the fingerprint + findings before signing, so the
 // self-report is never the trust anchor.
 //
-//   import { audit, requestVerification, confirmVerification } from '@tripwire/audit';
+//   import { audit, requestVerification, confirmVerification } from '@trustwright/audit';
 //   await audit({ origin: location.origin });
 //
 // Reuses src/range so there is zero drift between the local preview and what the

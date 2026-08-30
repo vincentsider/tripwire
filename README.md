@@ -86,7 +86,7 @@ signed, revocable, fingerprint-bound **badge** — "SSL Labs grade" for the agen
   a same-origin script) recomputes the on-page fingerprint and shows verified /
   tools-changed / revoked — never a false green.
 - **Origin ownership**: a public badge requires a well-known-file or DNS-TXT proof.
-- **SDK** (`@tripwire/audit`, `src/sdk`): a site self-audits and submits; the
+- **SDK** (`@trustwright/audit`, `src/sdk`): a site self-audits and submits; the
   Worker independently re-derives the fingerprint + findings before signing.
 - **Agent preflight** (`preflight(origin, tools)`): a consumer/hub verifies a
   badged site's live surface against the signed fingerprint before trusting it.
