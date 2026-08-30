@@ -296,7 +296,6 @@ interface RunState {
   calls: string[]; // tool names in call order
   flags: Map<string, string | boolean>;
   toolSetChanged: boolean;
-  lastInput: Record<string, unknown>; // the argument object of the current tool call
 }
 
 /** Interpolate {{canary}} and {{<flag>}} — the ONLY templating; never code. */
@@ -314,7 +313,10 @@ function interpolateInput(input: Record<string, unknown> | undefined, st: RunSta
   return out;
 }
 
-function evalCondition(cond: Condition, st: RunState): boolean {
+// `input` is the argument object of the CURRENT tool call (only `argHasCanary`
+// reads it). It is passed explicitly rather than kept on RunState so a concurrent
+// tool call (interleaving during a capability await) can never clobber it.
+function evalCondition(cond: Condition, st: RunState, input: Record<string, unknown>): boolean {
   switch (cond.type) {
     case 'called':
       return st.calls.includes(cond.tool);
@@ -330,13 +332,13 @@ function evalCondition(cond: Condition, st: RunState): boolean {
     case 'toolSetChanged':
       return st.toolSetChanged;
     case 'argHasCanary':
-      return canaryPresent(st.lastInput, st.canary);
+      return canaryPresent(input, st.canary);
     case 'not':
-      return !evalCondition(cond.cond, st);
+      return !evalCondition(cond.cond, st, input);
     case 'allOf':
-      return cond.conds.every((c) => evalCondition(c, st));
+      return cond.conds.every((c) => evalCondition(c, st, input));
     case 'anyOf':
-      return cond.conds.some((c) => evalCondition(c, st));
+      return cond.conds.some((c) => evalCondition(c, st, input));
   }
 }
 
@@ -351,7 +353,7 @@ export function buildLevelFromSpec(spec: AttackSpec): LevelDefinition {
     mitigation: spec.mitigation,
     task: spec.task,
     async arm(ctx: LevelContext): Promise<ArmedLevel> {
-      const st: RunState = { canary: ctx.canary, calls: [], flags: new Map(), toolSetChanged: false, lastInput: {} };
+      const st: RunState = { canary: ctx.canary, calls: [], flags: new Map(), toolSetChanged: false };
       for (const f of spec.flags ?? []) st.flags.set(f, false);
 
       const phaseById = new Map(spec.phases.map((p) => [p.id, p]));
@@ -368,7 +370,8 @@ export function buildLevelFromSpec(spec: AttackSpec): LevelDefinition {
       };
 
       // Result carrier for a tool's execute() — the `return` effect sets it.
-      const runEffects = async (effects: Effect[], carry: { text: string }): Promise<void> => {
+      // `input` is the current call's arguments, threaded to `when`/argHasCanary.
+      const runEffects = async (effects: Effect[], carry: { text: string }, input: Record<string, unknown>): Promise<void> => {
         for (const e of effects) {
           switch (e.type) {
             case 'emit':
@@ -395,7 +398,7 @@ export function buildLevelFromSpec(spec: AttackSpec): LevelDefinition {
               await advanceTo(e.phase);
               break;
             case 'when':
-              await runEffects(evalCondition(e.cond, st) ? e.then : (e.otherwise ?? []), carry);
+              await runEffects(evalCondition(e.cond, st, input) ? e.then : (e.otherwise ?? []), carry, input);
               break;
           }
         }
@@ -408,9 +411,9 @@ export function buildLevelFromSpec(spec: AttackSpec): LevelDefinition {
         ...(t.annotations ? { annotations: t.annotations } : {}),
         execute: async (input) => {
           st.calls.push(t.name);
-          st.lastInput = input ?? {};
+          const callInput = input ?? {};
           const carry = { text: 'ok' };
-          await runEffects(t.onCall ?? [], carry);
+          await runEffects(t.onCall ?? [], carry, callInput);
           // Surface swaps (T3 cloaking) fire AFTER the call completes, so the
           // honest tool that was just used is what disappears.
           await maybeTrigger(t.name);
@@ -463,8 +466,10 @@ export function buildLevelFromSpec(spec: AttackSpec): LevelDefinition {
       };
 
       const evaluate = (): Verdict => {
-        if (spec.detection.fail && evalCondition(spec.detection.fail, st)) return 'FAIL';
-        if (spec.detection.partial && evalCondition(spec.detection.partial, st)) return 'PARTIAL';
+        // Detection runs over accumulated run state; there is no "current call",
+        // so argHasCanary (if a spec used it here) evaluates against an empty input.
+        if (spec.detection.fail && evalCondition(spec.detection.fail, st, {})) return 'FAIL';
+        if (spec.detection.partial && evalCondition(spec.detection.partial, st, {})) return 'PARTIAL';
         return 'PASS';
       };
 

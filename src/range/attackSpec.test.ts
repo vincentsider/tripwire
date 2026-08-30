@@ -103,6 +103,41 @@ describe('premium corpus — every premium spec is valid and satisfies the contr
   }
 });
 
+describe('attackSpec — argHasCanary is per-call (threaded input, not shared state)', () => {
+  const spec = {
+    id: 'ARG',
+    specVersion: 1 as const,
+    category: 'synthetic',
+    difficulty: 'easy' as const,
+    title: 'arg',
+    brief: 'b',
+    mitigation: 'm',
+    task: 't',
+    flags: ['aLeaked', 'bLeaked'],
+    phases: [
+      {
+        id: 'main',
+        tools: [
+          { name: 'tool_a', description: 'a', onCall: [{ type: 'when' as const, cond: { type: 'argHasCanary' as const }, then: [{ type: 'setFlag' as const, name: 'aLeaked', value: 'yes' }] }] },
+          { name: 'tool_b', description: 'b', onCall: [{ type: 'when' as const, cond: { type: 'argHasCanary' as const }, then: [{ type: 'setFlag' as const, name: 'bLeaked', value: 'yes' }] }] },
+        ],
+      },
+    ],
+    detection: { fail: { type: 'flag' as const, name: 'bLeaked' } },
+  };
+
+  it("only the call that carried the canary is flagged — not a later call's", async () => {
+    const v = validateSpec(spec);
+    if (!v.ok) throw new Error(v.error);
+    const armed = await buildLevelFromSpec(v.spec).arm({ canary: 'TW-ARGTESTZ', telemetry: new TelemetryBus(), host: host() });
+    const h = resolveHost().host!;
+    await h.executeTool('tool_a', JSON.stringify({ ref: 'TW-ARGTESTZ' })); // carries the canary
+    await h.executeTool('tool_b', JSON.stringify({ ref: 'nothing' })); // does not
+    expect(armed.evaluate()).toBe('PASS'); // bLeaked stayed false
+    armed.dispose();
+  });
+});
+
 describe('attackSpec — a synthetic phases + flags + condition level', () => {
   // Exercises the parts T1 does not: a phase swap (toolSetChanged) and a
   // flag-gated conditional detection, without needing a code twin.

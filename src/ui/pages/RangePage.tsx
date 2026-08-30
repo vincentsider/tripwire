@@ -11,7 +11,7 @@ import { registerControlTools } from '../../range/controlTools.ts';
 import { hostSource, isWebMcpAvailable } from '../../webmcp/shim.ts';
 import { buildReport, sealReport } from '../../range/report.ts';
 import { saveScorecard, fetchPremiumCorpus } from '../../data/api.ts';
-import { buildFullCorpus } from '../../range/corpusLoader.ts';
+import { buildFullCorpus, CORPUS } from '../../range/corpusLoader.ts';
 import { shouldSaveRun } from '../persist.ts';
 import type { HostSource } from '../../webmcp/types.ts';
 import { Trace } from '../Trace.tsx';
@@ -48,15 +48,27 @@ export function RangePage() {
   // corpus. Public specs always run; premium is purely additive. The token is
   // remembered so a returning entitled visitor keeps the extra levels.
   useEffect(() => {
-    const url = new URLSearchParams(window.location.search).get('corpus_token');
-    const token = url || window.localStorage.getItem('trustwright_corpus_token') || '';
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('corpus_token');
+    const token = fromUrl || window.localStorage.getItem('trustwright_corpus_token') || '';
+    // A token in the URL is a bearer credential: strip it from the address bar (so
+    // it does not linger in history or leak via the Referer header) — it is kept
+    // in localStorage below.
+    if (fromUrl) {
+      params.delete('corpus_token');
+      const qs = params.toString();
+      window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash);
+    }
     if (!token) return;
     let cancelled = false;
     void fetchPremiumCorpus(token).then((specs) => {
       if (cancelled || specs.length === 0) return;
+      const full = buildFullCorpus(specs);
+      const added = full.length - CORPUS.length; // count LEVELS actually added (post-validate/dedup)
+      if (added <= 0) return;
       window.localStorage.setItem('trustwright_corpus_token', token);
-      session.setCorpus(buildFullCorpus(specs));
-      setPremiumCount(specs.length);
+      session.setCorpus(full);
+      setPremiumCount(added);
     });
     return () => {
       cancelled = true;

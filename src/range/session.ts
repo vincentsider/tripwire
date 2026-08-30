@@ -58,8 +58,10 @@ export class RangeSession {
   // swap in public + premium (buildFullCorpus) when the visitor is entitled.
   private corpus: LevelDefinition[] = CORPUS;
 
-  /** Replace the corpus (e.g. after fetching premium specs). Safe when idle. */
+  /** Replace the corpus (e.g. after fetching premium specs). Ignored mid-run so
+   *  the level index can never point past a corpus that changed under it. */
   setCorpus(levels: LevelDefinition[]): void {
+    if (this.state.status === 'running') return;
     this.corpus = levels;
   }
 
