@@ -138,6 +138,13 @@ export function AuditWizard() {
           The page that offers your agent tools. We derive your domain from it.
           {target && <> Domain: <span className="mono" style={{ color: 'var(--ink-2)' }}>{target.origin}</span></>}
         </p>
+        {siteInput.trim() !== '' && !target && (
+          <p style={{ fontSize: 12.5, margin: '6px 0 0', color: '#ffb3ba' }}>
+            That doesn&apos;t look like a valid web address. Use the form{' '}
+            <span className="mono">https://your-site.com</span> (check for typos like a double colon
+            <span className="mono"> :// </span>).
+          </p>
+        )}
       </div>
 
       <div className="steps">
