@@ -239,6 +239,33 @@ that reads tool-call observations and returns `PASS | PARTIAL | FAIL`. Add it to
 
 Every payload in this corpus is inert. See [SECURITY.md](./SECURITY.md).
 
-## License
+## What's open source vs commercial
 
-Apache-2.0. See [LICENSE](./LICENSE).
+This repository is a complete, self-hostable **reference implementation** — the
+attack corpus, the scanner, the badge embed, the fingerprint, and the ownership
+proof are all here under Apache-2.0. What makes a *live badge* trustworthy is
+operated by DeepBlocker and is **not** in this repo:
+
+| Open source (this repo, Apache-2.0) | Commercial (operated by DeepBlocker) |
+| --- | --- |
+| The attack corpus (the Range) | Private / premium attack corpora |
+| The scanner + badge embed + fingerprint | The badge-signing key = the **issuing authority** |
+| The WebMCP polyfill/shim | The hosted, continuously re-checking service + revocation |
+| A **fallback** detector verdict for T7 | The deepfake / voice-authenticity **detection model** |
+
+You can run everything here yourself and issue your **own** badges under your
+**own** name. Only badges issued by DeepBlocker's service are official DeepBlocker
+verifications — see **[TRADEMARK.md](./TRADEMARK.md)**.
+
+## Contributing
+
+Contributions are welcome — see **[CONTRIBUTING.md](./CONTRIBUTING.md)**. All
+contributions require agreeing to the **[CLA](./CLA.md)** (you keep ownership; you
+grant DeepBlocker broad rights, which preserves the option of a commercial
+edition later).
+
+## License & trademarks
+
+Source code: **Apache-2.0** — see [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
+The project name and the "verified" badge are **DeepBlocker trademarks** and are
+**not** licensed by the code license — see [TRADEMARK.md](./TRADEMARK.md).

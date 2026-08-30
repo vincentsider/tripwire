@@ -1,0 +1,29 @@
+Tripwire
+Copyright 2026 DeepBlocker
+
+This product includes software developed by DeepBlocker (https://deepblocker.ai).
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+the source code except in compliance with the License. A copy of the License is
+in the LICENSE file, or at http://www.apache.org/licenses/LICENSE-2.0.
+
+------------------------------------------------------------------------------
+Trademarks (NOT licensed under Apache-2.0)
+------------------------------------------------------------------------------
+The project name, the DeepBlocker name, and the "verified" trust-badge design
+are trademarks of DeepBlocker. The Apache-2.0 license covers the SOURCE CODE
+only and grants NO right to use these marks (Apache-2.0 section 6). In
+particular, a fork or self-hosted deployment may use the code but may NOT
+present itself as issuing an official DeepBlocker/Tripwire "verified" badge, nor
+use the name or badge in a way that implies endorsement. See TRADEMARK.md.
+
+------------------------------------------------------------------------------
+What is NOT in this repository (proprietary to DeepBlocker)
+------------------------------------------------------------------------------
+The open-source code here is a reference implementation and client. The trust
+that makes a live badge meaningful is operated by DeepBlocker and is not part of
+this repository:
+  - the badge-signing private key (the issuing authority);
+  - the deepfake / voice-authenticity detection model (called via a proxy);
+  - the hosted, continuously re-checking verification service.
+See TRADEMARK.md and the README ("What's open source vs commercial").
